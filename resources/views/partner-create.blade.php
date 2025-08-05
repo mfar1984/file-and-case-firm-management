@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
 @section('breadcrumb')
-    <span class="text-gray-500">Add New Partner</span>
+    Partner > Add New Partner
 @endsection
 
 @section('content')
-<div class="px-6 pt-6 max-w-7xl mx-auto">
+<div class="px-6 pt-6 pb-6 max-w-7xl mx-auto">
     <div class="bg-white rounded shadow-md border border-gray-300">
         <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex items-center">

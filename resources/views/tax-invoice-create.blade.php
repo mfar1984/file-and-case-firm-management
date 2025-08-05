@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('breadcrumb')
-    <span class="text-gray-500">Add New Quotation</span>
+    <span class="text-gray-500">Add New Tax Invoice</span>
 @endsection
 
 @section('content')
@@ -20,58 +20,65 @@ input[type='number'] {
     <div class="bg-white rounded shadow-md border border-gray-300">
         <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex items-center">
-                <span class="material-icons mr-2 text-blue-600">request_quote</span>
-                <h1 class="text-xl font-bold text-gray-800 text-[14px]">Add New Quotation</h1>
+                <span class="material-icons mr-2 text-blue-600">receipt</span>
+                <h1 class="text-xl font-bold text-gray-800 text-[14px]">Add New Tax Invoice</h1>
             </div>
-            <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Create a new quotation for your client.</p>
+            <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Create a new tax invoice from quotation or scratch.</p>
         </div>
         
         <form class="p-6">
-            <!-- Customer and Quotation Details -->
+            <!-- Quotation Selection and Invoice Details -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <!-- Left Column - Customer Information -->
+                <!-- Left Column - Quotation Selection -->
                 <div class="space-y-4">
-                    <h3 class="text-sm font-semibold text-gray-800 mb-4">Customer Information</h3>
+                    <h3 class="text-sm font-semibold text-gray-800 mb-4">Quotation Selection</h3>
                     
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-2">Customer *</label>
-                        <div class="flex space-x-2">
-                            <input type="text" class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Customer ID" readonly>
-                            <select class="flex-2 px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                                <option value="">Select Customer</option>
-                                <option value="A0001">A0001 - ATLINE SDN BHD</option>
-                                <option value="A0002">A0002 - TECH SOLUTIONS</option>
-                                <option value="A0003">A0003 - GLOBAL TRADING</option>
-                            </select>
-                        </div>
+                        <label class="block text-xs font-medium text-gray-700 mb-2">Select Quotation *</label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <option value="">Choose from existing quotations</option>
+                            <option value="Q-2025-001">Q-2025-001 - ATLINE SDN BHD</option>
+                            <option value="Q-2025-002">Q-2025-002 - TECH SOLUTIONS</option>
+                            <option value="Q-2025-003">Q-2025-003 - GLOBAL TRADING</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-2">Customer</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" value="ATLINE SDN BHD" readonly>
                     </div>
                     
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Address</label>
-                        <textarea class="w-full px-3 py-7 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Customer address will auto-populate" readonly>UNIT 606, BLOCK C, KELANA SQUARE, NO.17 JALAN SS 7/26, KELANA JAYA 47301 SELANGOR Malaysia</textarea>
+                        <textarea class="w-full px-3 py-7 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" rows="3" readonly>UNIT 606, BLOCK C, KELANA SQUARE, NO.17 JALAN SS 7/26, KELANA JAYA 47301 SELANGOR Malaysia</textarea>
                     </div>
                     
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Contact</label>
                         <div class="flex space-x-2">
-                            <input type="text" class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Contact Person" value="MOHD NURUL">
-                            <input type="text" class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Phone Number" value="016-2074769">
+                            <input type="text" class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" value="MOHD NURUL" readonly>
+                            <input type="text" class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" value="016-2074769" readonly>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Right Column - Quotation Information -->
+                <!-- Right Column - Invoice Information -->
                 <div class="space-y-4">
-                    <h3 class="text-sm font-semibold text-gray-800 mb-4">Quotation Information</h3>
+                    <h3 class="text-sm font-semibold text-gray-800 mb-4">Invoice Information</h3>
                     
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-2">Quotation No. *</label>
+                        <label class="block text-xs font-medium text-gray-700 mb-2">Invoice No. *</label>
                         <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" value="Auto-generated" readonly>
                     </div>
                     
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-2">Date *</label>
+                        <label class="block text-xs font-medium text-gray-700 mb-2">Issue Date *</label>
                         <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" value="2025-08-05" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-2">Due Date *</label>
+                        <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" value="2025-09-05" required>
                     </div>
                     
                     <div>
@@ -94,7 +101,7 @@ input[type='number'] {
             <!-- Item Entry Section -->
             <div class="mb-8" x-data="{
     items: [
-        { description: '', qty: 1, uom: 'lot', price: 0, disc: 0, tax: 6 }
+        { description: 'Legal consultation services', qty: 1, uom: 'hour', price: 500, disc: 0, tax: 6 }
     ],
     amount(item) {
         let subtotal = item.qty * item.price;
@@ -103,7 +110,17 @@ input[type='number'] {
         return afterTax;
     },
     subtotal() {
-        return this.items.reduce((sum, item) => sum + this.amount(item), 0);
+        return this.items.reduce((sum, item) => sum + (item.qty * item.price), 0);
+    },
+    totalTax() {
+        return this.items.reduce((sum, item) => {
+            let subtotal = item.qty * item.price;
+            let afterDisc = subtotal * (1 - item.disc / 100);
+            return sum + (afterDisc * (item.tax / 100));
+        }, 0);
+    },
+    grandTotal() {
+        return this.subtotal() + this.totalTax();
     },
     addRow() {
         this.items.push({ description: '', qty: 1, uom: 'lot', price: 0, disc: 0, tax: 6 });
@@ -199,8 +216,12 @@ input[type='number'] {
                                 <span class="text-gray-900 pr-6 mr-2" x-text="'RM ' + subtotal().toFixed(2)"></span>
                             </div>
                             <div class="flex justify-between text-sm">
+                                <span class="font-medium text-gray-700">SST:</span>
+                                <span class="text-gray-900 pr-6 mr-2" x-text="'RM ' + totalTax().toFixed(2)"></span>
+                            </div>
+                            <div class="flex justify-between text-sm">
                                 <span class="font-medium text-gray-700">Total RM:</span>
-                                <span class="text-gray-900 font-semibold pr-6 mr-2" x-text="'RM ' + subtotal().toFixed(2)"></span>
+                                <span class="text-gray-900 font-semibold pr-6 mr-2" x-text="'RM ' + grandTotal().toFixed(2)"></span>
                             </div>
                         </div>
                     </div>
@@ -209,12 +230,12 @@ input[type='number'] {
             
             <!-- Form Actions -->
             <div class="flex justify-end space-x-3 pt-6">
-                <a href="{{ route('quotation.index') }}" class="px-4 py-2 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors">
+                <a href="{{ route('tax-invoice.index') }}" class="px-4 py-2 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors">
                     Cancel
                 </a>
                 <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors">
                     <span class="material-icons text-xs mr-1">save</span>
-                    Save Quotation
+                    Save Tax Invoice
                 </button>
             </div>
         </form>

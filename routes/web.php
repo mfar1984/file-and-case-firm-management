@@ -44,9 +44,13 @@ Route::view('/partner/create', 'partner-create')->name('partner.create');
 Route::view('/quotation', 'quotation')->name('quotation.index');
 Route::view('/quotation/create', 'quotation-create')->name('quotation.create');
 Route::view('/tax-invoice', 'tax-invoice')->name('tax-invoice.index');
+Route::view('/tax-invoice/create', 'tax-invoice-create')->name('tax-invoice.create');
 Route::view('/resit', 'resit')->name('resit.index');
+Route::view('/resit/create', 'resit-create')->name('resit.create');
 Route::view('/voucher', 'voucher')->name('voucher.index');
+Route::view('/voucher/create', 'voucher-create')->name('voucher.create');
 Route::view('/bill', 'bill')->name('bill.index');
+Route::view('/bill/create', 'bill-create')->name('bill.create');
 
 Route::view('/settings/global', 'settings.global')->name('settings.global');
 Route::view('/settings/role', 'settings.role')->name('settings.role');

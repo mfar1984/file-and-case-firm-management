@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-<div class="px-6 pt-6 max-w-7xl mx-auto">
+<div class="px-6 pt-6 pb-6 max-w-7xl mx-auto">
     @if(session('success'))
         <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
             {{ session('success') }}

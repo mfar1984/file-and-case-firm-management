@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-<div class="px-6 pt-6 max-w-7xl mx-auto">
+<div class="px-6 pt-6 pb-6 max-w-7xl mx-auto">
     <div class="bg-white rounded shadow-md border border-gray-300">
         <div class="p-6 border-b border-gray-200">
             <div class="flex justify-between items-start">

@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-<div class="px-6 pt-6 max-w-7xl mx-auto">
+<div class="px-6 pt-6 pb-6 max-w-7xl mx-auto">
     <div class="bg-white rounded shadow-md border border-gray-300">
         <div class="p-6 border-b border-gray-200">
             <div class="flex justify-between items-start">
@@ -18,10 +18,10 @@
                 </div>
                 
                 <!-- Add Bill Button -->
-                <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs font-medium flex items-center">
+                <a href="{{ route('bill.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs font-medium flex items-center">
                     <span class="material-icons text-xs mr-1">add</span>
                     Add Bill
-                </button>
+                </a>
             </div>
         </div>
         
