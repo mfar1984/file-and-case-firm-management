@@ -1,0 +1,229 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Import Poppins font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Base styles */
+body {
+    font-family: 'Poppins', sans-serif;
+    color: #222;
+}
+
+/* Custom component styles */
+@layer components {
+    /* Button styles */
+    .btn-primary {
+        @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-medium transition-colors;
+    }
+    
+    .btn-secondary {
+        @apply bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors;
+    }
+    
+    .btn-danger {
+        @apply bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-medium transition-colors;
+    }
+    
+    /* Card styles */
+    .card {
+        @apply bg-white border border-gray-200 rounded-lg shadow-sm;
+    }
+    
+    .card-header {
+        @apply px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700 text-white;
+    }
+    
+    .card-body {
+        @apply p-6;
+    }
+    
+    /* Badge styles */
+    .badge {
+        @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+    }
+    
+    .badge-success {
+        @apply bg-green-100 text-green-800;
+    }
+    
+    .badge-warning {
+        @apply bg-yellow-100 text-yellow-800;
+    }
+    
+    .badge-danger {
+        @apply bg-red-100 text-red-800;
+    }
+    
+    .badge-info {
+        @apply bg-blue-100 text-blue-800;
+    }
+    
+    /* Form styles */
+    .form-input {
+        @apply block w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+    }
+    
+    .form-label {
+        @apply block text-xs font-medium text-gray-700 mb-1;
+    }
+    
+    .form-error {
+        @apply text-xs text-red-600 mt-1;
+    }
+    
+    .form-help {
+        @apply text-xs text-gray-500 mt-1;
+    }
+    
+    /* Table styles */
+    .table {
+        @apply min-w-full divide-y divide-gray-200;
+    }
+    
+    .table-header {
+        @apply bg-blue-600 text-white text-xs font-medium;
+    }
+    
+    .table-header th {
+        @apply px-6 py-3 text-left;
+    }
+    
+    .table-body {
+        @apply bg-white divide-y divide-gray-200;
+    }
+    
+    .table-row {
+        @apply hover:bg-gray-50;
+    }
+    
+    .table-cell {
+        @apply px-6 py-4 whitespace-nowrap text-xs text-gray-900;
+    }
+    
+    /* Sidebar styles */
+    .category-header {
+        @apply relative;
+    }
+    
+    .hierarchical-menu {
+        @apply pl-6 border-l border-gray-200 ml-4 mt-1;
+    }
+    
+    .sidebar-submenu-item {
+        @apply flex items-center py-2 px-4 text-sm relative;
+        border-top-left-radius: 9999px;
+        border-bottom-left-radius: 9999px;
+    }
+    
+    .sidebar-submenu-item:hover {
+        background-color: #f1d37d;
+    }
+    
+    .sidebar-submenu-item.active {
+        background-color: #f1d37d;
+        color: #a67a46;
+        border-top-left-radius: 9999px;
+        border-bottom-left-radius: 9999px;
+    }
+    
+    .sidebar-submenu-item:hover::after,
+    .sidebar-submenu-item.active::after {
+        content: '';
+        @apply absolute right-0 top-0 h-full w-1;
+        background-color: #a67a46;
+    }
+    
+    .sidebar-submenu-item::before {
+        content: '';
+        @apply absolute h-px bg-gray-200;
+        width: 16px;
+        top: 50%;
+        left: -16px;
+        transform: translateY(-50%);
+    }
+    
+    /* Main category ribbon effect */
+    .category-header > a:hover > div,
+    .category-header.active > a > div {
+        background-color: #f8f4e6;
+    }
+    
+    .category-header > a:hover::after,
+    .category-header.active > a::after {
+        content: '';
+        @apply absolute right-0 top-0 h-full w-1;
+        background-color: #a67a46;
+    }
+    
+    /* For non-link category headers (like Case and Settings) */
+    .category-header:hover > div {
+        background-color: #f8f4e6;
+    }
+    
+    .category-header:hover::after {
+        content: '';
+        @apply absolute right-0 top-0 h-full w-1;
+        background-color: #a67a46;
+    }
+    
+    /* Active state for non-link category headers */
+    .category-header.active > div {
+        background-color: #f8f4e6;
+    }
+    
+    .category-header.active::after {
+        content: '';
+        @apply absolute right-0 top-0 h-full w-1;
+        background-color: #a67a46;
+    }
+    
+    /* Active states for main category menu items */
+    .category-header > a.active > div {
+        background-color: #f8f4e6;
+    }
+    
+    .category-header > a.active::after {
+        content: '';
+        @apply absolute right-0 top-0 h-full w-1;
+        background-color: #a67a46;
+    }
+    
+    /* Notification styles */
+    .notification-item {
+        @apply block py-2 px-3 hover:bg-gray-50 border-b border-gray-100 transition duration-150 ease-in-out;
+    }
+    
+    .notification-item.unread {
+        @apply bg-blue-50;
+    }
+    
+    /* Dropdown styles */
+    .dropdown-menu {
+        @apply absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 border border-gray-200 py-2;
+    }
+    
+    .dropdown-item {
+        @apply block px-4 py-2 text-xs text-gray-700 hover:bg-gray-100;
+    }
+}
+
+/* Custom utilities */
+@layer utilities {
+    .text-primary {
+        @apply text-blue-600;
+    }
+    
+    .bg-primary {
+        @apply bg-blue-600;
+    }
+    
+    .border-primary {
+        @apply border-blue-600;
+    }
+    
+    .shadow-custom {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+}
