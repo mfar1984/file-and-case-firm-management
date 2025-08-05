@@ -1,7 +1,8 @@
 <aside class="w-64 bg-white shadow-lg border-r border-gray-200 flex flex-col">
     @php 
         $caseActive = request()->routeIs('case.index') || request()->routeIs('client.index') || request()->routeIs('partner.index');
-        $settingsActive = request()->routeIs('settings.global') || request()->routeIs('settings.role') || request()->routeIs('settings.user') || request()->routeIs('settings.log');
+        $accountingActive = request()->routeIs('quotation.index') || request()->routeIs('tax-invoice.index') || request()->routeIs('resit.index') || request()->routeIs('voucher.index') || request()->routeIs('bill.index');
+        $settingsActive = request()->routeIs('settings.global') || request()->routeIs('settings.role') || request()->routeIs('settings.user') || request()->routeIs('settings.category') || request()->routeIs('settings.log');
     @endphp
     
     <!-- Logo Section -->
@@ -70,33 +71,33 @@
 
         <!-- ACCOUNTING Section -->
         <div class="mt-2"></div>
-        <div class="category-header relative" onclick="toggleSection('accounting-section')">
+        <div class="category-header relative {{ $accountingActive ? 'active' : '' }}" onclick="toggleSection('accounting-section')">
             <div class="px-4 py-2 flex justify-between items-center cursor-pointer relative">
                 <div class="flex items-center">
                     <span class="material-icons text-base text-amber-700 mr-3">account_balance</span>
                     <p class="text-xs uppercase tracking-wider text-gray-500 font-normal">Accounting</p>
                 </div>
-                <span class="material-icons text-xs text-gray-500 transform transition-transform duration-200" id="accounting-section-icon">expand_more</span>
+                <span class="material-icons text-xs text-gray-500 transform transition-transform duration-200" id="accounting-section-icon" style="transform: {{ $accountingActive ? 'rotate(180deg)' : 'rotate(0deg)' }};">expand_more</span>
             </div>
         </div>
-        <div id="accounting-section" class="hierarchical-menu" style="display: none;">
-            <a href="#" class="sidebar-submenu-item">
+        <div id="accounting-section" class="hierarchical-menu" style="display: {{ $accountingActive ? 'block' : 'none' }};">
+            <a href="{{ route('quotation.index') }}" class="sidebar-submenu-item {{ request()->routeIs('quotation.index') ? 'active' : '' }}">
                 <span class="material-icons text-xs mr-3">request_quote</span>
                 <span class="text-xs">Quotation</span>
             </a>
-            <a href="#" class="sidebar-submenu-item">
+            <a href="{{ route('tax-invoice.index') }}" class="sidebar-submenu-item {{ request()->routeIs('tax-invoice.index') ? 'active' : '' }}">
                 <span class="material-icons text-xs mr-3">receipt_long</span>
                 <span class="text-xs">Tax Invoice</span>
             </a>
-            <a href="#" class="sidebar-submenu-item">
+            <a href="{{ route('resit.index') }}" class="sidebar-submenu-item {{ request()->routeIs('resit.index') ? 'active' : '' }}">
                 <span class="material-icons text-xs mr-3">receipt</span>
                 <span class="text-xs">Resit</span>
             </a>
-            <a href="#" class="sidebar-submenu-item">
+            <a href="{{ route('voucher.index') }}" class="sidebar-submenu-item {{ request()->routeIs('voucher.index') ? 'active' : '' }}">
                 <span class="material-icons text-xs mr-3">confirmation_number</span>
                 <span class="text-xs">Voucher</span>
             </a>
-            <a href="#" class="sidebar-submenu-item">
+            <a href="{{ route('bill.index') }}" class="sidebar-submenu-item {{ request()->routeIs('bill.index') ? 'active' : '' }}">
                 <span class="material-icons text-xs mr-3">description</span>
                 <span class="text-xs">Bill</span>
             </a>
@@ -140,6 +141,10 @@
             <a href="{{ route('settings.user') }}" class="sidebar-submenu-item {{ request()->routeIs('settings.user') ? 'active' : '' }}">
                 <span class="material-icons text-xs mr-3">manage_accounts</span>
                 <span class="text-xs">User Management</span>
+            </a>
+            <a href="{{ route('settings.category') }}" class="sidebar-submenu-item {{ request()->routeIs('settings.category') ? 'active' : '' }}">
+                <span class="material-icons text-xs mr-3">category</span>
+                <span class="text-xs">Category</span>
             </a>
             <a href="{{ route('settings.log') }}" class="sidebar-submenu-item {{ request()->routeIs('settings.log') ? 'active' : '' }}">
                 <span class="material-icons text-xs mr-3">history</span>

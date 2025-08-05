@@ -8,11 +8,21 @@
 <div class="px-6 pt-6 max-w-7xl mx-auto">
     <div class="bg-white rounded shadow-md border border-gray-300">
         <div class="p-6 border-b border-gray-200">
-            <div class="flex items-center">
-                <span class="material-icons mr-2 text-purple-600">folder</span>
-                <h1 class="text-xl font-bold text-gray-800 text-[14px]">Case Management</h1>
+            <div class="flex justify-between items-start">
+                <div>
+                    <div class="flex items-center">
+                        <span class="material-icons mr-2 text-purple-600">folder</span>
+                        <h1 class="text-xl font-bold text-gray-800 text-[14px]">Case Management</h1>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Manage all court cases, clients, and related documents.</p>
+                </div>
+                
+                <!-- Add Case Button -->
+                <a href="{{ route('case.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs font-medium flex items-center">
+                    <span class="material-icons text-xs mr-1">add</span>
+                    Add Case
+                </a>
             </div>
-            <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Manage all court cases, clients, and related documents.</p>
         </div>
         <div class="p-6">
             <div class="overflow-visible border border-gray-200 rounded">
