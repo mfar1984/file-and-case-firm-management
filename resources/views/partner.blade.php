@@ -18,10 +18,10 @@
                 </div>
                 
                 <!-- Add Partner Button -->
-                <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs font-medium flex items-center">
+                <a href="{{ route('partner.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs font-medium flex items-center">
                     <span class="material-icons text-xs mr-1">add</span>
                     Add Partner
-                </button>
+                </a>
             </div>
         </div>
         

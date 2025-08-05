@@ -55,7 +55,7 @@
                                     <button @click="open = !open" class="p-1 bg-purple-50 rounded hover:bg-purple-100 border border-purple-100" title="Change Status">
                                         <span class="material-icons text-purple-600 text-xs">add</span>
                                     </button>
-                                    <a href="#" class="p-1 bg-blue-50 rounded hover:bg-blue-100 border border-blue-100" title="View">
+                                    <a href="{{ route('case.view') }}" class="p-1 bg-blue-50 rounded hover:bg-blue-100 border border-blue-100" title="View">
                                         <span class="material-icons text-blue-600 text-xs">visibility</span>
                                     </a>
                                     <a href="#" class="p-1 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100" title="Edit">
@@ -93,7 +93,7 @@
                                     <button @click="open = !open" class="p-1 bg-purple-50 rounded hover:bg-purple-100 border border-purple-100" title="Change Status">
                                         <span class="material-icons text-purple-600 text-xs">add</span>
                                     </button>
-                                    <a href="#" class="p-1 bg-blue-50 rounded hover:bg-blue-100 border border-blue-100" title="View">
+                                    <a href="{{ route('case.view') }}" class="p-1 bg-blue-50 rounded hover:bg-blue-100 border border-blue-100" title="View">
                                         <span class="material-icons text-blue-600 text-xs">visibility</span>
                                     </a>
                                     <a href="#" class="p-1 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100" title="Edit">
@@ -131,7 +131,7 @@
                                     <button @click="open = !open" class="p-1 bg-purple-50 rounded hover:bg-purple-100 border border-purple-100" title="Change Status">
                                         <span class="material-icons text-purple-600 text-xs">add</span>
                                     </button>
-                                    <a href="#" class="p-1 bg-blue-50 rounded hover:bg-blue-100 border border-blue-100" title="View">
+                                    <a href="{{ route('case.view') }}" class="p-1 bg-blue-50 rounded hover:bg-blue-100 border border-blue-100" title="View">
                                         <span class="material-icons text-blue-600 text-xs">visibility</span>
                                     </a>
                                     <a href="#" class="p-1 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100" title="Edit">

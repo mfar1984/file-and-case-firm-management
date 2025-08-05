@@ -17,14 +17,7 @@ use Inertia\Inertia;
 |
 */
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
+Route::view('/', 'welcome');
 
 Route::get('/dashboard', function () {
     return redirect()->route('overview');
@@ -41,12 +34,15 @@ Route::view('/overview', 'overview')->name('overview');
 Route::view('/calendar', 'calendar')->name('calendar');
 Route::view('/case', 'case')->name('case.index');
 Route::view('/case/create', 'case-create')->name('case.create');
+Route::view('/case/view', 'case-view')->name('case.view');
 Route::view('/client', 'client')->name('client.index');
 Route::view('/client/create', 'client-create')->name('client.create');
 Route::view('/partner', 'partner')->name('partner.index');
+Route::view('/partner/create', 'partner-create')->name('partner.create');
 
 // Accounting routes
 Route::view('/quotation', 'quotation')->name('quotation.index');
+Route::view('/quotation/create', 'quotation-create')->name('quotation.create');
 Route::view('/tax-invoice', 'tax-invoice')->name('tax-invoice.index');
 Route::view('/resit', 'resit')->name('resit.index');
 Route::view('/voucher', 'voucher')->name('voucher.index');
