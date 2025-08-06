@@ -1,62 +1,119 @@
-# File and Case Firm Management System
+# Naeelah Firm - Law Firm Management System
 
-A comprehensive Laravel-based case management system designed specifically for Malaysian law firms. This system provides efficient management of court cases, client information, document handling, and calendar scheduling.
+A comprehensive file and case management system for Malaysian law firms built with Laravel.
 
-## 🏛️ Features
+## Features
 
-### Core Management
-- **Case Management**: Track court cases with status updates and document management
-- **Client Management**: Maintain client information with contact details and status tracking
-- **Partner Management**: Manage law firm partners and their case assignments
-- **File Management**: Physical file tracking with IN/OUT status and location management
+### Core Modules
+- **Case Management**: Track cases, clients, and legal proceedings
+- **File Management**: Digital file storage with physical location tracking
+- **Client Management**: Client information and case history
+- **Partner Management**: Law firm partner profiles and specializations
+- **Accounting**: Quotations, invoices, receipts, vouchers, and bills
+- **Calendar**: Court dates and case scheduling
+- **Weather Integration**: Real-time weather data with webhook support
 
-### Calendar & Scheduling
-- **FullCalendar.js Integration**: Interactive calendar for court hearings, client meetings, and deadlines
-- **Event Types**: Color-coded events (Court Hearings, Client Meetings, Deadlines, Follow-ups, Case Filing)
-- **Multiple Views**: Month, Week, Day, and List views
-- **Event Management**: Add, edit, and manage calendar events
+### Weather System
 
-### User Interface
-- **Modern Design**: Clean, professional interface using Tailwind CSS
-- **Responsive Layout**: Works on desktop, tablet, and mobile devices
-- **Material Icons**: Consistent iconography throughout the application
-- **Dynamic Breadcrumbs**: Easy navigation with breadcrumb trails
-- **Color-coded Status**: Visual status indicators for cases and clients
+#### Webhook Integration
+The system supports webhook-based weather data updates for real-time information.
 
-### Authentication & Security
-- **Laravel Breeze**: Built-in authentication system
-- **Role-based Access**: Different access levels for administrators, partners, and clients
-- **Password Security**: Argon2 password hashing with salt
-- **Session Management**: Secure session handling
+**Webhook Endpoint**: `https://firm.kflr.dev/webhook/weather`
+**Secret**: `481b6f7eb9d94e5facf63df6860a600b`
+**API Key**: `UINsXMQBMJemd36Z2AUaQ4e65nWw7i9V`
 
-## 🚀 Installation
+#### Webhook Usage
 
-### Prerequisites
-- PHP 8.1 or higher
-- Composer
-- MySQL 5.7 or higher
-- Node.js and npm (for frontend assets)
-
-### Step 1: Clone the Repository
+1. **Send Weather Data**:
 ```bash
-git clone https://github.com/mfar1984/file-and-case-firm-management.git
-cd file-and-case-firm-management
+curl -X POST https://firm.kflr.dev/webhook/weather \
+  -H "Content-Type: application/json" \
+  -H "X-Webhook-Secret: 481b6f7eb9d94e5facf63df6860a600b" \
+  -d '{
+    "location": "Kuala Lumpur",
+    "current": {
+      "temperature": 28.5,
+      "skytext": "Partly Cloudy",
+      "humidity": 85,
+      "winddisplay": "8.5 km/h",
+      "feels_like": 30.2,
+      "pressure": 1012,
+      "visibility": 12
+    },
+    "forecast": {
+      "today": {
+        "high": 32,
+        "low": 25,
+        "condition": "Partly Cloudy",
+        "humidity": 80,
+        "precipitation": 20
+      },
+      "tomorrow": {
+        "high": 31,
+        "low": 24,
+        "condition": "Light Rain",
+        "humidity": 85,
+        "precipitation": 35
+      },
+      "day_after": {
+        "high": 30,
+        "low": 23,
+        "condition": "Cloudy",
+        "humidity": 82,
+        "precipitation": 25
+      }
+    }
+  }'
 ```
 
-### Step 2: Install Dependencies
+2. **Test Webhook**:
+```bash
+curl -X GET https://firm.kflr.dev/webhook/test
+```
+
+3. **Get Cached Weather**:
+```bash
+curl -X GET https://firm.kflr.dev/webhook/weather/cached
+```
+
+#### Weather Widget Features
+- **Real-time Data**: Updates via webhook or API calls
+- **Hover Tooltip**: Detailed weather information
+- **3-Day Forecast**: Today, tomorrow, and day after
+- **Multiple Sources**: Webhook, API, and fallback data
+- **Location Support**: Configurable via admin panel
+- **Rate Limit Handling**: Graceful fallback when API limits are reached
+
+#### Weather Settings
+Access weather configuration at: `http://localhost:8000/settings/global`
+
+- **API Provider**: Tomorrow.io, OpenWeatherMap
+- **Location Details**: City, State, Country, Coordinates
+- **Units**: Metric/Imperial
+- **API Testing**: Built-in connection testing
+- **Database Storage**: Settings stored in `weather_settings` table
+
+## Installation
+
+1. **Clone Repository**:
+```bash
+git clone <repository-url>
+cd naeelah-firm
+```
+
+2. **Install Dependencies**:
 ```bash
 composer install
 npm install
 ```
 
-### Step 3: Environment Setup
+3. **Environment Setup**:
 ```bash
 cp .env.example .env
 php artisan key:generate
 ```
 
-### Step 4: Database Configuration
-Update your `.env` file with database credentials:
+4. **Database Configuration**:
 ```env
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -66,186 +123,92 @@ DB_USERNAME=root
 DB_PASSWORD=root
 ```
 
-### Step 5: Database Setup
+5. **Run Migrations**:
 ```bash
 php artisan migrate
-php artisan db:seed
 ```
 
-### Step 6: Build Assets
+6. **Build Assets**:
 ```bash
 npm run build
 ```
 
-### Step 7: Create Admin User
-```bash
-php artisan tinker
-```
-```php
-User::create([
-    'name' => 'Admin',
-    'email' => 'admin@naaelahsaleh.my',
-    'password' => Hash::make('password'),
-    'email_verified_at' => now(),
-]);
-```
-
-### Step 8: Start the Server
+7. **Start Server**:
 ```bash
 php artisan serve
 ```
 
-Visit `http://localhost:8000` and login with:
-- Email: `admin@naaelahsaleh.my`
-- Password: `password`
+## Database Structure
 
-## 📋 Usage Guide
-
-### Dashboard Overview
-The main dashboard provides:
-- **Statistics Cards**: Total cases, active cases, clients, and partners
-- **Recent Activity**: Latest cases and upcoming hearings
-- **Quick Actions**: Access to main functions
-
-### Case Management
-1. Navigate to **Case** in the sidebar
-2. View all cases in a table format
-3. Use the **+** button to change case status:
-   - Consultation
-   - Quotation
-   - Open file
-   - Proceed
-   - Closed file
-   - Cancel
-4. Use action buttons for View, Edit, and Delete
-
-### Client Management
-1. Navigate to **Client List** in the sidebar
-2. View all clients with their contact information
-3. Use action buttons:
-   - **Block Icon**: Ban/Unban client
-   - **Eye Icon**: View client details
-   - **Edit Icon**: Modify client information
-   - **Delete Icon**: Remove client
-
-### Calendar Management
-1. Navigate to **Calendar** in the sidebar
-2. View events in different formats:
-   - **Month View**: Overview of all events
-   - **Week View**: Detailed weekly schedule
-   - **Day View**: Hourly breakdown
-   - **List View**: Chronological list
-3. Filter events by type using the filter dropdown
-4. Add new events using the "Add Event" button
-
-### File Management
-1. Navigate to **File Management** in the sidebar
-2. Track physical files with IN/OUT status
-3. Monitor file locations and return dates
-4. Receive notifications for overdue files
-
-## 🎨 UI Components
-
-### Color Scheme
-- **Primary**: Blue (`#3b82f6`)
-- **Success**: Green (`#10b981`)
-- **Warning**: Yellow (`#f59e0b`)
-- **Danger**: Red (`#ef4444`)
-- **Purple**: Case status (`#8b5cf6`)
-
-### Event Types
-- **🏛️ Court Hearings**: Red
-- **👥 Client Meetings**: Blue
-- **📋 Deadlines**: Yellow
-- **📞 Follow-ups**: Green
-- **📝 Case Filing**: Purple
-
-### Font System
-- **Primary Font**: Poppins
-- **Icon Font**: Material Icons
-- **Base Size**: 11px (minimum) to 13px (maximum)
-
-## 🗂️ Project Structure
-
-```
-├── app/
-│   ├── Http/Controllers/    # Application controllers
-│   ├── Models/             # Eloquent models
-│   └── Providers/          # Service providers
-├── resources/
-│   ├── views/              # Blade templates
-│   │   ├── components/     # Reusable UI components
-│   │   ├── layouts/        # Layout templates
-│   │   └── settings/       # Settings pages
-│   ├── css/                # Stylesheets
-│   └── js/                 # JavaScript files
-├── routes/                 # Application routes
-├── database/               # Migrations and seeders
-└── public/                 # Public assets
+### Weather Settings Table
+```sql
+CREATE TABLE weather_settings (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    api_provider VARCHAR(255) DEFAULT 'tomorrow_io',
+    api_key VARCHAR(255) NULL,
+    location_name VARCHAR(255) DEFAULT 'Kuala Lumpur',
+    postcode VARCHAR(20) NULL,
+    country VARCHAR(100) DEFAULT 'Malaysia',
+    state VARCHAR(100) DEFAULT 'Kuala Lumpur',
+    city VARCHAR(100) DEFAULT 'Kuala Lumpur',
+    latitude DECIMAL(10,8) DEFAULT 3.1390,
+    longitude DECIMAL(11,8) DEFAULT 101.6869,
+    units VARCHAR(50) DEFAULT 'metric',
+    is_active BOOLEAN DEFAULT TRUE,
+    notes TEXT NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL
+);
 ```
 
-## 🔧 Configuration
+## API Endpoints
 
-### Database
-The system uses MySQL with the following main tables:
-- `users` - User accounts and authentication
-- `cases` - Case information and status
-- `clients` - Client details and contact information
-- `partners` - Law firm partners
-- `files` - Physical file tracking
-- `events` - Calendar events and scheduling
+### Weather API
+- `GET /api/weather` - Get current weather data
+- `POST /webhook/weather` - Webhook endpoint for weather updates
+- `GET /webhook/test` - Test webhook connectivity
+- `GET /webhook/weather/cached` - Get cached weather data
 
-### Environment Variables
-Key environment variables in `.env`:
-```env
-APP_NAME="Naeelah Firm"
-APP_ENV=local
-APP_DEBUG=true
-DB_DATABASE=firm
-DB_USERNAME=root
-DB_PASSWORD=root
-```
+### Weather Settings
+- `GET /settings/weather` - Weather settings page
+- `POST /settings/weather` - Save weather settings
+- `POST /settings/weather/test` - Test API connection
+- `GET /settings/weather/get` - Get current settings
 
-## 🚀 Deployment
+## Security
 
-### Production Setup
-1. Set `APP_ENV=production` in `.env`
-2. Set `APP_DEBUG=false` for security
-3. Configure your web server (Apache/Nginx)
-4. Set up SSL certificate
-5. Configure database for production
-6. Run `php artisan config:cache`
-7. Run `php artisan route:cache`
+### Webhook Security
+- **Secret Validation**: All webhook requests must include the correct secret
+- **CSRF Protection**: Webhook endpoints are excluded from CSRF protection
+- **Request Logging**: All webhook requests are logged for security monitoring
+- **Error Handling**: Comprehensive error handling and validation
 
-### Recommended Hosting
-- **Shared Hosting**: Compatible with most PHP hosting providers
-- **VPS**: DigitalOcean, Linode, or AWS EC2
-- **Cloud**: Laravel Forge, Heroku, or AWS Elastic Beanstalk
+### API Security
+- **Rate Limiting**: API calls are rate-limited to prevent abuse
+- **Input Validation**: All inputs are validated and sanitized
+- **Database Security**: API keys are stored securely in database
+- **Rate Limit Handling**: Graceful fallback to realistic data when API limits are reached
 
-## 🤝 Contributing
+## Weather Data Flow
+
+1. **Webhook Reception**: External service sends weather data to webhook endpoint
+2. **Data Processing**: Weather data is processed and formatted
+3. **Caching**: Processed data is cached for 30 minutes
+4. **Widget Display**: Weather widget displays cached data
+5. **Fallback**: If no webhook data, falls back to API or realistic data
+
+## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
-## 📝 License
+## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
-## 🆘 Support
+## Support
 
-For support and questions:
-- Create an issue on GitHub
-- Contact: admin@naaelahsaleh.my
-
-## 🔄 Version History
-
-- **v1.0.0** - Initial release with core case management features
-- **v1.1.0** - Added calendar integration and client management
-- **v1.2.0** - Enhanced UI with responsive design and Material Icons
-
----
-
-**Built with ❤️ for Malaysian Law Firms**
+For support and questions, please contact the development team.

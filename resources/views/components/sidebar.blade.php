@@ -2,7 +2,7 @@
     @php 
         $caseActive = request()->routeIs('case.index') || request()->routeIs('client.index') || request()->routeIs('partner.index');
         $accountingActive = request()->routeIs('quotation.index') || request()->routeIs('tax-invoice.index') || request()->routeIs('resit.index') || request()->routeIs('voucher.index') || request()->routeIs('bill.index');
-        $settingsActive = request()->routeIs('settings.global') || request()->routeIs('settings.role') || request()->routeIs('settings.user') || request()->routeIs('settings.category') || request()->routeIs('settings.log');
+        $settingsActive = request()->routeIs('settings.global') || request()->routeIs('settings.role') || request()->routeIs('settings.user') || request()->routeIs('settings.category') || request()->routeIs('settings.log') || request()->routeIs('settings.case-management');
     @endphp
     
     <!-- Logo Section -->
@@ -141,6 +141,10 @@
             <a href="{{ route('settings.user') }}" class="sidebar-submenu-item {{ request()->routeIs('settings.user') ? 'active' : '' }}">
                 <span class="material-icons text-xs mr-3">manage_accounts</span>
                 <span class="text-xs">User Management</span>
+            </a>
+            <a href="{{ route('settings.case-management') }}" class="sidebar-submenu-item {{ request()->routeIs('settings.case-management') ? 'active' : '' }}">
+                <span class="material-icons text-xs mr-3">folder_open</span>
+                <span class="text-xs">Case Management</span>
             </a>
             <a href="{{ route('settings.category') }}" class="sidebar-submenu-item {{ request()->routeIs('settings.category') ? 'active' : '' }}">
                 <span class="material-icons text-xs mr-3">category</span>
