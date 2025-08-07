@@ -5,10 +5,10 @@
 @endsection
 
 @section('content')
-<div class="px-6 pt-6 pb-6 max-w-7xl mx-auto space-y-6">
+<div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto space-y-6">
     <!-- Firm Information Section -->
     <div class="bg-white rounded shadow-md border border-gray-300">
-        <div class="p-6 border-b border-gray-200">
+        <div class="p-4 md:p-6 border-b border-gray-200">
             <div class="flex items-center">
                 <span class="material-icons mr-2 text-blue-600">business</span>
                 <h2 class="text-lg font-semibold text-gray-800 text-[14px]">Firm Information</h2>
@@ -16,7 +16,7 @@
             <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Update your law firm's basic information and contact details.</p>
         </div>
         
-        <div class="p-6">
+        <div class="p-4 md:p-6">
             <form id="firmForm" class="space-y-4" x-data="{ 
                 loading: false,
                 formData: {
@@ -38,7 +38,7 @@
                     })
                     .catch(error => console.error('Error loading firm settings:', error));
             ">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Firm Name *</label>
                         <input type="text" x-model="formData.firm_name" placeholder="Enter firm name" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
@@ -59,7 +59,7 @@
                         <input type="email" x-model="formData.email" placeholder="Enter email address" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                     </div>
                     
-                    <div class="md:col-span-2">
+                    <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Address *</label>
                         <textarea rows="3" x-model="formData.address" placeholder="Enter complete address" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
                     </div>
@@ -111,7 +111,7 @@
 
     <!-- System Settings Section -->
     <div class="bg-white rounded shadow-md border border-gray-300">
-        <div class="p-6 border-b border-gray-200">
+        <div class="p-4 md:p-6 border-b border-gray-200">
             <div class="flex items-center">
                 <span class="material-icons mr-2 text-green-600">settings</span>
                 <h2 class="text-lg font-semibold text-gray-800 text-[14px]">System Settings</h2>
@@ -119,7 +119,7 @@
             <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Configure system behavior and default settings.</p>
         </div>
         
-        <div class="p-6">
+        <div class="p-4 md:p-6">
             <form id="systemForm" class="space-y-4" x-data="{ 
                 loading: false,
                 formData: {
@@ -178,7 +178,7 @@
                     })
                     .catch(error => console.error('Error loading system settings:', error));
             ">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Date Format</label>
                         <select x-model="formData.date_format" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -224,7 +224,7 @@
                         <input type="number" x-model="formData.session_timeout" min="15" max="480" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     
-                    <div class="md:col-span-2">
+                    <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Maintenance Message</label>
                         <textarea rows="3" x-model="formData.maintenance_message" placeholder="Enter maintenance message (optional)" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                     </div>
@@ -277,7 +277,7 @@
 
     <!-- Email Settings Section -->
     <div class="bg-white rounded shadow-md border border-gray-300">
-        <div class="p-6 border-b border-gray-200">
+        <div class="p-4 md:p-6 border-b border-gray-200">
             <div class="flex items-center">
                 <span class="material-icons mr-2 text-purple-600">email</span>
                 <h2 class="text-lg font-semibold text-gray-800 text-[14px]">Email Settings</h2>
@@ -285,7 +285,7 @@
             <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Configure email notifications and SMTP settings.</p>
         </div>
         
-        <div class="p-6">
+        <div class="p-4 md:p-6">
             <form id="emailForm" class="space-y-4" x-data="{ 
                 loading: false,
                 formData: {
@@ -311,7 +311,7 @@
                     })
                     .catch(error => console.error('Error loading email settings:', error));
             ">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">SMTP Host</label>
                         <input type="text" x-model="formData.smtp_host" placeholder="e.g., smtp.gmail.com" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -401,7 +401,7 @@
 
     <!-- Weather Settings Section -->
     <div class="bg-white rounded shadow-md border border-gray-300">
-        <div class="p-6 border-b border-gray-200">
+        <div class="p-4 md:p-6 border-b border-gray-200">
             <div class="flex items-center">
                 <span class="material-icons mr-2 text-blue-600">wb_sunny</span>
                 <h2 class="text-lg font-semibold text-gray-800 text-[14px]">Weather Settings</h2>
@@ -409,7 +409,7 @@
             <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Configure weather API settings and location preferences.</p>
         </div>
         
-        <div class="p-6">
+        <div class="p-4 md:p-6">
             <form id="weatherForm" class="space-y-4" x-data="{ 
                 loading: false, 
                 detectingLocation: false,
@@ -489,7 +489,7 @@
                     })
                     .catch(error => console.error('Error loading settings:', error));
             ">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">API Provider *</label>
                         <select x-model="formData.api_provider" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -597,7 +597,7 @@
 
     <!-- Security Settings Section -->
     <div class="bg-white rounded shadow-md border border-gray-300">
-        <div class="p-6 border-b border-gray-200">
+        <div class="p-4 md:p-6 border-b border-gray-200">
             <div class="flex items-center">
                 <span class="material-icons mr-2 text-red-600">security</span>
                 <h2 class="text-lg font-semibold text-gray-800 text-[14px]">Security Settings</h2>
@@ -605,7 +605,7 @@
             <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Configure security and authentication settings.</p>
         </div>
         
-        <div class="p-6">
+        <div class="p-4 md:p-6">
             <form id="securityForm" class="space-y-4" x-data="{ 
                 loading: false,
                 formData: {
@@ -631,7 +631,7 @@
                     })
                     .catch(error => console.error('Error loading security settings:', error));
             ">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Password Expiry (days)</label>
                         <input type="number" x-model="formData.password_expiry_days" min="30" max="365" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -652,7 +652,7 @@
                         <input type="number" x-model="formData.session_timeout_minutes" min="15" max="1440" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     
-                    <div class="md:col-span-2">
+                    <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">IP Whitelist</label>
                         <textarea rows="3" x-model="formData.ip_whitelist" placeholder="Enter IP addresses (one per line) for whitelist" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                     </div>

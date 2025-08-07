@@ -5,24 +5,24 @@
 @endsection
 
 @section('content')
-<div class="px-6 pt-6 pb-6 max-w-7xl mx-auto">
+<div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto">
     <div class="bg-white rounded shadow-md border border-gray-300">
-        <div class="px-6 py-4 border-b border-gray-200">
+        <div class="px-4 md:px-6 py-4 border-b border-gray-200">
             <div class="flex items-center">
                 <span class="material-icons mr-2 text-blue-600">business</span>
-                <h1 class="text-xl font-bold text-gray-800 text-[14px]">Add New Partner</h1>
+                <h1 class="text-lg md:text-xl font-bold text-gray-800 text-[14px]">Add New Partner</h1>
             </div>
             <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Add a new partner firm to the system.</p>
         </div>
         
-        <form class="p-6">
+        <form class="p-4 md:p-6">
             <!-- Firm Information -->
             <div class="mb-8">
                 <h2 class="text-sm font-semibold text-gray-800 mb-4 flex items-center">
                     <span class="material-icons text-blue-600 text-xs mr-2">business</span>
                     Firm Information
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 gap-6">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Firm Name *</label>
                         <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Ahmad & Associates" required>
@@ -48,7 +48,7 @@
                     <span class="material-icons text-green-600 text-xs mr-2">person</span>
                     Incharge Person Information
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 gap-6">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Incharge Name *</label>
                         <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Ahmad bin Abdullah" required>
@@ -79,7 +79,7 @@
                     <span class="material-icons text-purple-600 text-xs mr-2">info</span>
                     Additional Information
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 gap-6">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Specialization</label>
                         <select class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -120,11 +120,11 @@
             </div>
 
             <!-- Form Actions -->
-            <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-                <a href="{{ route('partner.index') }}" class="px-4 py-2 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors">
+            <div class="flex flex-col md:flex-row justify-end space-y-2 md:space-y-0 md:space-x-3 pt-6 border-t border-gray-200">
+                <a href="{{ route('partner.index') }}" class="w-full md:w-auto px-4 py-2 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors text-center">
                     Cancel
                 </a>
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors">
+                <button type="submit" class="w-full md:w-auto px-4 py-2 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center">
                     <span class="material-icons text-xs mr-1">save</span>
                     Save Partner
                 </button>

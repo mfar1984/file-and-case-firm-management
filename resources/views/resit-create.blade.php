@@ -16,20 +16,20 @@ input[type='number'] {
   -moz-appearance: textfield;
 }
 </style>
-<div class="px-6 pt-6 pb-6 max-w-7xl mx-auto">
+<div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto">
     <div class="bg-white rounded shadow-md border border-gray-300">
-        <div class="px-6 py-4 border-b border-gray-200">
+        <div class="px-4 md:px-6 py-4 border-b border-gray-200">
             <div class="flex items-center">
                 <span class="material-icons mr-2 text-green-600">receipt</span>
-                <h1 class="text-xl font-bold text-gray-800 text-[14px]">Add New Receipt</h1>
+                <h1 class="text-lg md:text-xl font-bold text-gray-800 text-[14px]">Add New Receipt</h1>
             </div>
             <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Create a new receipt for payment received.</p>
         </div>
         
-        <form class="p-6">
+        <form class="p-4 md:p-6">
             <!-- Invoice Selection and Receipt Details -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <!-- Left Column - Invoice Selection -->
+            <div class="grid grid-cols-1 gap-6 mb-8">
+                <!-- Invoice Selection -->
                 <div class="space-y-4">
                     <h3 class="text-sm font-semibold text-gray-800 mb-4">Invoice Selection</h3>
                     
@@ -59,7 +59,7 @@ input[type='number'] {
                     </div>
                 </div>
                 
-                <!-- Right Column - Receipt Information -->
+                <!-- Receipt Information -->
                 <div class="space-y-4">
                     <h3 class="text-sm font-semibold text-gray-800 mb-4">Receipt Information</h3>
                     
@@ -91,7 +91,7 @@ input[type='number'] {
                     </div>
                     
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-2 mt-5">Remark</label>
+                        <label class="block text-xs font-medium text-gray-700 mb-2">Remark</label>
                         <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter any additional remarks">
                     </div>
                 </div>
@@ -118,20 +118,21 @@ input[type='number'] {
                 <!-- Add/Insert Buttons Above Table -->
                 <div class="flex flex-row items-end space-x-8 my-3">
                     <div class="flex flex-col items-center">
-                        <button type="button" @click="addPayment()" class="w-5 h-5 flex items-center justify-center bg-green-600 text-white rounded-full text-base mb-1 focus:outline-none" title="Add Payment">
+                        <button type="button" @click="addPayment()" class="w-8 h-8 md:w-5 md:h-5 flex items-center justify-center bg-green-600 text-white rounded-full text-base mb-1 focus:outline-none" title="Add Payment">
                             +
                         </button>
                         <span class="text-green-600 text-xs font-medium">Add</span>
                     </div>
                     <div class="flex flex-col items-center">
-                        <button type="button" @click="insertPayment()" class="w-5 h-5 flex items-center justify-center bg-purple-600 text-white rounded-full text-base mb-1 focus:outline-none" title="Insert Payment">
+                        <button type="button" @click="insertPayment()" class="w-8 h-8 md:w-5 md:h-5 flex items-center justify-center bg-purple-600 text-white rounded-full text-base mb-1 focus:outline-none" title="Insert Payment">
                             +
                         </button>
                         <span class="text-purple-600 text-xs font-medium">Insert</span>
                     </div>
                 </div>
-                <!-- Payment Breakdown Table -->
-                <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                
+                <!-- Desktop Table View -->
+                <div class="hidden md:block overflow-x-auto border border-gray-200 rounded-lg">
                     <table class="min-w-full">
                         <thead class="bg-gray-50">
                             <tr>
@@ -158,26 +159,55 @@ input[type='number'] {
                             </template>
                         </tbody>
                     </table>
-                    <!-- Separator before summary inside scroll -->
-                    <div class="border-t border-gray-200 mt-6 mb-4"></div>
-                    <!-- Summary inside scroll -->
-                    <div class="flex justify-end mt-0 mb-4">
-                        <div class="w-64 space-y-2">
-                            <div class="flex justify-between text-sm">
-                                <span class="font-medium text-gray-700">Total Received:</span>
-                                <span class="text-gray-900 font-semibold pr-6 mr-2" x-text="'RM ' + totalAmount().toFixed(2)"></span>
+                </div>
+
+                <!-- Mobile Card View for Payments -->
+                <div class="md:hidden space-y-4">
+                    <template x-for="(payment, idx) in payments" :key="idx">
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-800">Payment <span x-text="idx + 1"></span></span>
+                                <button type="button" @click="removePayment(idx)" class="text-red-600 hover:text-red-800 text-lg" title="Delete Payment">❌</button>
                             </div>
+                            
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                                <textarea x-model="payment.description" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y" placeholder="Payment description" rows="2"></textarea>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Amount (RM)</label>
+                                <input type="number" min="0" step="0.01" x-model.number="payment.amount" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="0.00">
+                            </div>
+                            
+                            <div class="pt-2 border-t border-gray-100">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs font-medium text-gray-600">Amount:</span>
+                                    <span class="text-sm font-semibold text-gray-900" x-text="'RM ' + payment.amount.toFixed(2)"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Summary Section -->
+                <div class="border-t border-gray-200 mt-6 mb-4"></div>
+                <div class="flex justify-end">
+                    <div class="w-full md:w-64 space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="font-medium text-gray-700">Total Received:</span>
+                            <span class="text-gray-900 font-semibold" x-text="'RM ' + totalAmount().toFixed(2)"></span>
                         </div>
                     </div>
                 </div>
             </div>
             
             <!-- Form Actions -->
-            <div class="flex justify-end space-x-3 pt-6">
-                <a href="{{ route('resit.index') }}" class="px-4 py-2 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors">
+            <div class="flex flex-col md:flex-row justify-end space-y-2 md:space-y-0 md:space-x-3 pt-6">
+                <a href="{{ route('resit.index') }}" class="w-full md:w-auto px-4 py-2 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors text-center">
                     Cancel
                 </a>
-                <button type="submit" class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors">
+                <button type="submit" class="w-full md:w-auto px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center">
                     <span class="material-icons text-xs mr-1">save</span>
                     Save Receipt
                 </button>

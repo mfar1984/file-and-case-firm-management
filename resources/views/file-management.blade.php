@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-<div class="px-6 pt-6 pb-6 max-w-7xl mx-auto">
+<div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto">
     @if(session('success'))
         <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
             {{ session('success') }}
@@ -30,18 +30,18 @@
 
     <!-- File Upload Section -->
     <div class="bg-white rounded shadow-md border border-gray-300 mb-6">
-        <div class="p-6 border-b border-gray-200">
+        <div class="p-4 md:p-6 border-b border-gray-200">
             <div class="flex items-center">
                 <span class="material-icons mr-2 text-blue-600">folder</span>
-                <h1 class="text-xl font-bold text-gray-800 text-[14px]">File Management</h1>
+                <h1 class="text-lg md:text-xl font-bold text-gray-800 text-[14px]">File Management</h1>
             </div>
             <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Upload and manage case-related documents and files.</p>
         </div>
         
-        <div class="p-6">
+        <div class="p-4 md:p-6">
             <form action="{{ route('file-management.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                 @csrf
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 gap-4">
                     <!-- Case Selection -->
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Select Case</label>
@@ -102,15 +102,15 @@
     
     <!-- File List Section -->
     <div class="bg-white rounded shadow-md border border-gray-300">
-        <div class="p-6 border-b border-gray-200">
-            <div class="flex justify-between items-center">
-                <div>
+        <div class="p-4 md:p-6 border-b border-gray-200">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center">
+                <div class="mb-4 md:mb-0">
                     <h2 class="text-lg font-bold text-gray-800 text-[13px]">Case Files</h2>
                     <p class="text-xs text-gray-500 mt-1">Manage and track all case-related files</p>
                 </div>
                 
                 <!-- Filter Options -->
-                <form method="GET" class="flex space-x-2">
+                <form method="GET" class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
                     <select name="case_ref" class="px-3 py-1 border border-gray-300 rounded text-xs">
                         <option value="">All Cases</option>
                         @foreach($cases as $case)
@@ -131,7 +131,8 @@
             </div>
         </div>
         
-        <div class="p-6">
+        <!-- Desktop Table View -->
+        <div class="hidden md:block p-6">
             @if($files->count() > 0)
                 <div class="overflow-visible border border-gray-200 rounded">
                     <table class="min-w-full border-collapse">
@@ -196,6 +197,72 @@
                         </tbody>
                     </table>
                 </div>
+            @else
+                <div class="text-center py-8">
+                    <span class="material-icons text-gray-400 text-4xl mb-2">folder_open</span>
+                    <p class="text-gray-500 text-sm">No files found. Upload your first file above.</p>
+                </div>
+            @endif
+        </div>
+
+        <!-- Mobile Card View -->
+        <div class="md:hidden p-4 space-y-4">
+            @if($files->count() > 0)
+                @foreach($files as $file)
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <span class="material-icons {{ $file->file_icon_color }} text-lg">{{ $file->file_icon }}</span>
+                                <div>
+                                    <span class="text-sm font-medium text-gray-800">{{ $file->file_name }}</span>
+                                    <div class="flex items-center space-x-2 mt-1">
+                                        <span class="inline-block {{ $file->file_type_badge_color }} px-2 py-1 rounded-full text-xs">
+                                            {{ ucfirst(str_replace('_', ' ', $file->file_type)) }}
+                                        </span>
+                                        <span class="inline-block {{ $file->status_badge_color }} px-2 py-1 rounded-full text-xs">
+                                            {{ $file->status }}
+                                        </span>
+                                        @if($file->is_overdue)
+                                            <span class="text-red-500 text-xs">⚠️ Overdue</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <a href="{{ route('file-management.download', $file->id) }}" class="p-2 bg-blue-50 rounded hover:bg-blue-100 border border-blue-100">
+                                    <span class="material-icons text-blue-600 text-sm">download</span>
+                                </a>
+                                <button onclick="openStatusModal({{ $file->id }}, '{{ $file->status }}', '{{ $file->taken_by }}', '{{ $file->purpose }}', '{{ $file->expected_return }}', '{{ $file->rack_location }}')" class="p-2 bg-purple-50 rounded hover:bg-purple-100 border border-purple-100">
+                                    <span class="material-icons text-purple-600 text-sm">swap_horiz</span>
+                                </button>
+                                <a href="#" class="p-2 bg-blue-50 rounded hover:bg-blue-100 border border-blue-100">
+                                    <span class="material-icons text-blue-600 text-sm">visibility</span>
+                                </a>
+                                <form action="{{ route('file-management.destroy', $file->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this file?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
+                                        <span class="material-icons text-red-600 text-sm">delete</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-xs font-medium text-gray-600">Case Ref:</span>
+                                <span class="text-xs text-gray-800">{{ $file->case_ref }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-xs font-medium text-gray-600">Size:</span>
+                                <span class="text-xs text-gray-800">{{ $file->formatted_size }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-xs font-medium text-gray-600">Upload Date:</span>
+                                <span class="text-xs text-gray-800">{{ $file->created_at->format('d/m/Y') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
             @else
                 <div class="text-center py-8">
                     <span class="material-icons text-gray-400 text-4xl mb-2">folder_open</span>

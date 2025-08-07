@@ -16,20 +16,20 @@ input[type='number'] {
   -moz-appearance: textfield;
 }
 </style>
-<div class="px-6 pt-6 pb-6 max-w-7xl mx-auto">
+<div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto">
     <div class="bg-white rounded shadow-md border border-gray-300">
-        <div class="px-6 py-4 border-b border-gray-200">
+        <div class="px-4 md:px-6 py-4 border-b border-gray-200">
             <div class="flex items-center">
                 <span class="material-icons mr-2 text-blue-600">receipt</span>
-                <h1 class="text-xl font-bold text-gray-800 text-[14px]">Add New Tax Invoice</h1>
+                <h1 class="text-lg md:text-xl font-bold text-gray-800 text-[14px]">Add New Tax Invoice</h1>
             </div>
             <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Create a new tax invoice from quotation or scratch.</p>
         </div>
         
-        <form class="p-6">
+        <form class="p-4 md:p-6">
             <!-- Quotation Selection and Invoice Details -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <!-- Left Column - Quotation Selection -->
+            <div class="grid grid-cols-1 gap-6 mb-8">
+                <!-- Quotation Selection -->
                 <div class="space-y-4">
                     <h3 class="text-sm font-semibold text-gray-800 mb-4">Quotation Selection</h3>
                     
@@ -50,19 +50,19 @@ input[type='number'] {
                     
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Address</label>
-                        <textarea class="w-full px-3 py-7 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" rows="3" readonly>UNIT 606, BLOCK C, KELANA SQUARE, NO.17 JALAN SS 7/26, KELANA JAYA 47301 SELANGOR Malaysia</textarea>
+                        <textarea class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" rows="3" readonly>UNIT 606, BLOCK C, KELANA SQUARE, NO.17 JALAN SS 7/26, KELANA JAYA 47301 SELANGOR Malaysia</textarea>
                     </div>
                     
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Contact</label>
-                        <div class="flex space-x-2">
-                            <input type="text" class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" value="MOHD NURUL" readonly>
-                            <input type="text" class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" value="016-2074769" readonly>
+                        <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" value="MOHD NURUL" readonly>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" value="016-2074769" readonly>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Right Column - Invoice Information -->
+                <!-- Invoice Information -->
                 <div class="space-y-4">
                     <h3 class="text-sm font-semibold text-gray-800 mb-4">Invoice Information</h3>
                     
@@ -92,7 +92,7 @@ input[type='number'] {
                     </div>
                     
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-2 mt-5">Remark</label>
+                        <label class="block text-xs font-medium text-gray-700 mb-2">Remark</label>
                         <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter any additional remarks">
                     </div>
                 </div>
@@ -135,20 +135,21 @@ input[type='number'] {
                 <!-- Add/Insert Buttons Above Table -->
                 <div class="flex flex-row items-end space-x-8 my-3">
                     <div class="flex flex-col items-center">
-                        <button type="button" @click="addRow()" class="w-5 h-5 flex items-center justify-center bg-green-600 text-white rounded-full text-base mb-1 focus:outline-none" title="Add Row">
+                        <button type="button" @click="addRow()" class="w-8 h-8 md:w-5 md:h-5 flex items-center justify-center bg-green-600 text-white rounded-full text-base mb-1 focus:outline-none" title="Add Row">
                             +
                         </button>
                         <span class="text-green-600 text-xs font-medium">Add</span>
                     </div>
                     <div class="flex flex-col items-center">
-                        <button type="button" @click="insertRow()" class="w-5 h-5 flex items-center justify-center bg-purple-600 text-white rounded-full text-base mb-1 focus:outline-none" title="Insert Row">
+                        <button type="button" @click="insertRow()" class="w-8 h-8 md:w-5 md:h-5 flex items-center justify-center bg-purple-600 text-white rounded-full text-base mb-1 focus:outline-none" title="Insert Row">
                             +
                         </button>
                         <span class="text-purple-600 text-xs font-medium">Insert</span>
                     </div>
                 </div>
-                <!-- Items Table -->
-                <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                
+                <!-- Desktop Table View -->
+                <div class="hidden md:block overflow-x-auto border border-gray-200 rounded-lg">
                     <table class="min-w-full">
                         <thead class="bg-gray-50">
                             <tr>
@@ -206,34 +207,95 @@ input[type='number'] {
                             </template>
                         </tbody>
                     </table>
-                    <!-- Separator before summary inside scroll -->
-                    <div class="border-t border-gray-200 mt-6 mb-4"></div>
-                    <!-- Summary inside scroll -->
-                    <div class="flex justify-end mt-0 mb-4">
-                        <div class="w-64 space-y-2">
-                            <div class="flex justify-between text-sm">
-                                <span class="font-medium text-gray-700">Subtotal:</span>
-                                <span class="text-gray-900 pr-6 mr-2" x-text="'RM ' + subtotal().toFixed(2)"></span>
+                </div>
+
+                <!-- Mobile Card View for Items -->
+                <div class="md:hidden space-y-4">
+                    <template x-for="(item, idx) in items" :key="idx">
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-800">Item <span x-text="idx + 1"></span></span>
+                                <button type="button" @click="removeRow(idx)" class="text-red-600 hover:text-red-800 text-lg" title="Delete Row">❌</button>
                             </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="font-medium text-gray-700">SST:</span>
-                                <span class="text-gray-900 pr-6 mr-2" x-text="'RM ' + totalTax().toFixed(2)"></span>
+                            
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                                <textarea x-model="item.description" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y" placeholder="Description" rows="2"></textarea>
                             </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="font-medium text-gray-700">Total RM:</span>
-                                <span class="text-gray-900 font-semibold pr-6 mr-2" x-text="'RM ' + grandTotal().toFixed(2)"></span>
+                            
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Quantity</label>
+                                    <input type="number" min="1" x-model.number="item.qty" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="Qty">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">UOM</label>
+                                    <select x-model="item.uom" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                        <option value="lot">lot</option>
+                                        <option value="unit">unit</option>
+                                        <option value="hour">hour</option>
+                                        <option value="day">day</option>
+                                        <option value="week">week</option>
+                                        <option value="month">month</option>
+                                    </select>
+                                </div>
                             </div>
+                            
+                            <div class="grid grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price</label>
+                                    <input type="number" min="0" step="0.01" x-model.number="item.price" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="0.00">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Discount %</label>
+                                    <input type="number" min="0" max="100" x-model.number="item.disc" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="0%">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Tax %</label>
+                                    <select x-model.number="item.tax" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                        <option value="0">0%</option>
+                                        <option value="6">6%</option>
+                                        <option value="10">10%</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="pt-2 border-t border-gray-100">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs font-medium text-gray-600">Amount:</span>
+                                    <span class="text-sm font-semibold text-gray-900" x-text="'RM ' + amount(item).toFixed(2)"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Summary Section -->
+                <div class="border-t border-gray-200 mt-6 mb-4"></div>
+                <div class="flex justify-end">
+                    <div class="w-full md:w-64 space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="font-medium text-gray-700">Subtotal:</span>
+                            <span class="text-gray-900" x-text="'RM ' + subtotal().toFixed(2)"></span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="font-medium text-gray-700">SST:</span>
+                            <span class="text-gray-900" x-text="'RM ' + totalTax().toFixed(2)"></span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="font-medium text-gray-700">Total RM:</span>
+                            <span class="text-gray-900 font-semibold" x-text="'RM ' + grandTotal().toFixed(2)"></span>
                         </div>
                     </div>
                 </div>
             </div>
             
             <!-- Form Actions -->
-            <div class="flex justify-end space-x-3 pt-6">
-                <a href="{{ route('tax-invoice.index') }}" class="px-4 py-2 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors">
+            <div class="flex flex-col md:flex-row justify-end space-y-2 md:space-y-0 md:space-x-3 pt-6">
+                <a href="{{ route('tax-invoice.index') }}" class="w-full md:w-auto px-4 py-2 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors text-center">
                     Cancel
                 </a>
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors">
+                <button type="submit" class="w-full md:w-auto px-4 py-2 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center">
                     <span class="material-icons text-xs mr-1">save</span>
                     Save Tax Invoice
                 </button>

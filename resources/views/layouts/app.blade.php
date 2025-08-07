@@ -62,172 +62,300 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-50 flex">
+        <div class="min-h-screen bg-gray-50 flex" x-data="{ sidebarOpen: false }">
+            <!-- Sidebar Overlay (Mobile) -->
+            <div x-show="sidebarOpen" x-cloak class="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden" @click="sidebarOpen = false"></div>
+
             <!-- Sidebar -->
-            @component('components.sidebar')
-            @endcomponent
+            <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed z-50 inset-y-0 left-0 w-64 bg-white shadow-lg border-r border-gray-200 flex flex-col transform transition-transform duration-200 md:relative md:translate-x-0 md:flex md:w-64">
+                @component('components.sidebar')
+                @endcomponent
+                
+                <!-- Close button for mobile -->
+                <button @click="sidebarOpen = false" class="absolute top-4 right-4 md:hidden">
+                    <span class="material-icons text-gray-500 hover:text-gray-700">close</span>
+                </button>
+            </aside>
 
             <!-- Main Content -->
             <div class="flex-1 flex flex-col overflow-hidden">
                 <!-- Top Navigation -->
                 <header class="bg-white shadow-lg z-10">
-                    <div class="flex justify-between items-center px-6 py-3">
-                        <!-- Welcome & Date/Time -->
-                        <div class="flex items-center">
-                            <div class="text-xs">
-                                @auth
-                                    <span class="font-medium">Welcome, {{ Auth::user()->name }}</span>
-                                    <span class="mx-2 text-gray-400">|</span>
-                                @else
-                                    <span class="font-medium">Welcome, Guest</span>
-                                    <span class="mx-2 text-gray-400">|</span>
-                                @endauth
-                                <span id="current-date-time" class="text-gray-500"></span>
+                    <!-- Mobile Header -->
+                    <div class="md:hidden">
+                        <div class="flex justify-between items-center px-4 py-3">
+                            <!-- Hamburger Menu -->
+                            <button @click="sidebarOpen = true" class="p-1">
+                                <span class="material-icons text-2xl text-gray-600 hover:text-gray-800">menu</span>
+                            </button>
+                            
+                            <!-- Page Title (from breadcrumb) -->
+                            <div class="flex-1 text-center">
+                                <h1 class="text-sm font-semibold text-gray-800 truncate">
+                                    @hasSection('breadcrumb')
+                                        @yield('breadcrumb')
+                                    @else
+                                        Dashboard
+                                    @endif
+                                </h1>
+                            </div>
+                            
+                            <!-- Mobile Actions -->
+                            <div class="flex items-center space-x-2">
+                                <!-- Notifications (Mobile) -->
+                                <div class="relative" x-data="{ showNotifications: false, notifications: [], unreadCount: 0 }">
+                                    <button @click="showNotifications = !showNotifications" class="p-1 text-gray-500 hover:text-gray-700 relative">
+                                        <span class="material-icons text-xl">notifications</span>
+                                        <span x-show="unreadCount > 0" x-text="unreadCount" class="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center"></span>
+                                    </button>
+                                    
+                                    <!-- Mobile Notifications Dropdown -->
+                                    <div x-show="showNotifications" @click.away="showNotifications = false" class="absolute right-0 top-10 mt-1 w-72 bg-white rounded-md shadow-lg z-20 border border-gray-200 overflow-hidden">
+                                        <div class="py-2 px-3 bg-gray-100 border-b border-gray-200 flex justify-between items-center">
+                                            <h3 class="text-xs font-semibold text-gray-700">Notifications</h3>
+                                            <span x-show="unreadCount > 0" @click="window.markAllAsRead()" class="text-xs text-blue-500 hover:text-blue-700 cursor-pointer">Mark all as read</span>
+                                        </div>
+                                        
+                                        <div class="max-h-48 overflow-y-auto">
+                                            <template x-if="notifications.length === 0">
+                                                <div class="py-4 px-3 text-center text-gray-500 text-xs">
+                                                    <p>No new notifications</p>
+                                                </div>
+                                            </template>
+                                            
+                                            <template x-for="notification in notifications" :key="notification.id">
+                                                <a :href="notification.url" class="block py-2 px-3 hover:bg-gray-50 border-b border-gray-100 transition duration-150 ease-in-out" :class="{'bg-blue-50': !notification.read_at}">
+                                                    <div class="flex items-start">
+                                                        <div class="flex-shrink-0 mr-2">
+                                                            <span class="material-icons text-blue-600 text-sm" x-text="notification.icon || 'forum'"></span>
+                                                        </div>
+                                                        <div class="flex-grow min-w-0">
+                                                            <p class="text-xs font-medium truncate" x-text="notification.title"></p>
+                                                            <p class="text-xs text-gray-500 truncate" x-text="notification.message"></p>
+                                                            <p class="text-xs text-gray-400 mt-1" x-text="notification.time"></p>
+                                                        </div>
+                                                        <div x-show="!notification.read_at" class="flex-shrink-0 ml-2">
+                                                            <span class="h-2 w-2 rounded-full bg-blue-500 inline-block"></span>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </template>
+                                        </div>
+                                        
+                                        <a href="#" class="block text-center py-2 text-xs text-blue-600 hover:bg-gray-50 font-medium">
+                                            View all notifications
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <!-- User Menu (Mobile) -->
+                                <div class="relative" x-data="{ open: false }">
+                                    <button @click="open = !open" class="p-1 text-gray-500 hover:text-gray-700">
+                                        <span class="material-icons text-xl">account_circle</span>
+                                    </button>
+                                    
+                                    <!-- Mobile User Dropdown -->
+                                    <div x-show="open" @click.away="open = false" class="absolute right-0 top-10 mt-1 w-48 bg-white rounded-md shadow-lg z-20 border border-gray-200 overflow-hidden">
+                                        <div class="py-2 px-3 bg-gray-100 border-b border-gray-200">
+                                            <p class="text-xs font-semibold text-gray-700">
+                                                @auth
+                                                    {{ Auth::user()->name }}
+                                                @else
+                                                    Guest
+                                                @endauth
+                                            </p>
+                                        </div>
+                                        
+                                        <div class="py-1">
+                                            <a href="{{ route('profile.edit') }}" class="block px-3 py-2 text-xs text-gray-700 hover:bg-gray-50">
+                                                <span class="material-icons text-sm mr-2">person</span>
+                                                Profile
+                                            </a>
+                                            <form method="POST" action="{{ route('logout') }}">
+                                                @csrf
+                                                <button type="submit" class="block w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-gray-50">
+                                                    <span class="material-icons text-sm mr-2">logout</span>
+                                                    Logout
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-
-                        <!-- Notifications & User Menu -->
-                        <div class="flex items-center space-x-4">
-                            <!-- Notifications -->
-                            <div class="flex items-center justify-center h-8" x-data="{ showNotifications: false, notifications: [], unreadCount: 0 }" id="notification-container">
-                                <button @click="showNotifications = !showNotifications" class="text-gray-500 hover:text-gray-700 flex items-center justify-center relative">
-                                    <span class="material-icons text-xl">notifications</span>
-                                    <span x-show="unreadCount > 0" x-text="unreadCount" class="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center"></span>
-                                </button>
-                                
-                                <!-- Notifications Dropdown -->
-                                <div x-show="showNotifications" @click.away="showNotifications = false" class="absolute right-16 top-16 mt-2 w-80 bg-white rounded-md shadow-lg z-20 border border-gray-200 overflow-hidden">
-                                    <div class="py-2 px-3 bg-gray-100 border-b border-gray-200 flex justify-between items-center">
-                                        <h3 class="text-xs font-semibold text-gray-700">Notifications</h3>
-                                        <span x-show="unreadCount > 0" @click="window.markAllAsRead()" class="text-xs text-blue-500 hover:text-blue-700 cursor-pointer">Mark all as read</span>
-                                    </div>
-                                    
-                                    <div class="max-h-64 overflow-y-auto">
-                                        <template x-if="notifications.length === 0">
-                                            <div class="py-4 px-3 text-center text-gray-500 text-xs">
-                                                <p>No new notifications</p>
-                                            </div>
-                                        </template>
-                                        
-                                        <template x-for="notification in notifications" :key="notification.id">
-                                            <a :href="notification.url" class="block py-2 px-3 hover:bg-gray-50 border-b border-gray-100 transition duration-150 ease-in-out" :class="{'bg-blue-50': !notification.read_at}">
-                                                <div class="flex items-start">
-                                                    <div class="flex-shrink-0 mr-2">
-                                                        <span class="material-icons text-blue-600" x-text="notification.icon || 'forum'"></span>
-                                                    </div>
-                                                    <div class="flex-grow">
-                                                        <p class="text-xs font-medium" x-text="notification.title"></p>
-                                                        <p class="text-xs text-gray-500" x-text="notification.message"></p>
-                                                        <p class="text-xs text-gray-400 mt-1" x-text="notification.time"></p>
-                                                    </div>
-                                                    <div x-show="!notification.read_at" class="flex-shrink-0 ml-2">
-                                                        <span class="h-2 w-2 rounded-full bg-blue-500 inline-block"></span>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </template>
-                                    </div>
-                                    
-                                    <a href="#" class="block text-center py-2 text-xs text-blue-600 hover:bg-gray-50 font-medium">
-                                        View all notifications
-                                    </a>
+                    </div>
+                    
+                    <!-- Desktop Header -->
+                    <div class="hidden md:block">
+                        <div class="flex justify-between items-center px-6 py-3">
+                            <!-- Welcome & Date/Time -->
+                            <div class="flex items-center">
+                                <div class="text-xs">
+                                    @auth
+                                        <span class="font-medium">Welcome, {{ Auth::user()->name }}</span>
+                                        <span class="mx-2 text-gray-400">|</span>
+                                    @else
+                                        <span class="font-medium">Welcome, Guest</span>
+                                        <span class="mx-2 text-gray-400">|</span>
+                                    @endauth
+                                    <span id="current-date-time" class="text-gray-500"></span>
                                 </div>
                             </div>
 
-                            <!-- User Menu -->
-                            <div class="relative" x-data="{ open: false }">
-                                <button @click="open = !open" class="flex items-center text-xs font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none transition duration-150 ease-in-out">
-                                    <div class="flex items-center space-x-2">
-                                        <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
-                                            <span class="material-icons text-xs text-gray-500">person</span>
+                            <!-- Notifications & User Menu -->
+                            <div class="flex items-center space-x-4">
+                                <!-- Notifications -->
+                                <div class="flex items-center justify-center h-8" x-data="{ showNotifications: false, notifications: [], unreadCount: 0 }" id="notification-container">
+                                    <button @click="showNotifications = !showNotifications" class="text-gray-500 hover:text-gray-700 flex items-center justify-center relative">
+                                        <span class="material-icons text-xl">notifications</span>
+                                        <span x-show="unreadCount > 0" x-text="unreadCount" class="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center"></span>
+                                    </button>
+                                    
+                                    <!-- Desktop Notifications Dropdown -->
+                                    <div x-show="showNotifications" @click.away="showNotifications = false" class="absolute right-16 top-16 mt-2 w-80 bg-white rounded-md shadow-lg z-20 border border-gray-200 overflow-hidden">
+                                        <div class="py-2 px-3 bg-gray-100 border-b border-gray-200 flex justify-between items-center">
+                                            <h3 class="text-xs font-semibold text-gray-700">Notifications</h3>
+                                            <span x-show="unreadCount > 0" @click="window.markAllAsRead()" class="text-xs text-blue-500 hover:text-blue-700 cursor-pointer">Mark all as read</span>
                                         </div>
-                                        <div class="hidden md:flex">
-                                            @auth
-                                                <span class="text-xs">{{ Auth::user()->name }}</span>
-                                            @else
-                                                <span class="text-xs">Guest</span>
-                                            @endauth
-                                        </div>
-                                    </div>
-
-                                    <div class="ml-1">
-                                        <svg class="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                        </svg>
-                                    </div>
-                                </button>
-                                
-                                <!-- Dropdown Menu -->
-                                <div x-show="open" @click.away="open = false" x-cloak class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 border border-gray-200 py-2">
-                                    @auth
-                                        <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-100">
-                                            <div class="flex items-center space-x-2">
-                                                <span class="material-icons text-xs">account_circle</span>
-                                                <span class="text-xs">Profile</span>
-                                            </div>
-                                        </a>
-                                    @endauth
-                                    @auth
-                                        <form method="POST" action="{{ route('logout') }}" class="block">
-                                            @csrf
-                                            <button type="submit" class="w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-100">
-                                                <div class="flex items-center space-x-2">
-                                                    <span class="material-icons text-xs">logout</span>
-                                                    <span class="text-xs">Log Out</span>
+                                        
+                                        <div class="max-h-64 overflow-y-auto">
+                                            <template x-if="notifications.length === 0">
+                                                <div class="py-4 px-3 text-center text-gray-500 text-xs">
+                                                    <p>No new notifications</p>
                                                 </div>
-                                            </button>
-                                        </form>
-                                    @else
-                                        <a href="{{ route('login') }}" class="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-100">
-                                            <div class="flex items-center space-x-2">
-                                                <span class="material-icons text-xs">login</span>
-                                                <span class="text-xs">Log In</span>
-                                            </div>
+                                            </template>
+                                            
+                                            <template x-for="notification in notifications" :key="notification.id">
+                                                <a :href="notification.url" class="block py-2 px-3 hover:bg-gray-50 border-b border-gray-100 transition duration-150 ease-in-out" :class="{'bg-blue-50': !notification.read_at}">
+                                                    <div class="flex items-start">
+                                                        <div class="flex-shrink-0 mr-2">
+                                                            <span class="material-icons text-blue-600" x-text="notification.icon || 'forum'"></span>
+                                                        </div>
+                                                        <div class="flex-grow">
+                                                            <p class="text-xs font-medium" x-text="notification.title"></p>
+                                                            <p class="text-xs text-gray-500" x-text="notification.message"></p>
+                                                            <p class="text-xs text-gray-400 mt-1" x-text="notification.time"></p>
+                                                        </div>
+                                                        <div x-show="!notification.read_at" class="flex-shrink-0 ml-2">
+                                                            <span class="h-2 w-2 rounded-full bg-blue-500 inline-block"></span>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </template>
+                                        </div>
+                                        
+                                        <a href="#" class="block text-center py-2 text-xs text-blue-600 hover:bg-gray-50 font-medium">
+                                            View all notifications
                                         </a>
-                                    @endauth
+                                    </div>
+                                </div>
+
+                                <!-- User Menu -->
+                                <div class="relative" x-data="{ open: false }">
+                                    <button @click="open = !open" class="flex items-center text-xs font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none transition duration-150 ease-in-out">
+                                        <div class="flex items-center space-x-2">
+                                            <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                                <span class="material-icons text-xs text-gray-500">person</span>
+                                            </div>
+                                            <div class="hidden md:flex">
+                                                @auth
+                                                    <span class="text-xs">{{ Auth::user()->name }}</span>
+                                                @else
+                                                    <span class="text-xs">Guest</span>
+                                                @endauth
+                                            </div>
+                                        </div>
+
+                                        <div class="ml-1">
+                                            <svg class="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    </button>
+                                    
+                                    <!-- Dropdown Menu -->
+                                    <div x-show="open" @click.away="open = false" x-cloak class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 border border-gray-200 py-2">
+                                        @auth
+                                            <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-100">
+                                                <div class="flex items-center space-x-2">
+                                                    <span class="material-icons text-xs">account_circle</span>
+                                                    <span class="text-xs">Profile</span>
+                                                </div>
+                                            </a>
+                                        @endauth
+                                        @auth
+                                            <form method="POST" action="{{ route('logout') }}" class="block">
+                                                @csrf
+                                                <button type="submit" class="w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-100">
+                                                    <div class="flex items-center space-x-2">
+                                                        <span class="material-icons text-xs">logout</span>
+                                                        <span class="text-xs">Log Out</span>
+                                                    </div>
+                                                </button>
+                                            </form>
+                                        @else
+                                            <a href="{{ route('login') }}" class="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-100">
+                                                <div class="flex items-center space-x-2">
+                                                    <span class="material-icons text-xs">login</span>
+                                                    <span class="text-xs">Log In</span>
+                                                </div>
+                                            </a>
+                                        @endauth
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Breadcrumb -->
-                    <div class="px-6 py-2 bg-gray-50 border-t border-gray-100">
+                    <!-- Breadcrumb & Weather Section -->
+                    <div class="bg-gray-50 border-t border-gray-100 px-6" style="padding-top: 6px; padding-bottom: 6.5px;">
                         <div class="flex justify-between items-center">
-                            <nav class="flex items-center text-xs">
-                                <a href="{{ route('dashboard') }}" class="text-blue-600 flex items-center">
+                            <!-- Breadcrumb (Desktop Only) -->
+                            <nav class="hidden md:flex items-center text-xs">
+                                <a href="{{ route('dashboard') }}" class="text-blue-600 flex items-center hover:text-blue-800">
                                     <span class="material-icons text-xs">home</span>
                                     <span class="ml-1">Home</span>
                                 </a>
                                 @hasSection('breadcrumb')
                                     <span class="mx-2 text-gray-500">></span>
-                                    @yield('breadcrumb')
+                                    <span class="text-gray-700">@yield('breadcrumb')</span>
                                 @endif
                             </nav>
                             
-                            <!-- Weather Widget -->
-                            <div class="relative" x-data="{ weather: null, loading: true, showTooltip: false, locationInfo: null }" x-init="
-                                // Fetch weather data
+                            <!-- Weather Widget (Desktop Only) -->
+                            <div class="hidden md:block relative" x-data="{ weather: null, loading: true, showTooltip: false, locationInfo: null }" x-init="
+                                // Fetch weather data with error handling
                                 fetch('/api/weather')
-                                    .then(response => response.json())
+                                    .then(response => {
+                                        if (!response.ok) {
+                                            throw new Error('Weather API not available');
+                                        }
+                                        return response.json();
+                                    })
                                     .then(data => {
                                         weather = data;
                                         loading = false;
                                     })
                                     .catch(error => {
-                                        console.error('Weather fetch error:', error);
+                                        console.warn('Weather fetch error:', error.message);
                                         loading = false;
                                     });
                                 
-                                // Fetch location info from settings
+                                // Fetch location info from settings with error handling
                                 fetch('/settings/weather/get')
-                                    .then(response => response.json())
+                                    .then(response => {
+                                        if (!response.ok) {
+                                            throw new Error('Location API not available');
+                                        }
+                                        return response.json();
+                                    })
                                     .then(data => {
                                         if (data) {
                                             locationInfo = data;
                                         }
                                     })
                                     .catch(error => {
-                                        console.error('Location info fetch error:', error);
+                                        console.warn('Location info fetch error:', error.message);
                                     });
                             ">
                                 <div class="flex items-center space-x-2 text-xs cursor-pointer" 

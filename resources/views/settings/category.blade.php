@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-<div class="px-6 pt-6 pb-6 max-w-7xl mx-auto" x-data="{ 
+<div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto" x-data="{ 
     showTypeModal: false, 
     showStatusModal: false,
     showEditTypeModal: false,
@@ -27,25 +27,26 @@
 }">
     <!-- Type of Case Section -->
     <div class="bg-white rounded shadow-md border border-gray-300 mb-6">
-        <div class="p-6 border-b border-gray-200">
-            <div class="flex justify-between items-start">
-                <div>
+        <div class="p-4 md:p-6 border-b border-gray-200">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-start">
+                <div class="mb-4 md:mb-0">
                     <div class="flex items-center">
                         <span class="material-icons mr-2 text-blue-600">category</span>
-                        <h1 class="text-xl font-bold text-gray-800 text-[14px]">Type of Case</h1>
+                        <h1 class="text-lg md:text-xl font-bold text-gray-800 text-[14px]">Type of Case</h1>
                     </div>
                     <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Manage different types of legal cases and their codes.</p>
                 </div>
                 
                 <!-- Add Type Button -->
-                <button @click="showTypeModal = true" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs font-medium flex items-center">
+                <button @click="showTypeModal = true" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
                     <span class="material-icons text-xs mr-1">add</span>
                     Add Type
                 </button>
             </div>
         </div>
         
-        <div class="p-6">
+        <!-- Desktop Table View -->
+        <div class="hidden md:block p-6">
             <div class="overflow-visible border border-gray-200 rounded">
                 <table class="min-w-full border-collapse">
                     <thead>
@@ -214,29 +215,138 @@
                 </table>
             </div>
         </div>
+
+        <!-- Mobile Card View for Type of Case -->
+        <div class="md:hidden p-4 space-y-4">
+            <!-- Type Card 1 -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-sm font-medium text-gray-800">CR</span>
+                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button @click="openEditTypeModal('CR', 'Criminal', 'active')" class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
+                            <span class="material-icons text-yellow-700 text-sm">edit</span>
+                        </button>
+                        <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
+                            <span class="material-icons text-red-600 text-sm">delete</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="pt-2 border-t border-gray-100">
+                    <span class="text-sm text-gray-700">Criminal</span>
+                </div>
+            </div>
+
+            <!-- Type Card 2 -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-sm font-medium text-gray-800">CA</span>
+                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button @click="openEditTypeModal('CA', 'Civil Action', 'active')" class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
+                            <span class="material-icons text-yellow-700 text-sm">edit</span>
+                        </button>
+                        <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
+                            <span class="material-icons text-red-600 text-sm">delete</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="pt-2 border-t border-gray-100">
+                    <span class="text-sm text-gray-700">Civil Action</span>
+                </div>
+            </div>
+
+            <!-- Type Card 3 -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-sm font-medium text-gray-800">CVY</span>
+                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button @click="openEditTypeModal('CVY', 'Conveyancing', 'active')" class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
+                            <span class="material-icons text-yellow-700 text-sm">edit</span>
+                        </button>
+                        <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
+                            <span class="material-icons text-red-600 text-sm">delete</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="pt-2 border-t border-gray-100">
+                    <span class="text-sm text-gray-700">Conveyancing</span>
+                </div>
+            </div>
+
+            <!-- Type Card 4 -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-sm font-medium text-gray-800">PB</span>
+                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button @click="openEditTypeModal('PB', 'Probate/ Letter of Administration', 'active')" class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
+                            <span class="material-icons text-yellow-700 text-sm">edit</span>
+                        </button>
+                        <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
+                            <span class="material-icons text-red-600 text-sm">delete</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="pt-2 border-t border-gray-100">
+                    <span class="text-sm text-gray-700">Probate/ Letter of Administration</span>
+                </div>
+            </div>
+
+            <!-- Type Card 5 -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-sm font-medium text-gray-800">AGT</span>
+                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button @click="openEditTypeModal('AGT', 'Agreement', 'active')" class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
+                            <span class="material-icons text-yellow-700 text-sm">edit</span>
+                        </button>
+                        <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
+                            <span class="material-icons text-red-600 text-sm">delete</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="pt-2 border-t border-gray-100">
+                    <span class="text-sm text-gray-700">Agreement</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Category Status Section -->
     <div class="bg-white rounded shadow-md border border-gray-300">
-        <div class="p-6 border-b border-gray-200">
-            <div class="flex justify-between items-start">
-                <div>
+        <div class="p-4 md:p-6 border-b border-gray-200">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-start">
+                <div class="mb-4 md:mb-0">
                     <div class="flex items-center">
                         <span class="material-icons mr-2 text-green-600">flag</span>
-                        <h1 class="text-xl font-bold text-gray-800 text-[14px]">Category Status</h1>
+                        <h1 class="text-lg md:text-xl font-bold text-gray-800 text-[14px]">Category Status</h1>
                     </div>
                     <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Manage case status categories and their definitions.</p>
                 </div>
                 
                 <!-- Add Status Button -->
-                <button @click="showStatusModal = true" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs font-medium flex items-center">
+                <button @click="showStatusModal = true" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
                     <span class="material-icons text-xs mr-1">add</span>
                     Add Status
                 </button>
             </div>
         </div>
         
-        <div class="p-6">
+        <!-- Desktop Table View -->
+        <div class="hidden md:block p-6">
             <div class="overflow-visible border border-gray-200 rounded">
                 <table class="min-w-full border-collapse">
                     <thead>
@@ -389,6 +499,144 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- Mobile Card View for Category Status -->
+        <div class="md:hidden p-4 space-y-4">
+            <!-- Status Card 1 -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-sm font-medium text-gray-800">Consultation</span>
+                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button @click="openEditStatusModal('Consultation', 'Initial consultation with client', 'blue', 'active')" class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
+                            <span class="material-icons text-yellow-700 text-sm">edit</span>
+                        </button>
+                        <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
+                            <span class="material-icons text-red-600 text-sm">delete</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-blue-500 rounded mr-2"></div>
+                        <span class="text-xs text-gray-600">Blue</span>
+                    </div>
+                </div>
+                <div class="pt-2 border-t border-gray-100">
+                    <span class="text-sm text-gray-700">Initial consultation with client</span>
+                </div>
+            </div>
+
+            <!-- Status Card 2 -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-sm font-medium text-gray-800">Quotation</span>
+                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button @click="openEditStatusModal('Quotation', 'Fee quotation provided to client', 'yellow', 'active')" class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
+                            <span class="material-icons text-yellow-700 text-sm">edit</span>
+                        </button>
+                        <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
+                            <span class="material-icons text-red-600 text-sm">delete</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-yellow-500 rounded mr-2"></div>
+                        <span class="text-xs text-gray-600">Yellow</span>
+                    </div>
+                </div>
+                <div class="pt-2 border-t border-gray-100">
+                    <span class="text-sm text-gray-700">Fee quotation provided to client</span>
+                </div>
+            </div>
+
+            <!-- Status Card 3 -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-sm font-medium text-gray-800">Open file</span>
+                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button @click="openEditStatusModal('Open file', 'Case file opened and active', 'green', 'active')" class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
+                            <span class="material-icons text-yellow-700 text-sm">edit</span>
+                        </button>
+                        <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
+                            <span class="material-icons text-red-600 text-sm">delete</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-green-500 rounded mr-2"></div>
+                        <span class="text-xs text-gray-600">Green</span>
+                    </div>
+                </div>
+                <div class="pt-2 border-t border-gray-100">
+                    <span class="text-sm text-gray-700">Case file opened and active</span>
+                </div>
+            </div>
+
+            <!-- Status Card 4 -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-sm font-medium text-gray-800">Proceed</span>
+                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button @click="openEditStatusModal('Proceed', 'Case proceeding with legal action', 'purple', 'active')" class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
+                            <span class="material-icons text-yellow-700 text-sm">edit</span>
+                        </button>
+                        <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
+                            <span class="material-icons text-red-600 text-sm">delete</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-purple-500 rounded mr-2"></div>
+                        <span class="text-xs text-gray-600">Purple</span>
+                    </div>
+                </div>
+                <div class="pt-2 border-t border-gray-100">
+                    <span class="text-sm text-gray-700">Case proceeding with legal action</span>
+                </div>
+            </div>
+
+            <!-- Status Card 5 -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-sm font-medium text-gray-800">Closed file</span>
+                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button @click="openEditStatusModal('Closed file', 'Case completed and file closed', 'gray', 'active')" class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
+                            <span class="material-icons text-yellow-700 text-sm">edit</span>
+                        </button>
+                        <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
+                            <span class="material-icons text-red-600 text-sm">delete</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-gray-500 rounded mr-2"></div>
+                        <span class="text-xs text-gray-600">Gray</span>
+                    </div>
+                </div>
+                <div class="pt-2 border-t border-gray-100">
+                    <span class="text-sm text-gray-700">Case completed and file closed</span>
+                </div>
             </div>
         </div>
     </div>

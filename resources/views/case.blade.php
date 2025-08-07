@@ -5,26 +5,28 @@
 @endsection
 
 @section('content')
-<div class="px-6 pt-6 pb-6 max-w-7xl mx-auto">
+<div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto">
     <div class="bg-white rounded shadow-md border border-gray-300">
-        <div class="p-6 border-b border-gray-200">
-            <div class="flex justify-between items-start">
+        <div class="p-4 md:p-6 border-b border-gray-200">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-start space-y-4 md:space-y-0">
                 <div>
                     <div class="flex items-center">
                         <span class="material-icons mr-2 text-purple-600">folder</span>
-                        <h1 class="text-xl font-bold text-gray-800 text-[14px]">Case Management</h1>
+                        <h1 class="text-lg md:text-xl font-bold text-gray-800">Case Management</h1>
                     </div>
-                    <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Manage all court cases, clients, and related documents.</p>
+                    <p class="text-xs text-gray-500 mt-1 ml-8">Manage all court cases, clients, and related documents.</p>
                 </div>
                 
                 <!-- Add Case Button -->
-                <a href="{{ route('case.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs font-medium flex items-center">
-                    <span class="material-icons text-xs mr-1">add</span>
+                <a href="{{ route('case.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
+                    <span class="material-icons text-sm md:text-xs mr-1">add</span>
                     Add Case
                 </a>
             </div>
         </div>
-        <div class="p-6">
+        
+        <!-- Desktop Table View -->
+        <div class="hidden md:block p-6">
             <div class="overflow-visible border border-gray-200 rounded">
                 <table class="min-w-full border-collapse">
                     <thead>
@@ -156,6 +158,198 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+        
+        <!-- Mobile Card View -->
+        <div class="md:hidden p-4 space-y-4">
+            <!-- Case Card 1 -->
+            <div class="bg-gray-50 rounded-lg border border-gray-200 p-4" x-data="{ showStatusMenu: false }">
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <h3 class="font-semibold text-gray-800 text-sm">2024-010</h3>
+                        <p class="text-xs text-gray-600">NF-00123</p>
+                    </div>
+                    <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Open Case</span>
+                </div>
+                
+                <div class="space-y-2 mb-4">
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Client:</span>
+                        <span class="text-xs font-medium">John Doe</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Partner:</span>
+                        <span class="text-xs font-medium">A. Rahman</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Court Ref:</span>
+                        <span class="text-xs font-medium">CR-2024-001</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Open Date:</span>
+                        <span class="text-xs font-medium">27 Jul 2025</span>
+                    </div>
+                </div>
+                
+                <!-- Mobile Action Buttons -->
+                <div class="flex space-x-2">
+                    <button @click="showStatusMenu = !showStatusMenu" class="flex-1 bg-purple-100 text-purple-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">add</span>
+                        Status
+                    </button>
+                    <a href="{{ route('case.view') }}" class="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">visibility</span>
+                        View
+                    </a>
+                    <a href="#" class="flex-1 bg-yellow-100 text-yellow-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">edit</span>
+                        Edit
+                    </a>
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">delete</span>
+                        Delete
+                    </button>
+                </div>
+                
+                <!-- Mobile Status Dropdown -->
+                <div x-show="showStatusMenu" @click.away="showStatusMenu = false" class="mt-3 bg-white rounded-md shadow-lg border border-gray-200 p-3">
+                    <div class="mb-2 font-bold text-purple-700 text-xs">Change Status</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-purple-50 rounded">Consultation</button>
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-purple-50 rounded">Quotation</button>
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-purple-50 rounded">Open file</button>
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-purple-50 rounded">Proceed</button>
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-purple-50 rounded">Closed file</button>
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-purple-50 rounded">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Case Card 2 -->
+            <div class="bg-gray-50 rounded-lg border border-gray-200 p-4" x-data="{ showStatusMenu: false }">
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <h3 class="font-semibold text-gray-800 text-sm">2024-009</h3>
+                        <p class="text-xs text-gray-600">NF-00124</p>
+                    </div>
+                    <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Open Case</span>
+                </div>
+                
+                <div class="space-y-2 mb-4">
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Client:</span>
+                        <span class="text-xs font-medium">Jane Smith</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Partner:</span>
+                        <span class="text-xs font-medium">S. Kumar</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Court Ref:</span>
+                        <span class="text-xs font-medium">CR-2024-002</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Open Date:</span>
+                        <span class="text-xs font-medium">25 Jul 2025</span>
+                    </div>
+                </div>
+                
+                <!-- Mobile Action Buttons -->
+                <div class="flex space-x-2">
+                    <button @click="showStatusMenu = !showStatusMenu" class="flex-1 bg-purple-100 text-purple-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">add</span>
+                        Status
+                    </button>
+                    <a href="{{ route('case.view') }}" class="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">visibility</span>
+                        View
+                    </a>
+                    <a href="#" class="flex-1 bg-yellow-100 text-yellow-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">edit</span>
+                        Edit
+                    </a>
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">delete</span>
+                        Delete
+                    </button>
+                </div>
+                
+                <!-- Mobile Status Dropdown -->
+                <div x-show="showStatusMenu" @click.away="showStatusMenu = false" class="mt-3 bg-white rounded-md shadow-lg border border-gray-200 p-3">
+                    <div class="mb-2 font-bold text-purple-700 text-xs">Change Status</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-purple-50 rounded">Consultation</button>
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-purple-50 rounded">Quotation</button>
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-purple-50 rounded">Open file</button>
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-purple-50 rounded">Proceed</button>
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-purple-50 rounded">Closed file</button>
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-purple-50 rounded">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Case Card 3 -->
+            <div class="bg-gray-50 rounded-lg border border-gray-200 p-4" x-data="{ showStatusMenu: false }">
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <h3 class="font-semibold text-gray-800 text-sm">2024-008</h3>
+                        <p class="text-xs text-gray-600">NF-00125</p>
+                    </div>
+                    <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Open Case</span>
+                </div>
+                
+                <div class="space-y-2 mb-4">
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Client:</span>
+                        <span class="text-xs font-medium">Ahmad Ali</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Partner:</span>
+                        <span class="text-xs font-medium">M. Lim</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Court Ref:</span>
+                        <span class="text-xs font-medium">CR-2024-003</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Open Date:</span>
+                        <span class="text-xs font-medium">20 Jul 2025</span>
+                    </div>
+                </div>
+                
+                <!-- Mobile Action Buttons -->
+                <div class="flex space-x-2">
+                    <button @click="showStatusMenu = !showStatusMenu" class="flex-1 bg-purple-100 text-purple-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">add</span>
+                        Status
+                    </button>
+                    <a href="{{ route('case.view') }}" class="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">visibility</span>
+                        View
+                    </a>
+                    <a href="#" class="flex-1 bg-yellow-100 text-yellow-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">edit</span>
+                        Edit
+                    </a>
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">delete</span>
+                        Delete
+                    </button>
+                </div>
+                
+                <!-- Mobile Status Dropdown -->
+                <div x-show="showStatusMenu" @click.away="showStatusMenu = false" class="mt-3 bg-white rounded-md shadow-lg border border-gray-200 p-3">
+                    <div class="mb-2 font-bold text-purple-700 text-xs">Change Status</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-purple-50 rounded">Consultation</button>
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-purple-50 rounded">Quotation</button>
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-purple-50 rounded">Open file</button>
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-purple-50 rounded">Proceed</button>
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-purple-50 rounded">Closed file</button>
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-purple-50 rounded">Cancel</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

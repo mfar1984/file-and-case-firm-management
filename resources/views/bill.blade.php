@@ -5,27 +5,28 @@
 @endsection
 
 @section('content')
-<div class="px-6 pt-6 pb-6 max-w-7xl mx-auto">
+<div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto">
     <div class="bg-white rounded shadow-md border border-gray-300">
-        <div class="p-6 border-b border-gray-200">
-            <div class="flex justify-between items-start">
+        <div class="p-4 md:p-6 border-b border-gray-200">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-start space-y-4 md:space-y-0">
                 <div>
                     <div class="flex items-center">
                         <span class="material-icons mr-2 text-orange-600">account_balance_wallet</span>
-                        <h1 class="text-xl font-bold text-gray-800 text-[14px]">Bill Management</h1>
+                        <h1 class="text-lg md:text-xl font-bold text-gray-800">Bill Management</h1>
                     </div>
-                    <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Manage all bills and expense records.</p>
+                    <p class="text-xs text-gray-500 mt-1 ml-8">Manage all bills and expense records.</p>
                 </div>
                 
                 <!-- Add Bill Button -->
-                <a href="{{ route('bill.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs font-medium flex items-center">
-                    <span class="material-icons text-xs mr-1">add</span>
+                <a href="{{ route('bill.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
+                    <span class="material-icons text-sm md:text-xs mr-1">add</span>
                     Add Bill
                 </a>
             </div>
         </div>
         
-        <div class="p-6">
+        <!-- Desktop Table View -->
+        <div class="hidden md:block p-6">
             <div class="overflow-visible border border-gray-200 rounded">
                 <table class="min-w-full border-collapse">
                     <thead>
@@ -212,6 +213,333 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+        
+        <!-- Mobile Card View -->
+        <div class="md:hidden p-4 space-y-4">
+            <!-- Bill Card 1 -->
+            <div class="bg-gray-50 rounded-lg border border-gray-200 p-4">
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <h3 class="font-semibold text-gray-800 text-sm">BL-2025-001</h3>
+                        <p class="text-xs text-gray-600">Office Supplies Co</p>
+                    </div>
+                    <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Paid</span>
+                </div>
+                
+                <div class="space-y-2 mb-4">
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Category:</span>
+                        <span class="text-xs font-medium">Office Supplies</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Description:</span>
+                        <span class="text-xs font-medium">Stationery & Paper</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Amount:</span>
+                        <span class="text-xs font-medium">RM 250.00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Due Date:</span>
+                        <span class="text-xs font-medium">15/02/2025</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Payment Date:</span>
+                        <span class="text-xs font-medium">10/02/2025</span>
+                    </div>
+                </div>
+                
+                <!-- Mobile Action Buttons -->
+                <div class="flex space-x-2">
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">block</span>
+                        Cancel
+                    </button>
+                    <a href="#" class="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">visibility</span>
+                        View
+                    </a>
+                    <a href="#" class="flex-1 bg-yellow-100 text-yellow-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">edit</span>
+                        Edit
+                    </a>
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">delete</span>
+                        Delete
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Bill Card 2 -->
+            <div class="bg-gray-50 rounded-lg border border-gray-200 p-4">
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <h3 class="font-semibold text-gray-800 text-sm">BL-2025-002</h3>
+                        <p class="text-xs text-gray-600">Internet Provider</p>
+                    </div>
+                    <span class="inline-block bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">Pending</span>
+                </div>
+                
+                <div class="space-y-2 mb-4">
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Category:</span>
+                        <span class="text-xs font-medium">Utilities</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Description:</span>
+                        <span class="text-xs font-medium">Monthly Internet</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Amount:</span>
+                        <span class="text-xs font-medium">RM 180.00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Due Date:</span>
+                        <span class="text-xs font-medium">20/02/2025</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Payment Date:</span>
+                        <span class="text-xs font-medium">-</span>
+                    </div>
+                </div>
+                
+                <!-- Mobile Action Buttons -->
+                <div class="flex space-x-2">
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">block</span>
+                        Cancel
+                    </button>
+                    <a href="#" class="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">visibility</span>
+                        View
+                    </a>
+                    <a href="#" class="flex-1 bg-yellow-100 text-yellow-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">edit</span>
+                        Edit
+                    </a>
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">delete</span>
+                        Delete
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Bill Card 3 -->
+            <div class="bg-gray-50 rounded-lg border border-gray-200 p-4">
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <h3 class="font-semibold text-gray-800 text-sm">BL-2025-003</h3>
+                        <p class="text-xs text-gray-600">Electricity Board</p>
+                    </div>
+                    <span class="inline-block bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">Pending</span>
+                </div>
+                
+                <div class="space-y-2 mb-4">
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Category:</span>
+                        <span class="text-xs font-medium">Utilities</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Description:</span>
+                        <span class="text-xs font-medium">Monthly Electricity</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Amount:</span>
+                        <span class="text-xs font-medium">RM 320.00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Due Date:</span>
+                        <span class="text-xs font-medium">25/02/2025</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Payment Date:</span>
+                        <span class="text-xs font-medium">-</span>
+                    </div>
+                </div>
+                
+                <!-- Mobile Action Buttons -->
+                <div class="flex space-x-2">
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">block</span>
+                        Cancel
+                    </button>
+                    <a href="#" class="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">visibility</span>
+                        View
+                    </a>
+                    <a href="#" class="flex-1 bg-yellow-100 text-yellow-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">edit</span>
+                        Edit
+                    </a>
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">delete</span>
+                        Delete
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Bill Card 4 -->
+            <div class="bg-gray-50 rounded-lg border border-gray-200 p-4">
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <h3 class="font-semibold text-gray-800 text-sm">BL-2025-004</h3>
+                        <p class="text-xs text-gray-600">Cleaning Services</p>
+                    </div>
+                    <span class="inline-block bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">Pending</span>
+                </div>
+                
+                <div class="space-y-2 mb-4">
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Category:</span>
+                        <span class="text-xs font-medium">Services</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Description:</span>
+                        <span class="text-xs font-medium">Monthly Cleaning</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Amount:</span>
+                        <span class="text-xs font-medium">RM 450.00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Due Date:</span>
+                        <span class="text-xs font-medium">28/02/2025</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Payment Date:</span>
+                        <span class="text-xs font-medium">-</span>
+                    </div>
+                </div>
+                
+                <!-- Mobile Action Buttons -->
+                <div class="flex space-x-2">
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">block</span>
+                        Cancel
+                    </button>
+                    <a href="#" class="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">visibility</span>
+                        View
+                    </a>
+                    <a href="#" class="flex-1 bg-yellow-100 text-yellow-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">edit</span>
+                        Edit
+                    </a>
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">delete</span>
+                        Delete
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Bill Card 5 -->
+            <div class="bg-gray-50 rounded-lg border border-gray-200 p-4">
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <h3 class="font-semibold text-gray-800 text-sm">BL-2025-005</h3>
+                        <p class="text-xs text-gray-600">Legal Database</p>
+                    </div>
+                    <span class="inline-block bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">Pending</span>
+                </div>
+                
+                <div class="space-y-2 mb-4">
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Category:</span>
+                        <span class="text-xs font-medium">Subscriptions</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Description:</span>
+                        <span class="text-xs font-medium">Annual Subscription</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Amount:</span>
+                        <span class="text-xs font-medium">RM 2,500.00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Due Date:</span>
+                        <span class="text-xs font-medium">15/03/2025</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Payment Date:</span>
+                        <span class="text-xs font-medium">-</span>
+                    </div>
+                </div>
+                
+                <!-- Mobile Action Buttons -->
+                <div class="flex space-x-2">
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">block</span>
+                        Cancel
+                    </button>
+                    <a href="#" class="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">visibility</span>
+                        View
+                    </a>
+                    <a href="#" class="flex-1 bg-yellow-100 text-yellow-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">edit</span>
+                        Edit
+                    </a>
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">delete</span>
+                        Delete
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Bill Card 6 -->
+            <div class="bg-gray-50 rounded-lg border border-gray-200 p-4">
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <h3 class="font-semibold text-gray-800 text-sm">BL-2025-006</h3>
+                        <p class="text-xs text-gray-600">Insurance Co</p>
+                    </div>
+                    <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Paid</span>
+                </div>
+                
+                <div class="space-y-2 mb-4">
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Category:</span>
+                        <span class="text-xs font-medium">Insurance</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Description:</span>
+                        <span class="text-xs font-medium">Professional Liability</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Amount:</span>
+                        <span class="text-xs font-medium">RM 1,800.00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Due Date:</span>
+                        <span class="text-xs font-medium">30/01/2025</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-500">Payment Date:</span>
+                        <span class="text-xs font-medium">25/01/2025</span>
+                    </div>
+                </div>
+                
+                <!-- Mobile Action Buttons -->
+                <div class="flex space-x-2">
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">block</span>
+                        Cancel
+                    </button>
+                    <a href="#" class="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">visibility</span>
+                        View
+                    </a>
+                    <a href="#" class="flex-1 bg-yellow-100 text-yellow-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">edit</span>
+                        Edit
+                    </a>
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                        <span class="material-icons text-sm mr-1">delete</span>
+                        Delete
+                    </button>
+                </div>
             </div>
         </div>
     </div>

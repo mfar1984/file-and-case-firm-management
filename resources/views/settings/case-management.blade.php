@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-<div class="px-6 pt-6 pb-6 max-w-7xl mx-auto" x-data="{ 
+<div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto" x-data="{ 
     showCaseTypeModal: false, 
     showCaseStatusModal: false,
     showEditCaseTypeModal: false,
@@ -31,25 +31,26 @@
         <!-- Filing Section -->
         <div>
             <div class="bg-white rounded shadow-md border border-gray-300 mb-6">
-                <div class="p-6 border-b border-gray-200">
-                    <div class="flex justify-between items-start">
-                        <div>
+                <div class="p-4 md:p-6 border-b border-gray-200">
+                    <div class="flex flex-col md:flex-row md:justify-between md:items-start">
+                        <div class="mb-4 md:mb-0">
                             <div class="flex items-center">
                                 <span class="material-icons mr-2 text-purple-600">description</span>
-                                <h1 class="text-xl font-bold text-gray-800 text-[14px]">FILING</h1>
+                                <h1 class="text-lg md:text-xl font-bold text-gray-800 text-[14px]">FILING</h1>
                             </div>
                             <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Manage New Filing Case Information</p>
                         </div>
                         
                         <!-- Add Filing Button -->
-                        <button @click="showFilingModal = true" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-md text-xs font-medium flex items-center">
+                        <button @click="showFilingModal = true" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
                             <span class="material-icons text-xs mr-1">add</span>
                             Add Filing
                         </button>
                     </div>
                 </div>
                 
-                <div class="p-6">
+                <!-- Desktop Table View -->
+                <div class="hidden md:block p-6">
                     <div class="overflow-visible border border-gray-200 rounded">
                         <table class="min-w-full border-collapse">
                             <thead>
@@ -128,6 +129,133 @@
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <!-- Mobile Card View for Filing -->
+                <div class="md:hidden p-4 space-y-4">
+                    <!-- Filing Card 1 -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-sm font-medium text-gray-800">Statement of Claim</span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
+                                    <span class="material-icons text-yellow-700 text-sm">edit</span>
+                                </button>
+                                <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
+                                    <span class="material-icons text-red-600 text-sm">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-xs font-medium text-gray-600">Jurisdiction:</span>
+                                <span class="text-xs text-gray-800">Civil</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-xs font-medium text-gray-600">Section:</span>
+                                <span class="text-xs text-gray-800">Section A</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-xs font-medium text-gray-600">Document:</span>
+                                <span class="text-xs text-gray-800">Writ of Summons</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filing Card 2 -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-sm font-medium text-gray-800">Defense Statement</span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
+                                    <span class="material-icons text-yellow-700 text-sm">edit</span>
+                                </button>
+                                <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
+                                    <span class="material-icons text-red-600 text-sm">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-xs font-medium text-gray-600">Jurisdiction:</span>
+                                <span class="text-xs text-gray-800">Criminal</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-xs font-medium text-gray-600">Section:</span>
+                                <span class="text-xs text-gray-800">Section B</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-xs font-medium text-gray-600">Document:</span>
+                                <span class="text-xs text-gray-800">Charge Sheet</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filing Card 3 -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-sm font-medium text-gray-800">Reply to Defense</span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
+                                    <span class="material-icons text-yellow-700 text-sm">edit</span>
+                                </button>
+                                <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
+                                    <span class="material-icons text-red-600 text-sm">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-xs font-medium text-gray-600">Jurisdiction:</span>
+                                <span class="text-xs text-gray-800">Family</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-xs font-medium text-gray-600">Section:</span>
+                                <span class="text-xs text-gray-800">Section C</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-xs font-medium text-gray-600">Document:</span>
+                                <span class="text-xs text-gray-800">Petition</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filing Card 4 -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-sm font-medium text-gray-800">Pejabat Tanah</span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
+                                    <span class="material-icons text-yellow-700 text-sm">edit</span>
+                                </button>
+                                <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
+                                    <span class="material-icons text-red-600 text-sm">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-xs font-medium text-gray-600">Jurisdiction:</span>
+                                <span class="text-xs text-gray-800">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-xs font-medium text-gray-600">Section:</span>
+                                <span class="text-xs text-gray-800">Conveyancing</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-xs font-medium text-gray-600">Document:</span>
+                                <span class="text-xs text-gray-800">Sale & Purchase Agreement</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
