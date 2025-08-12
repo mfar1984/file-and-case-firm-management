@@ -6,6 +6,7 @@ use App\Models\CaseFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use App\Models\FileType;
 
 class FileManagementController extends Controller
 {
@@ -36,7 +37,10 @@ class FileManagementController extends Controller
         // Get available cases for dropdown
         $cases = CaseFile::distinct()->pluck('case_ref')->filter()->values();
 
-        return view('file-management', compact('files', 'cases'));
+        // Get file types from DB for dropdowns
+        $fileTypes = FileType::active()->orderBy('description')->get(['code','description']);
+
+        return view('file-management', compact('files', 'cases', 'fileTypes'));
     }
 
     /**

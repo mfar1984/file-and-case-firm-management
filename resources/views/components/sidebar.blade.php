@@ -1,4 +1,5 @@
 @php 
+    use App\Helpers\PermissionHelper;
     $caseActive = request()->routeIs('case.index') || request()->routeIs('client.index') || request()->routeIs('partner.index');
     $accountingActive = request()->routeIs('quotation.index') || request()->routeIs('tax-invoice.index') || request()->routeIs('resit.index') || request()->routeIs('voucher.index') || request()->routeIs('bill.index');
     $settingsActive = request()->routeIs('settings.global') || request()->routeIs('settings.role') || request()->routeIs('settings.user') || request()->routeIs('settings.category') || request()->routeIs('settings.log') || request()->routeIs('settings.case-management');
@@ -18,6 +19,7 @@
 <!-- Navigation Menu -->
 <nav class="flex-1 overflow-y-auto py-4">
     <!-- Dashboard -->
+    @if(PermissionHelper::hasPermission('view-overview'))
     <div class="category-header relative">
         <a href="{{ route('overview') }}" class="block relative {{ request()->routeIs('overview') ? 'active' : '' }}">
             <div class="px-4 py-2 flex justify-between items-center cursor-pointer relative">
@@ -28,8 +30,10 @@
             </div>
         </a>
     </div>
+    @endif
 
     <!-- Calendar -->
+    @if(PermissionHelper::hasPermission('view-calendar'))
     <div class="mt-2"></div>
     <div class="category-header relative">
         <a href="{{ route('calendar') }}" class="block relative {{ request()->routeIs('calendar') ? 'active' : '' }}">
@@ -41,8 +45,10 @@
             </div>
         </a>
     </div>
+    @endif
 
     <!-- Case Section -->
+    @if(PermissionHelper::hasAnyPermission(['view-cases', 'view-clients', 'view-partners']))
     <div class="mt-2"></div>
     <div class="category-header relative {{ $caseActive ? 'active' : '' }}" onclick="toggleSection('case-section')">
         <div class="px-4 py-2 flex justify-between items-center cursor-pointer relative">
@@ -54,21 +60,29 @@
         </div>
     </div>
     <div id="case-section" class="hierarchical-menu" style="display: {{ $caseActive ? 'block' : 'none' }};">
+        @if(PermissionHelper::hasPermission('view-cases'))
         <a href="{{ route('case.index') }}" class="sidebar-submenu-item {{ request()->routeIs('case.index') ? 'active' : '' }}">
             <span class="material-icons text-xs mr-3">description</span>
             <span class="text-xs">Case</span>
         </a>
+        @endif
+        @if(PermissionHelper::hasPermission('view-clients'))
         <a href="{{ route('client.index') }}" class="sidebar-submenu-item {{ request()->routeIs('client.index') ? 'active' : '' }}">
             <span class="material-icons text-xs mr-3">people</span>
             <span class="text-xs">Client List</span>
         </a>
+        @endif
+        @if(PermissionHelper::hasPermission('view-partners'))
         <a href="{{ route('partner.index') }}" class="sidebar-submenu-item {{ request()->routeIs('partner.index') ? 'active' : '' }}">
             <span class="material-icons text-xs mr-3">business</span>
             <span class="text-xs">Partner</span>
         </a>
+        @endif
     </div>
+    @endif
 
     <!-- ACCOUNTING Section -->
+    @if(PermissionHelper::hasPermission('view-accounting'))
     <div class="mt-2"></div>
     <div class="category-header relative {{ $accountingActive ? 'active' : '' }}" onclick="toggleSection('accounting-section')">
         <div class="px-4 py-2 flex justify-between items-center cursor-pointer relative">
@@ -101,8 +115,10 @@
             <span class="text-xs">Bill</span>
         </a>
     </div>
+    @endif
 
     <!-- File Management -->
+    @if(PermissionHelper::hasPermission('view-files'))
     <div class="mt-2"></div>
     <div class="category-header relative">
         <a href="{{ route('file-management.index') }}" class="block relative {{ request()->routeIs('file-management.index') ? 'active' : '' }}">
@@ -114,11 +130,13 @@
             </div>
         </a>
     </div>
+    @endif
 
     <!-- Separator Line -->
     <div class="border-t border-gray-200 my-4"></div>
 
     <!-- Settings Section -->
+    @if(PermissionHelper::hasPermission('view-settings'))
     <div class="category-header relative {{ $settingsActive ? 'active' : '' }}" onclick="toggleSection('settings-section')">
         <div class="px-4 py-2 flex justify-between items-center cursor-pointer relative">
             <div class="flex items-center">
@@ -129,31 +147,44 @@
         </div>
     </div>
     <div id="settings-section" class="hierarchical-menu" style="display: {{ $settingsActive ? 'block' : 'none' }};">
+        @if(PermissionHelper::hasPermission('manage-firm-settings'))
         <a href="{{ route('settings.global') }}" class="sidebar-submenu-item {{ request()->routeIs('settings.global') ? 'active' : '' }}">
             <span class="material-icons text-xs mr-3">tune</span>
             <span class="text-xs">Global Config</span>
         </a>
+        @endif
+        @if(PermissionHelper::hasPermission('manage-roles'))
         <a href="{{ route('settings.role') }}" class="sidebar-submenu-item {{ request()->routeIs('settings.role') ? 'active' : '' }}">
             <span class="material-icons text-xs mr-3">admin_panel_settings</span>
             <span class="text-xs">Role Management</span>
         </a>
+        @endif
+        @if(PermissionHelper::hasPermission('manage-users'))
         <a href="{{ route('settings.user') }}" class="sidebar-submenu-item {{ request()->routeIs('settings.user') ? 'active' : '' }}">
             <span class="material-icons text-xs mr-3">manage_accounts</span>
             <span class="text-xs">User Management</span>
         </a>
+        @endif
+        @if(PermissionHelper::hasPermission('manage-system-logs'))
         <a href="{{ route('settings.case-management') }}" class="sidebar-submenu-item {{ request()->routeIs('settings.case-management') ? 'active' : '' }}">
             <span class="material-icons text-xs mr-3">folder_open</span>
             <span class="text-xs">Case Management</span>
         </a>
+        @endif
+        @if(PermissionHelper::hasPermission('manage-system-logs'))
         <a href="{{ route('settings.category') }}" class="sidebar-submenu-item {{ request()->routeIs('settings.category') ? 'active' : '' }}">
             <span class="material-icons text-xs mr-3">category</span>
             <span class="text-xs">Category</span>
         </a>
+        @endif
+        @if(PermissionHelper::hasPermission('manage-system-logs'))
         <a href="{{ route('settings.log') }}" class="sidebar-submenu-item {{ request()->routeIs('settings.log') ? 'active' : '' }}">
             <span class="material-icons text-xs mr-3">history</span>
             <span class="text-xs">Log Activity</span>
         </a>
+        @endif
     </div>
+    @endif
 </nav>
 
 <script>

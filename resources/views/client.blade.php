@@ -41,136 +41,45 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
+                        @forelse($clients as $client)
                         <tr class="hover:bg-gray-50">
-                            <td class="py-3 px-4 text-[11px] font-medium">CL-001</td>
-                            <td class="py-3 px-4 text-[11px]">John Doe</td>
-                            <td class="py-3 px-4 text-[11px]">+60 12-345 6789</td>
-                            <td class="py-3 px-4 text-[11px]">john.doe@email.com</td>
-                            <td class="py-3 px-4 text-[11px]">Kuala Lumpur, Malaysia</td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full">Active</span>
+                            <td class="py-1 px-4 text-[11px] font-medium">{{ $client->client_code }}</td>
+                            <td class="py-1 px-4 text-[11px]">{{ $client->name }}</td>
+                            <td class="py-1 px-4 text-[11px]">{{ $client->phone }}</td>
+                            <td class="py-1 px-4 text-[11px]">{{ $client->email ?? '-' }}</td>
+                            <td class="py-1 px-4 text-[11px]">{{ Str::limit($client->address_current, 40) }}</td>
+                            <td class="py-1 px-4 text-[11px]">
+                                <span class="inline-block {{ $client->status_badge_color }} px-1.5 py-0.5 rounded-full text-[10px]">{{ $client->is_banned ? 'Banned' : 'Active' }}</span>
                             </td>
-                            <td class="py-3 px-4">
-                                <div class="flex justify-center space-x-2 items-center">
-                                    <button class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Banned">
-                                        <span class="material-icons text-red-600 text-xs">block</span>
-                                    </button>
-                                    <a href="#" class="p-1 bg-blue-50 rounded hover:bg-blue-100 border border-blue-100" title="View">
-                                        <span class="material-icons text-blue-600 text-xs">visibility</span>
+                            <td class="py-1 px-4">
+                                <div class="flex justify-center space-x-1 items-center">
+                                    <form action="{{ route('client.toggle-ban', $client->id) }}" method="POST">
+                                        @csrf
+                                        <button class="p-0.5 {{ $client->is_banned ? 'text-green-600 hover:text-green-700' : 'text-red-600 hover:text-red-700' }}" title="{{ $client->is_banned ? 'Unban' : 'Ban' }}">
+                                            <span class="material-icons text-base">block</span>
+                                        </button>
+                                    </form>
+                                    <a href="{{ route('client.show', $client->id) }}" class="p-0.5 text-blue-600 hover:text-blue-700" title="View">
+                                        <span class="material-icons text-base">visibility</span>
                                     </a>
-                                    <a href="#" class="p-1 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100" title="Edit">
-                                        <span class="material-icons text-yellow-700 text-xs">edit</span>
+                                    <a href="{{ route('client.edit', $client->id) }}" class="p-0.5 text-yellow-600 hover:text-yellow-700" title="Edit">
+                                        <span class="material-icons text-base">edit</span>
                                     </a>
-                                    <button class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Delete">
-                                        <span class="material-icons text-red-600 text-xs">delete</span>
-                                    </button>
+                                    <form action="{{ route('client.destroy', $client->id) }}" method="POST" onsubmit="return confirm('Delete this client?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="p-0.5 text-red-600 hover:text-red-700" title="Delete">
+                                            <span class="material-icons text-base">delete</span>
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="py-3 px-4 text-[11px] font-medium">CL-002</td>
-                            <td class="py-3 px-4 text-[11px]">Jane Smith</td>
-                            <td class="py-3 px-4 text-[11px]">+60 12-987 6543</td>
-                            <td class="py-3 px-4 text-[11px]">jane.smith@email.com</td>
-                            <td class="py-3 px-4 text-[11px]">Petaling Jaya, Selangor</td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full">Active</span>
-                            </td>
-                            <td class="py-3 px-4">
-                                <div class="flex justify-center space-x-2 items-center">
-                                    <button class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Banned">
-                                        <span class="material-icons text-red-600 text-xs">block</span>
-                                    </button>
-                                    <a href="#" class="p-1 bg-blue-50 rounded hover:bg-blue-100 border border-blue-100" title="View">
-                                        <span class="material-icons text-blue-600 text-xs">visibility</span>
-                                    </a>
-                                    <a href="#" class="p-1 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100" title="Edit">
-                                        <span class="material-icons text-yellow-700 text-xs">edit</span>
-                                    </a>
-                                    <button class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Delete">
-                                        <span class="material-icons text-red-600 text-xs">delete</span>
-                                    </button>
-                                </div>
-                            </td>
+                        @empty
+                        <tr>
+                            <td colspan="7" class="text-center text-xs text-gray-500 py-6">No clients yet. Click Add Client to create one.</td>
                         </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="py-3 px-4 text-[11px] font-medium">CL-003</td>
-                            <td class="py-3 px-4 text-[11px]">Ahmad Ali</td>
-                            <td class="py-3 px-4 text-[11px]">+60 12-456 7890</td>
-                            <td class="py-3 px-4 text-[11px]">ahmad.ali@email.com</td>
-                            <td class="py-3 px-4 text-[11px]">Shah Alam, Selangor</td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <span class="inline-block bg-red-100 text-red-800 px-2 py-1 rounded-full">Banned</span>
-                            </td>
-                            <td class="py-3 px-4">
-                                <div class="flex justify-center space-x-2 items-center">
-                                    <button class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Banned">
-                                        <span class="material-icons text-red-600 text-xs">block</span>
-                                    </button>
-                                    <a href="#" class="p-1 bg-blue-50 rounded hover:bg-blue-100 border border-blue-100" title="View">
-                                        <span class="material-icons text-blue-600 text-xs">visibility</span>
-                                    </a>
-                                    <a href="#" class="p-1 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100" title="Edit">
-                                        <span class="material-icons text-yellow-700 text-xs">edit</span>
-                                    </a>
-                                    <button class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Delete">
-                                        <span class="material-icons text-red-600 text-xs">delete</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="py-3 px-4 text-[11px] font-medium">CL-004</td>
-                            <td class="py-3 px-4 text-[11px]">Maria Tan</td>
-                            <td class="py-3 px-4 text-[11px]">+60 12-789 0123</td>
-                            <td class="py-3 px-4 text-[11px]">maria.tan@email.com</td>
-                            <td class="py-3 px-4 text-[11px]">Subang Jaya, Selangor</td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full">Active</span>
-                            </td>
-                            <td class="py-3 px-4">
-                                <div class="flex justify-center space-x-2 items-center">
-                                    <button class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Banned">
-                                        <span class="material-icons text-red-600 text-xs">block</span>
-                                    </button>
-                                    <a href="#" class="p-1 bg-blue-50 rounded hover:bg-blue-100 border border-blue-100" title="View">
-                                        <span class="material-icons text-blue-600 text-xs">visibility</span>
-                                    </a>
-                                    <a href="#" class="p-1 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100" title="Edit">
-                                        <span class="material-icons text-yellow-700 text-xs">edit</span>
-                                    </a>
-                                    <button class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Delete">
-                                        <span class="material-icons text-red-600 text-xs">delete</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="py-3 px-4 text-[11px] font-medium">CL-005</td>
-                            <td class="py-3 px-4 text-[11px]">David Wong</td>
-                            <td class="py-3 px-4 text-[11px]">+60 12-321 6540</td>
-                            <td class="py-3 px-4 text-[11px]">david.wong@email.com</td>
-                            <td class="py-3 px-4 text-[11px]">Klang, Selangor</td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full">Active</span>
-                            </td>
-                            <td class="py-3 px-4">
-                                <div class="flex justify-center space-x-2 items-center">
-                                    <button class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Banned">
-                                        <span class="material-icons text-red-600 text-xs">block</span>
-                                    </button>
-                                    <a href="#" class="p-1 bg-blue-50 rounded hover:bg-blue-100 border border-blue-100" title="View">
-                                        <span class="material-icons text-blue-600 text-xs">visibility</span>
-                                    </a>
-                                    <a href="#" class="p-1 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100" title="Edit">
-                                        <span class="material-icons text-yellow-700 text-xs">edit</span>
-                                    </a>
-                                    <button class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Delete">
-                                        <span class="material-icons text-red-600 text-xs">delete</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>

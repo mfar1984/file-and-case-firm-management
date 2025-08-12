@@ -95,9 +95,24 @@ class WeatherController extends Controller
                     'visibility' => round($current['visibility']) . ' km'
                 ],
                 'forecast' => [
-                    'today' => $dailyForecast[0] ?? $this->getDefaultForecast('today'),
-                    'tomorrow' => $dailyForecast[1] ?? $this->getDefaultForecast('tomorrow'),
-                    'day_after' => $dailyForecast[2] ?? $this->getDefaultForecast('day_after')
+                    [
+                        'day' => 'Today',
+                        'condition' => $dailyForecast[0]['condition'] ?? 'Partly Cloudy',
+                        'high' => $dailyForecast[0]['high'] ?? '33°C',
+                        'low' => $dailyForecast[0]['low'] ?? '25°C'
+                    ],
+                    [
+                        'day' => 'Tomorrow',
+                        'condition' => $dailyForecast[1]['condition'] ?? 'Light Rain',
+                        'high' => $dailyForecast[1]['high'] ?? '32°C',
+                        'low' => $dailyForecast[1]['low'] ?? '24°C'
+                    ],
+                    [
+                        'day' => 'Day After',
+                        'condition' => $dailyForecast[2]['condition'] ?? 'Cloudy',
+                        'high' => $dailyForecast[2]['high'] ?? '31°C',
+                        'low' => $dailyForecast[2]['low'] ?? '23°C'
+                    ]
                 ],
                 'source' => 'api'
             ];
@@ -149,10 +164,26 @@ class WeatherController extends Controller
                 'visibility' => '10 km'
             ],
             'forecast' => [
-                'today' => $this->getDefaultForecast('today'),
-                'tomorrow' => $this->getDefaultForecast('tomorrow'),
-                'day_after' => $this->getDefaultForecast('day_after')
-            ]
+                [
+                    'day' => 'Today',
+                    'condition' => 'Partly Cloudy',
+                    'high' => '33°C',
+                    'low' => '25°C'
+                ],
+                [
+                    'day' => 'Tomorrow',
+                    'condition' => 'Light Rain',
+                    'high' => '32°C',
+                    'low' => '24°C'
+                ],
+                [
+                    'day' => 'Day After',
+                    'condition' => 'Cloudy',
+                    'high' => '31°C',
+                    'low' => '23°C'
+                ]
+            ],
+            'source' => 'fallback'
         ]);
     }
     

@@ -463,6 +463,7 @@
                                     <div class="pt-3 border-t border-gray-200">
                                         <div class="flex justify-between items-center text-xs">
                                             <span x-text="weather?.source === 'webhook' ? '📡 Webhook' : weather?.source === 'api' ? '🌐 API' : '🔄 Fallback'"></span>
+                                            <span class="text-gray-400">Fallback</span>
                                         </div>
                                         <div x-show="weather?.received_at" class="text-xs text-gray-400 text-center mt-1">
                                             <span x-text="'Received: ' + (weather?.received_at ? new Date(weather.received_at).toLocaleString() : 'N/A')"></span>

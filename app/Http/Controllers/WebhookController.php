@@ -103,9 +103,24 @@ class WebhookController extends Controller
                 'visibility' => $this->formatVisibility($current['visibility'] ?? null)
             ],
             'forecast' => [
-                'today' => $this->processForecastDay($forecast['today'] ?? []),
-                'tomorrow' => $this->processForecastDay($forecast['tomorrow'] ?? []),
-                'day_after' => $this->processForecastDay($forecast['day_after'] ?? [])
+                [
+                    'day' => 'Today',
+                    'condition' => $this->processForecastDay($forecast['today'] ?? [])['condition'],
+                    'high' => $this->processForecastDay($forecast['today'] ?? [])['high'],
+                    'low' => $this->processForecastDay($forecast['today'] ?? [])['low']
+                ],
+                [
+                    'day' => 'Tomorrow',
+                    'condition' => $this->processForecastDay($forecast['tomorrow'] ?? [])['condition'],
+                    'high' => $this->processForecastDay($forecast['tomorrow'] ?? [])['high'],
+                    'low' => $this->processForecastDay($forecast['tomorrow'] ?? [])['low']
+                ],
+                [
+                    'day' => 'Day After',
+                    'condition' => $this->processForecastDay($forecast['day_after'] ?? [])['condition'],
+                    'high' => $this->processForecastDay($forecast['day_after'] ?? [])['high'],
+                    'low' => $this->processForecastDay($forecast['day_after'] ?? [])['low']
+                ]
             ],
             'source' => 'webhook',
             'received_at' => now()->toISOString()

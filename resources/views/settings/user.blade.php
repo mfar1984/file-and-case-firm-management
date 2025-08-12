@@ -6,6 +6,19 @@
 
 @section('content')
 <div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto">
+    <!-- Success/Error Messages -->
+    @if(session('success'))
+        <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <div class="bg-white rounded shadow-md border border-gray-300">
         <div class="p-4 md:p-6 border-b border-gray-200">
             <div class="flex flex-col md:flex-row md:justify-between md:items-start">
@@ -14,14 +27,14 @@
                         <span class="material-icons mr-2 text-blue-600">people</span>
                         <h1 class="text-lg md:text-xl font-bold text-gray-800 text-[14px]">User Management</h1>
                     </div>
-                    <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Manage system users, roles, and permissions.</p>
+                    <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Manage system users, their roles, and access permissions.</p>
                 </div>
                 
                 <!-- Add User Button -->
-                <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
-                    <span class="material-icons text-xs mr-1">add</span>
+                <a href="{{ route('settings.user.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
+                    <span class="material-icons text-xs mr-1">person_add</span>
                     Add User
-                </button>
+                </a>
             </div>
         </div>
         
@@ -31,126 +44,70 @@
                 <table class="min-w-full border-collapse">
                     <thead>
                         <tr class="bg-primary-light text-white uppercase text-xs">
-                            <th class="py-3 px-4 text-left rounded-tl">Name</th>
+                            <th class="py-3 px-4 text-left rounded-tl">User</th>
                             <th class="py-3 px-4 text-left">Email</th>
-                            <th class="py-3 px-4 text-left">Role</th>
+                            <th class="py-3 px-4 text-left">Roles</th>
                             <th class="py-3 px-4 text-left">Status</th>
                             <th class="py-3 px-4 text-left">Last Login</th>
-                            <th class="py-3 px-4 text-left">Created Date</th>
                             <th class="py-3 px-4 text-center rounded-tr">Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
+                        @foreach($users as $user)
                         <tr class="hover:bg-gray-50">
-                            <td class="py-3 px-4 text-[11px] font-medium">Admin User</td>
-                            <td class="py-3 px-4 text-[11px]">admin@naaelahsaleh.my</td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <span class="inline-block bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">Administrator</span>
+                            <td class="py-1 px-4">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-8 w-8">
+                                        <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                            <span class="text-sm font-medium text-blue-600">{{ substr($user->name, 0, 1) }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-3">
+                                        <div class="text-[11px] font-medium text-gray-900">{{ $user->name }}</div>
+                                        <div class="text-[10px] text-gray-500">ID: {{ $user->id }}</div>
+                                    </div>
+                                </div>
                             </td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
+                            <td class="py-1 px-4 text-[11px] text-gray-600">{{ $user->email }}</td>
+                            <td class="py-1 px-4 text-[11px]">
+                                <div class="flex flex-wrap gap-1">
+                                    @if($user->roles->count() > 0)
+                                        @foreach($user->roles->take(3) as $role)
+                                            <span class="inline-block bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded text-[10px]">{{ $role->name }}</span>
+                                        @endforeach
+                                        @if($user->roles->count() > 3)
+                                            <span class="inline-block bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded text-[10px]">+{{ $user->roles->count() - 3 }} more</span>
+                                        @endif
+                                    @else
+                                        <span class="inline-block bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded text-[10px]">No roles</span>
+                                    @endif
+                                </div>
                             </td>
-                            <td class="py-3 px-4 text-[11px]">2025-07-10 09:15:23</td>
-                            <td class="py-3 px-4 text-[11px]">2025-01-01</td>
-                            <td class="py-3 px-4">
-                                <div class="flex justify-center space-x-2 items-center">
-                                    <button class="p-1 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100" title="Edit">
-                                        <span class="material-icons text-yellow-700 text-xs">edit</span>
-                                    </button>
-                                    <button class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Delete">
-                                        <span class="material-icons text-red-600 text-xs">delete</span>
+                            <td class="py-1 px-4 text-[11px]">
+                                @if($user->email_verified_at)
+                                    <span class="inline-block bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full text-[10px]">Verified</span>
+                                @else
+                                    <span class="inline-block bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded-full text-[10px]">Pending</span>
+                                @endif
+                            </td>
+                            <td class="py-1 px-4 text-[11px] text-gray-500">
+                                {{ $user->last_login_at ? $user->last_login_at->diffForHumans() : 'Never' }}
+                            </td>
+                            <td class="py-1 px-4">
+                                <div class="flex justify-center space-x-1 items-center">
+                                    <a href="{{ route('settings.user.show', $user->id) }}" class="p-0.5 text-blue-600 hover:text-blue-700" title="View">
+                                        <span class="material-icons text-base">visibility</span>
+                                    </a>
+                                    <a href="{{ route('settings.user.edit', $user->id) }}" class="p-0.5 text-yellow-600 hover:text-yellow-700" title="Edit">
+                                        <span class="material-icons text-base">edit</span>
+                                    </a>
+                                    <button onclick="deleteUser({{ $user->id }})" class="p-0.5 text-red-600 hover:text-red-700" title="Delete">
+                                        <span class="material-icons text-base">delete</span>
                                     </button>
                                 </div>
                             </td>
                         </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="py-3 px-4 text-[11px] font-medium">Partner One</td>
-                            <td class="py-3 px-4 text-[11px]">partner1@firm.com</td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <span class="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">Partner</span>
-                            </td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
-                            </td>
-                            <td class="py-3 px-4 text-[11px]">2025-07-10 08:30:15</td>
-                            <td class="py-3 px-4 text-[11px]">2025-01-15</td>
-                            <td class="py-3 px-4">
-                                <div class="flex justify-center space-x-2 items-center">
-                                    <button class="p-1 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100" title="Edit">
-                                        <span class="material-icons text-yellow-700 text-xs">edit</span>
-                                    </button>
-                                    <button class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Delete">
-                                        <span class="material-icons text-red-600 text-xs">delete</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="py-3 px-4 text-[11px] font-medium">Clerk One</td>
-                            <td class="py-3 px-4 text-[11px]">clerk@firm.com</td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">Clerk</span>
-                            </td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
-                            </td>
-                            <td class="py-3 px-4 text-[11px]">2025-07-10 07:45:30</td>
-                            <td class="py-3 px-4 text-[11px]">2025-02-01</td>
-                            <td class="py-3 px-4">
-                                <div class="flex justify-center space-x-2 items-center">
-                                    <button class="p-1 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100" title="Edit">
-                                        <span class="material-icons text-yellow-700 text-xs">edit</span>
-                                    </button>
-                                    <button class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Delete">
-                                        <span class="material-icons text-red-600 text-xs">delete</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="py-3 px-4 text-[11px] font-medium">Client One</td>
-                            <td class="py-3 px-4 text-[11px]">client1@gmail.com</td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Client</span>
-                            </td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
-                            </td>
-                            <td class="py-3 px-4 text-[11px]">2025-07-09 16:20:45</td>
-                            <td class="py-3 px-4 text-[11px]">2025-03-15</td>
-                            <td class="py-3 px-4">
-                                <div class="flex justify-center space-x-2 items-center">
-                                    <button class="p-1 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100" title="Edit">
-                                        <span class="material-icons text-yellow-700 text-xs">edit</span>
-                                    </button>
-                                    <button class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Delete">
-                                        <span class="material-icons text-red-600 text-xs">delete</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="py-3 px-4 text-[11px] font-medium">Client Two</td>
-                            <td class="py-3 px-4 text-[11px]">client2@yahoo.com</td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Client</span>
-                            </td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <span class="inline-block bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">Inactive</span>
-                            </td>
-                            <td class="py-3 px-4 text-[11px]">2025-07-05 10:15:20</td>
-                            <td class="py-3 px-4 text-[11px]">2025-04-01</td>
-                            <td class="py-3 px-4">
-                                <div class="flex justify-center space-x-2 items-center">
-                                    <button class="p-1 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100" title="Edit">
-                                        <span class="material-icons text-yellow-700 text-xs">edit</span>
-                                    </button>
-                                    <button class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Delete">
-                                        <span class="material-icons text-red-600 text-xs">delete</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>
@@ -158,186 +115,91 @@
 
         <!-- Mobile Card View -->
         <div class="md:hidden p-4 space-y-4">
-            <!-- User Card 1 -->
-            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-sm font-medium text-gray-800">Admin User</span>
-                        <span class="inline-block bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">Administrator</span>
+            @foreach($users as $user)
+            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center">
+                        <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                            <span class="text-sm font-medium text-blue-600">{{ substr($user->name, 0, 1) }}</span>
+                        </div>
+                        <div>
+                            <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
+                            <div class="text-xs text-gray-500">{{ $user->email }}</div>
+                        </div>
                     </div>
-                    <div class="flex space-x-2">
-                        <button class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
+                    <div class="flex space-x-1">
+                        <a href="{{ route('settings.user.show', $user->id) }}" class="p-2 bg-blue-50 rounded hover:bg-blue-100">
+                            <span class="material-icons text-blue-700 text-sm">visibility</span>
+                        </a>
+                        <a href="{{ route('settings.user.edit', $user->id) }}" class="p-2 bg-yellow-50 rounded hover:bg-yellow-100">
                             <span class="material-icons text-yellow-700 text-sm">edit</span>
-                        </button>
-                        <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
+                        </a>
+                        <button onclick="deleteUser({{ $user->id }})" class="p-2 bg-red-50 rounded hover:bg-red-100">
                             <span class="material-icons text-red-600 text-sm">delete</span>
                         </button>
                     </div>
                 </div>
-                <div class="space-y-2">
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Email:</span>
-                        <span class="text-xs text-gray-800">admin@naaelahsaleh.my</span>
+                
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                        <span class="text-gray-500">Roles:</span>
+                        <div class="flex flex-wrap gap-1 mt-1">
+                            @if($user->roles->count() > 0)
+                                @foreach($user->roles->take(2) as $role)
+                                    <span class="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">{{ $role->name }}</span>
+                                @endforeach
+                                @if($user->roles->count() > 2)
+                                    <span class="inline-block bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">+{{ $user->roles->count() - 2 }} more</span>
+                                @endif
+                            @else
+                                <span class="inline-block bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">No roles</span>
+                            @endif
+                        </div>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Status:</span>
-                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
+                    <div>
+                        <span class="text-gray-500">Status:</span>
+                        <div class="mt-1">
+                            @if($user->email_verified_at)
+                                <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Verified</span>
+                            @else
+                                <span class="inline-block bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">Pending</span>
+                            @endif
+                        </div>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Last Login:</span>
-                        <span class="text-xs text-gray-800">2025-07-10 09:15:23</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Created:</span>
-                        <span class="text-xs text-gray-800">2025-01-01</span>
-                    </div>
+                </div>
+                
+                <div class="mt-3 text-xs text-gray-500">
+                    Last login: {{ $user->last_login_at ? $user->last_login_at->diffForHumans() : 'Never' }}
                 </div>
             </div>
-
-            <!-- User Card 2 -->
-            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-sm font-medium text-gray-800">Partner One</span>
-                        <span class="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">Partner</span>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
-                            <span class="material-icons text-yellow-700 text-sm">edit</span>
-                        </button>
-                        <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
-                            <span class="material-icons text-red-600 text-sm">delete</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="space-y-2">
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Email:</span>
-                        <span class="text-xs text-gray-800">partner1@firm.com</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Status:</span>
-                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Last Login:</span>
-                        <span class="text-xs text-gray-800">2025-07-10 08:30:15</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Created:</span>
-                        <span class="text-xs text-gray-800">2025-01-15</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- User Card 3 -->
-            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-sm font-medium text-gray-800">Clerk One</span>
-                        <span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">Clerk</span>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
-                            <span class="material-icons text-yellow-700 text-sm">edit</span>
-                        </button>
-                        <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
-                            <span class="material-icons text-red-600 text-sm">delete</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="space-y-2">
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Email:</span>
-                        <span class="text-xs text-gray-800">clerk@firm.com</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Status:</span>
-                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Last Login:</span>
-                        <span class="text-xs text-gray-800">2025-07-10 07:45:30</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Created:</span>
-                        <span class="text-xs text-gray-800">2025-02-01</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- User Card 4 -->
-            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-sm font-medium text-gray-800">Client One</span>
-                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Client</span>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
-                            <span class="material-icons text-yellow-700 text-sm">edit</span>
-                        </button>
-                        <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
-                            <span class="material-icons text-red-600 text-sm">delete</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="space-y-2">
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Email:</span>
-                        <span class="text-xs text-gray-800">client1@gmail.com</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Status:</span>
-                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Last Login:</span>
-                        <span class="text-xs text-gray-800">2025-07-09 16:20:45</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Created:</span>
-                        <span class="text-xs text-gray-800">2025-03-15</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- User Card 5 -->
-            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-sm font-medium text-gray-800">Client Two</span>
-                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Client</span>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
-                            <span class="material-icons text-yellow-700 text-sm">edit</span>
-                        </button>
-                        <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
-                            <span class="material-icons text-red-600 text-sm">delete</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="space-y-2">
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Email:</span>
-                        <span class="text-xs text-gray-800">client2@yahoo.com</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Status:</span>
-                        <span class="inline-block bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">Inactive</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Last Login:</span>
-                        <span class="text-xs text-gray-800">2025-07-05 10:15:20</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Created:</span>
-                        <span class="text-xs text-gray-800">2025-04-01</span>
-                    </div>
-                </div>
-            </div>
+            @endforeach
         </div>
     </div>
 </div>
+
+<script>
+function deleteUser(userId) {
+    if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+        // Create a form and submit it
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/settings/user/${userId}`;
+        
+        const methodField = document.createElement('input');
+        methodField.type = 'hidden';
+        methodField.name = '_method';
+        methodField.value = 'DELETE';
+        
+        const tokenField = document.createElement('input');
+        tokenField.type = 'hidden';
+        tokenField.name = '_token';
+        tokenField.value = '{{ csrf_token() }}';
+        
+        form.appendChild(methodField);
+        form.appendChild(tokenField);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
 @endsection 

@@ -44,29 +44,29 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         <tr class="hover:bg-gray-50">
-                            <td class="py-3 px-4 text-[11px] font-medium">BL-2025-001</td>
-                            <td class="py-3 px-4 text-[11px]">Office Supplies Co</td>
-                            <td class="py-3 px-4 text-[11px]">Office Supplies</td>
-                            <td class="py-3 px-4 text-[11px]">Stationery & Paper</td>
-                            <td class="py-3 px-4 text-[11px] font-medium">RM 250.00</td>
-                            <td class="py-3 px-4 text-[11px]">15/02/2025</td>
-                            <td class="py-3 px-4 text-[11px]">10/02/2025</td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Paid</span>
+                            <td class="py-1 px-4 text-[11px] font-medium">BL-2025-001</td>
+                            <td class="py-1 px-4 text-[11px]">Office Supplies Co</td>
+                            <td class="py-1 px-4 text-[11px]">Office Supplies</td>
+                            <td class="py-1 px-4 text-[11px]">Stationery & Paper</td>
+                            <td class="py-1 px-4 text-[11px] font-medium">RM 250.00</td>
+                            <td class="py-1 px-4 text-[11px]">15/02/2025</td>
+                            <td class="py-1 px-4 text-[11px]">10/02/2025</td>
+                            <td class="py-1 px-4 text-[11px]">
+                                <span class="inline-block bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full text-[10px]">Paid</span>
                             </td>
-                            <td class="py-3 px-4">
-                                <div class="flex justify-center space-x-2 items-center">
-                                    <button class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Banned">
-                                        <span class="material-icons text-red-600 text-xs">block</span>
+                            <td class="py-1 px-4">
+                                <div class="flex justify-center space-x-1 items-center">
+                                    <button class="p-0.5 text-red-600 hover:text-red-700" title="Cancel">
+                                        <span class="material-icons text-base">block</span>
                                     </button>
-                                    <a href="#" class="p-1 bg-blue-50 rounded hover:bg-blue-100 border border-blue-100" title="View">
-                                        <span class="material-icons text-blue-600 text-xs">visibility</span>
+                                    <a href="#" class="p-0.5 text-blue-600 hover:text-blue-700" title="View">
+                                        <span class="material-icons text-base">visibility</span>
                                     </a>
-                                    <a href="#" class="p-1 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100" title="Edit">
-                                        <span class="material-icons text-yellow-700 text-xs">edit</span>
+                                    <a href="#" class="p-0.5 text-yellow-600 hover:text-yellow-700" title="Edit">
+                                        <span class="material-icons text-base">edit</span>
                                     </a>
-                                    <button class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Delete">
-                                        <span class="material-icons text-red-600 text-xs">delete</span>
+                                    <button class="p-0.5 text-red-600 hover:text-red-700" title="Delete">
+                                        <span class="material-icons text-base">delete</span>
                                     </button>
                                 </div>
                             </td>

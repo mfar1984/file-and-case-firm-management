@@ -6,6 +6,19 @@
 
 @section('content')
 <div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto">
+    <!-- Success/Error Messages -->
+    @if(session('success'))
+        <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <div class="bg-white rounded shadow-md border border-gray-300">
         <div class="p-4 md:p-6 border-b border-gray-200">
             <div class="flex flex-col md:flex-row md:justify-between md:items-start">
@@ -18,10 +31,10 @@
                 </div>
                 
                 <!-- Add Role Button -->
-                <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
+                <a href="{{ route('settings.role.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
                     <span class="material-icons text-xs mr-1">add</span>
                     Add Role
-                </button>
+                </a>
             </div>
         </div>
         
@@ -40,107 +53,43 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
+                        @foreach($roles as $role)
                         <tr class="hover:bg-gray-50">
-                            <td class="py-3 px-4 text-[11px] font-medium">Administrator</td>
-                            <td class="py-3 px-4 text-[11px]">Full system access and control</td>
-                            <td class="py-3 px-4 text-[11px]">
+                            <td class="py-1 px-4 text-[11px] font-medium">{{ $role->name }}</td>
+                            <td class="py-1 px-4 text-[11px]">{{ $role->description ?? 'No description' }}</td>
+                            <td class="py-1 px-4 text-[11px]">
                                 <div class="flex flex-wrap gap-1">
-                                    <span class="inline-block bg-blue-100 text-blue-800 px-1 py-0.5 rounded text-xs">All</span>
+                                    @if($role->permissions->count() > 0)
+                                        @foreach($role->permissions->take(3) as $permission)
+                                            <span class="inline-block bg-green-100 text-green-800 px-1.5 py-0.5 rounded text-[10px]">{{ $permission->name }}</span>
+                                        @endforeach
+                                        @if($role->permissions->count() > 3)
+                                            <span class="inline-block bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded text-[10px]">+{{ $role->permissions->count() - 3 }} more</span>
+                                        @endif
+                                    @else
+                                        <span class="inline-block bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded text-[10px]">No permissions</span>
+                                    @endif
                                 </div>
                             </td>
-                            <td class="py-3 px-4 text-[11px]">1</td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
+                            <td class="py-1 px-4 text-[11px]">{{ $roleUserCounts[$role->id] ?? 0 }}</td>
+                            <td class="py-1 px-4 text-[11px]">
+                                <span class="inline-block bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full text-[10px]">Active</span>
                             </td>
-                            <td class="py-3 px-4">
-                                <div class="flex justify-center space-x-2 items-center">
-                                    <button class="p-1 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100" title="Edit">
-                                        <span class="material-icons text-yellow-700 text-xs">edit</span>
-                                    </button>
-                                    <button class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Delete">
-                                        <span class="material-icons text-red-600 text-xs">delete</span>
+                            <td class="py-1 px-4">
+                                <div class="flex justify-center space-x-1 items-center">
+                                    <a href="{{ route('settings.role.show', $role->id) }}" class="p-0.5 text-blue-600 hover:text-blue-700" title="Show">
+                                        <span class="material-icons text-base">visibility</span>
+                                    </a>
+                                    <a href="{{ route('settings.role.edit', $role->id) }}" class="p-0.5 text-yellow-600 hover:text-yellow-700" title="Edit">
+                                        <span class="material-icons text-base">edit</span>
+                                    </a>
+                                    <button onclick="deleteRole({{ $role->id }})" class="p-0.5 text-red-600 hover:text-red-700" title="Delete">
+                                        <span class="material-icons text-base">delete</span>
                                     </button>
                                 </div>
                             </td>
                         </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="py-3 px-4 text-[11px] font-medium">Firm</td>
-                            <td class="py-3 px-4 text-[11px]">Firm staff with comprehensive access</td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <div class="flex flex-wrap gap-1">
-                                    <span class="inline-block bg-green-100 text-green-800 px-1 py-0.5 rounded text-xs">Cases</span>
-                                    <span class="inline-block bg-green-100 text-green-800 px-1 py-0.5 rounded text-xs">Clients</span>
-                                    <span class="inline-block bg-green-100 text-green-800 px-1 py-0.5 rounded text-xs">Files</span>
-                                    <span class="inline-block bg-green-100 text-green-800 px-1 py-0.5 rounded text-xs">Accounting</span>
-                                    <span class="inline-block bg-green-100 text-green-800 px-1 py-0.5 rounded text-xs">Partners</span>
-                                </div>
-                            </td>
-                            <td class="py-3 px-4 text-[11px]">5</td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
-                            </td>
-                            <td class="py-3 px-4">
-                                <div class="flex justify-center space-x-2 items-center">
-                                    <button class="p-1 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100" title="Edit">
-                                        <span class="material-icons text-yellow-700 text-xs">edit</span>
-                                    </button>
-                                    <button class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Delete">
-                                        <span class="material-icons text-red-600 text-xs">delete</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="py-3 px-4 text-[11px] font-medium">Partner</td>
-                            <td class="py-3 px-4 text-[11px]">External partner with case access</td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <div class="flex flex-wrap gap-1">
-                                    <span class="inline-block bg-green-100 text-green-800 px-1 py-0.5 rounded text-xs">Cases</span>
-                                    <span class="inline-block bg-green-100 text-green-800 px-1 py-0.5 rounded text-xs">Clients</span>
-                                    <span class="inline-block bg-green-100 text-green-800 px-1 py-0.5 rounded text-xs">Files</span>
-                                    <span class="inline-block bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded text-xs">Limited</span>
-                                </div>
-                            </td>
-                            <td class="py-3 px-4 text-[11px]">3</td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
-                            </td>
-                            <td class="py-3 px-4">
-                                <div class="flex justify-center space-x-2 items-center">
-                                    <button class="p-1 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100" title="Edit">
-                                        <span class="material-icons text-yellow-700 text-xs">edit</span>
-                                    </button>
-                                    <button class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Delete">
-                                        <span class="material-icons text-red-600 text-xs">delete</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="py-3 px-4 text-[11px] font-medium">Client</td>
-                            <td class="py-3 px-4 text-[11px]">Client access to their own cases</td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <div class="flex flex-wrap gap-1">
-                                    <span class="inline-block bg-green-100 text-green-800 px-1 py-0.5 rounded text-xs">Own Cases</span>
-                                    <span class="inline-block bg-green-100 text-green-800 px-1 py-0.5 rounded text-xs">Documents</span>
-                                    <span class="inline-block bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded text-xs">View Only</span>
-                                </div>
-                            </td>
-                            <td class="py-3 px-4 text-[11px]">25</td>
-                            <td class="py-3 px-4 text-[11px]">
-                                <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
-                            </td>
-                            <td class="py-3 px-4">
-                                <div class="flex justify-center space-x-2 items-center">
-                                    <button class="p-1 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100" title="Edit">
-                                        <span class="material-icons text-yellow-700 text-xs">edit</span>
-                                    </button>
-                                    <button class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Delete">
-                                        <span class="material-icons text-red-600 text-xs">delete</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>
@@ -148,18 +97,21 @@
 
         <!-- Mobile Card View -->
         <div class="md:hidden p-4 space-y-4">
-            <!-- Role Card 1 -->
+            @foreach($roles as $role)
             <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
-                        <span class="text-sm font-medium text-gray-800">Administrator</span>
+                        <span class="text-sm font-medium text-gray-800">{{ $role->name }}</span>
                         <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
                     </div>
                     <div class="flex space-x-2">
-                        <button class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
+                        <a href="{{ route('settings.role.show', $role->id) }}" class="p-2 bg-blue-50 rounded hover:bg-blue-100 border border-blue-100">
+                            <span class="material-icons text-blue-700 text-sm">visibility</span>
+                        </a>
+                        <a href="{{ route('settings.role.edit', $role->id) }}" class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
                             <span class="material-icons text-yellow-700 text-sm">edit</span>
-                        </button>
-                        <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
+                        </a>
+                        <button onclick="deleteRole({{ $role->id }})" class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
                             <span class="material-icons text-red-600 text-sm">delete</span>
                         </button>
                     </div>
@@ -167,128 +119,59 @@
                 <div class="space-y-2">
                     <div class="flex justify-between">
                         <span class="text-xs font-medium text-gray-600">Description:</span>
-                        <span class="text-xs text-gray-800">Full system access and control</span>
+                        <span class="text-xs text-gray-800">{{ $role->description ?? 'No description' }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-xs font-medium text-gray-600">Users:</span>
-                        <span class="text-xs text-gray-800">1</span>
+                        <span class="text-xs text-gray-800">{{ $roleUserCounts[$role->id] ?? 0 }}</span>
                     </div>
                     <div class="pt-2 border-t border-gray-100">
                         <div class="flex flex-wrap gap-1">
-                            <span class="inline-block bg-blue-100 text-blue-800 px-1 py-0.5 rounded text-xs">All</span>
+                            @if($role->permissions->count() > 0)
+                                @foreach($role->permissions->take(3) as $permission)
+                                    <span class="inline-block bg-green-100 text-green-800 px-1 py-0.5 rounded text-xs">{{ $permission->name }}</span>
+                                @endforeach
+                                @if($role->permissions->count() > 3)
+                                    <span class="inline-block bg-gray-100 text-gray-800 px-1 py-0.5 rounded text-xs">+{{ $role->permissions->count() - 3 }} more</span>
+                                @endif
+                            @else
+                                <span class="inline-block bg-gray-100 text-gray-800 px-1 py-0.5 rounded text-xs">No permissions</span>
+                            @endif
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Role Card 2 -->
-            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-sm font-medium text-gray-800">Firm</span>
-                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
-                            <span class="material-icons text-yellow-700 text-sm">edit</span>
-                        </button>
-                        <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
-                            <span class="material-icons text-red-600 text-sm">delete</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="space-y-2">
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Description:</span>
-                        <span class="text-xs text-gray-800">Firm staff with comprehensive access</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Users:</span>
-                        <span class="text-xs text-gray-800">5</span>
-                    </div>
-                    <div class="pt-2 border-t border-gray-100">
-                        <div class="flex flex-wrap gap-1">
-                            <span class="inline-block bg-green-100 text-green-800 px-1 py-0.5 rounded text-xs">Cases</span>
-                            <span class="inline-block bg-green-100 text-green-800 px-1 py-0.5 rounded text-xs">Clients</span>
-                            <span class="inline-block bg-green-100 text-green-800 px-1 py-0.5 rounded text-xs">Files</span>
-                            <span class="inline-block bg-green-100 text-green-800 px-1 py-0.5 rounded text-xs">Accounting</span>
-                            <span class="inline-block bg-green-100 text-green-800 px-1 py-0.5 rounded text-xs">Partners</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Role Card 3 -->
-            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-sm font-medium text-gray-800">Partner</span>
-                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
-                            <span class="material-icons text-yellow-700 text-sm">edit</span>
-                        </button>
-                        <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
-                            <span class="material-icons text-red-600 text-sm">delete</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="space-y-2">
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Description:</span>
-                        <span class="text-xs text-gray-800">External partner with case access</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Users:</span>
-                        <span class="text-xs text-gray-800">3</span>
-                    </div>
-                    <div class="pt-2 border-t border-gray-100">
-                        <div class="flex flex-wrap gap-1">
-                            <span class="inline-block bg-green-100 text-green-800 px-1 py-0.5 rounded text-xs">Cases</span>
-                            <span class="inline-block bg-green-100 text-green-800 px-1 py-0.5 rounded text-xs">Clients</span>
-                            <span class="inline-block bg-green-100 text-green-800 px-1 py-0.5 rounded text-xs">Files</span>
-                            <span class="inline-block bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded text-xs">Limited</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Role Card 4 -->
-            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-sm font-medium text-gray-800">Client</span>
-                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
-                            <span class="material-icons text-yellow-700 text-sm">edit</span>
-                        </button>
-                        <button class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
-                            <span class="material-icons text-red-600 text-sm">delete</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="space-y-2">
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Description:</span>
-                        <span class="text-xs text-gray-800">Client access to their own cases</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-xs font-medium text-gray-600">Users:</span>
-                        <span class="text-xs text-gray-800">25</span>
-                    </div>
-                    <div class="pt-2 border-t border-gray-100">
-                        <div class="flex flex-wrap gap-1">
-                            <span class="inline-block bg-green-100 text-green-800 px-1 py-0.5 rounded text-xs">Own Cases</span>
-                            <span class="inline-block bg-green-100 text-green-800 px-1 py-0.5 rounded text-xs">Documents</span>
-                            <span class="inline-block bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded text-xs">View Only</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @endforeach
         </div>
     </div>
 </div>
+
+
+
+
+
+<script>
+function deleteRole(roleId) {
+    if (confirm('Are you sure you want to delete this role?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/settings/role/${roleId}`;
+        
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = '_token';
+        csrfToken.value = '{{ csrf_token() }}';
+        
+        const methodField = document.createElement('input');
+        methodField.type = 'hidden';
+        methodField.name = '_method';
+        methodField.value = 'DELETE';
+        
+        form.appendChild(csrfToken);
+        form.appendChild(methodField);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
 @endsection 

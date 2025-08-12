@@ -35,14 +35,61 @@ class CaseFile extends Model
      */
     public function getFormattedSizeAttribute()
     {
-        $bytes = $this->file_size;
-        $units = ['B', 'KB', 'MB', 'GB'];
+        $fileSize = $this->file_size;
         
-        for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
-            $bytes /= 1024;
+        // If file_size is already formatted (e.g., "2.5 MB"), return as is
+        if (is_string($fileSize) && preg_match('/^\d+(\.\d+)?\s*(B|KB|MB|GB)$/i', $fileSize)) {
+            return $fileSize;
         }
         
-        return round($bytes, 1) . ' ' . $units[$i];
+        // If it's numeric, format it
+        if (is_numeric($fileSize)) {
+            $bytes = (float) $fileSize;
+            $units = ['B', 'KB', 'MB', 'GB'];
+            
+            for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
+                $bytes /= 1024;
+            }
+            
+            return round($bytes, 1) . ' ' . $units[$i];
+        }
+        
+        // Fallback
+        return $fileSize ?? 'Unknown';
+    }
+
+    /**
+     * Get the file size in bytes
+     */
+    public function getSizeInBytesAttribute()
+    {
+        $fileSize = $this->file_size;
+        
+        // If it's already numeric, return as is
+        if (is_numeric($fileSize)) {
+            return (int) $fileSize;
+        }
+        
+        // If it's formatted string, convert to bytes
+        if (is_string($fileSize) && preg_match('/^(\d+(?:\.\d+)?)\s*(B|KB|MB|GB)$/i', $fileSize, $matches)) {
+            $size = (float) $matches[1];
+            $unit = strtoupper($matches[2]);
+            
+            switch ($unit) {
+                case 'B':
+                    return (int) $size;
+                case 'KB':
+                    return (int) ($size * 1024);
+                case 'MB':
+                    return (int) ($size * 1024 * 1024);
+                case 'GB':
+                    return (int) ($size * 1024 * 1024 * 1024);
+                default:
+                    return 0;
+            }
+        }
+        
+        return 0;
     }
 
     /**
@@ -145,5 +192,37 @@ class CaseFile extends Model
             return now()->isAfter($this->expected_return);
         }
         return false;
+    }
+
+    /**
+     * Scope for ordering by file size
+     */
+    public function scopeOrderBySize($query, $direction = 'desc')
+    {
+        return $query->orderByRaw('
+            CASE 
+                WHEN file_size REGEXP "^[0-9]+$" THEN CAST(file_size AS UNSIGNED)
+                WHEN file_size REGEXP "^[0-9]+(\.[0-9]+)?\\s*KB$" THEN CAST(SUBSTRING_INDEX(file_size, " ", 1) AS DECIMAL(10,2)) * 1024
+                WHEN file_size REGEXP "^[0-9]+(\.[0-9]+)?\\s*MB$" THEN CAST(SUBSTRING_INDEX(file_size, " ", 1) AS DECIMAL(10,2)) * 1024 * 1024
+                WHEN file_size REGEXP "^[0-9]+(\.[0-9]+)?\\s*GB$" THEN CAST(SUBSTRING_INDEX(file_size, " ", 1) AS DECIMAL(10,2)) * 1024 * 1024 * 1024
+                ELSE 0
+            END ' . $direction
+        );
+    }
+
+    /**
+     * Scope for filtering by file size range
+     */
+    public function scopeSizeBetween($query, $minSize, $maxSize)
+    {
+        return $query->whereRaw('
+            CASE 
+                WHEN file_size REGEXP "^[0-9]+$" THEN CAST(file_size AS UNSIGNED)
+                WHEN file_size REGEXP "^[0-9]+(\.[0-9]+)?\\s*KB$" THEN CAST(SUBSTRING_INDEX(file_size, " ", 1) AS DECIMAL(10,2)) * 1024
+                WHEN file_size REGEXP "^[0-9]+(\.[0-9]+)?\\s*MB$" THEN CAST(SUBSTRING_INDEX(file_size, " ", 1) AS DECIMAL(10,2)) * 1024 * 1024
+                WHEN file_size REGEXP "^[0-9]+(\.[0-9]+)?\\s*GB$" THEN CAST(SUBSTRING_INDEX(file_size, " ", 1) AS DECIMAL(10,2)) * 1024 * 1024 * 1024
+                ELSE 0
+            END BETWEEN ? AND ?', [$minSize, $maxSize]
+        );
     }
 }

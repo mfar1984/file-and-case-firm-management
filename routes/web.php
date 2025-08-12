@@ -22,7 +22,7 @@ use Inertia\Inertia;
 |
 */
 
-Route::view('/', 'welcome');
+Route::view('/', 'auth.login');
 
 Route::get('/dashboard', function () {
     return redirect()->route('overview');
@@ -40,10 +40,23 @@ Route::view('/calendar', 'calendar')->name('calendar');
 Route::view('/case', 'case')->name('case.index');
 Route::view('/case/create', 'case-create')->name('case.create');
 Route::view('/case/view', 'case-view')->name('case.view');
-Route::view('/client', 'client')->name('client.index');
-Route::view('/client/create', 'client-create')->name('client.create');
-Route::view('/partner', 'partner')->name('partner.index');
-Route::view('/partner/create', 'partner-create')->name('partner.create');
+Route::view('/case/edit', 'case-edit')->name('case.edit');
+Route::get('/client', [App\Http\Controllers\ClientController::class, 'index'])->name('client.index');
+Route::get('/client/create', [App\Http\Controllers\ClientController::class, 'create'])->name('client.create');
+Route::post('/client', [App\Http\Controllers\ClientController::class, 'store'])->name('client.store');
+Route::get('/client/{id}/edit', [App\Http\Controllers\ClientController::class, 'edit'])->name('client.edit');
+Route::put('/client/{id}', [App\Http\Controllers\ClientController::class, 'update'])->name('client.update');
+Route::get('/client/{id}', [App\Http\Controllers\ClientController::class, 'show'])->name('client.show');
+Route::delete('/client/{id}', [App\Http\Controllers\ClientController::class, 'destroy'])->name('client.destroy');
+Route::post('/client/{id}/toggle-ban', [App\Http\Controllers\ClientController::class, 'toggleBan'])->name('client.toggle-ban');
+Route::get('/partner', [App\Http\Controllers\PartnerController::class, 'index'])->name('partner.index');
+Route::get('/partner/create', [App\Http\Controllers\PartnerController::class, 'create'])->name('partner.create');
+Route::post('/partner', [App\Http\Controllers\PartnerController::class, 'store'])->name('partner.store');
+Route::get('/partner/{id}', [App\Http\Controllers\PartnerController::class, 'show'])->name('partner.show');
+Route::get('/partner/{id}/edit', [App\Http\Controllers\PartnerController::class, 'edit'])->name('partner.edit');
+Route::put('/partner/{id}', [App\Http\Controllers\PartnerController::class, 'update'])->name('partner.update');
+Route::delete('/partner/{id}', [App\Http\Controllers\PartnerController::class, 'destroy'])->name('partner.destroy');
+Route::post('/partner/{id}/toggle-ban', [App\Http\Controllers\PartnerController::class, 'toggleBan'])->name('partner.toggle-ban');
 
 // Accounting routes
 Route::view('/quotation', 'quotation')->name('quotation.index');
@@ -88,9 +101,46 @@ Route::middleware(['auth'])->group(function () {
 Route::post('/webhook/weather', [App\Http\Controllers\WebhookController::class, 'weather'])->name('webhook.weather')->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class]);
 Route::get('/webhook/test', [App\Http\Controllers\WebhookController::class, 'test'])->name('webhook.test');
 Route::get('/webhook/weather/cached', [App\Http\Controllers\WebhookController::class, 'getCachedWeather'])->name('webhook.weather.cached');
-Route::view('/settings/role', 'settings.role')->name('settings.role');
-Route::view('/settings/user', 'settings.user')->name('settings.user');
-Route::view('/settings/category', 'settings.category')->name('settings.category');
+// Role Management Routes
+Route::middleware(['auth', 'permission:manage-roles'])->group(function () {
+    Route::get('/settings/role', [App\Http\Controllers\RoleController::class, 'index'])->name('settings.role');
+    Route::get('/settings/role/create', [App\Http\Controllers\RoleController::class, 'create'])->name('settings.role.create');
+    Route::post('/settings/role', [App\Http\Controllers\RoleController::class, 'store'])->name('settings.role.store');
+            Route::get('/settings/role/{id}', [App\Http\Controllers\RoleController::class, 'show'])->name('settings.role.show');
+        Route::get('/settings/role/{id}/edit', [App\Http\Controllers\RoleController::class, 'edit'])->name('settings.role.edit');
+    Route::put('/settings/role/{id}', [App\Http\Controllers\RoleController::class, 'update'])->name('settings.role.update');
+    Route::delete('/settings/role/{id}', [App\Http\Controllers\RoleController::class, 'destroy'])->name('settings.role.destroy');
+    Route::get('/settings/role/{id}/users', [App\Http\Controllers\RoleController::class, 'getRoleUsers'])->name('settings.role.users');
+    Route::get('/settings/permissions', [App\Http\Controllers\RoleController::class, 'getPermissions'])->name('settings.permissions');
+});
+
+// User Management Routes
+Route::middleware(['auth', 'permission:manage-users'])->group(function () {
+    Route::get('/settings/user', [App\Http\Controllers\Settings\UserController::class, 'index'])->name('settings.user');
+    Route::get('/settings/user/create', [App\Http\Controllers\Settings\UserController::class, 'create'])->name('settings.user.create');
+    Route::post('/settings/user', [App\Http\Controllers\Settings\UserController::class, 'store'])->name('settings.user.store');
+    Route::get('/settings/user/{id}', [App\Http\Controllers\Settings\UserController::class, 'show'])->name('settings.user.show');
+    Route::get('/settings/user/{id}/edit', [App\Http\Controllers\Settings\UserController::class, 'edit'])->name('settings.user.edit');
+    Route::put('/settings/user/{id}', [App\Http\Controllers\Settings\UserController::class, 'update'])->name('settings.user.update');
+    Route::delete('/settings/user/{id}', [App\Http\Controllers\Settings\UserController::class, 'destroy'])->name('settings.user.destroy');
+    Route::post('/settings/user/{id}/reset-password', [App\Http\Controllers\Settings\UserController::class, 'resetPassword'])->name('settings.user.reset-password');
+    Route::post('/settings/user/{id}/verify-email', [App\Http\Controllers\Settings\UserController::class, 'verifyEmail'])->name('settings.user.verify-email');
+});
+// Category Management Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/settings/category', [App\Http\Controllers\CategoryController::class, 'index'])->name('settings.category');
+    Route::post('/settings/category/type', [App\Http\Controllers\CategoryController::class, 'storeType'])->name('settings.category.type.store');
+    Route::put('/settings/category/type/{id}', [App\Http\Controllers\CategoryController::class, 'updateType'])->name('settings.category.type.update');
+    Route::delete('/settings/category/type/{id}', [App\Http\Controllers\CategoryController::class, 'destroyType'])->name('settings.category.type.destroy');
+    Route::post('/settings/category/status', [App\Http\Controllers\CategoryController::class, 'storeStatus'])->name('settings.category.status.store');
+    Route::put('/settings/category/status/{id}', [App\Http\Controllers\CategoryController::class, 'updateStatus'])->name('settings.category.status.update');
+    Route::delete('/settings/category/status/{id}', [App\Http\Controllers\CategoryController::class, 'destroyStatus'])->name('settings.category.status.destroy');
+
+    // File Types
+    Route::post('/settings/category/file-type', [App\Http\Controllers\CategoryController::class, 'storeFileType'])->name('settings.category.file-type.store');
+    Route::put('/settings/category/file-type/{id}', [App\Http\Controllers\CategoryController::class, 'updateFileType'])->name('settings.category.file-type.update');
+    Route::delete('/settings/category/file-type/{id}', [App\Http\Controllers\CategoryController::class, 'destroyFileType'])->name('settings.category.file-type.destroy');
+});
 Route::view('/settings/log', 'settings.log')->name('settings.log');
 Route::view('/settings/case-management', 'settings.case-management')->name('settings.case-management');
 
@@ -107,5 +157,14 @@ Route::middleware(['auth'])->group(function () {
 
 // Weather API Route
 Route::get('/api/weather', [WeatherController::class, 'getWeather'])->name('api.weather');
+
+// Agency Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/settings/agency', [App\Http\Controllers\AgencyController::class, 'index'])->name('settings.agency.index');
+    Route::post('/settings/agency', [App\Http\Controllers\AgencyController::class, 'store'])->name('settings.agency.store');
+    Route::post('/settings/agency/bulk', [App\Http\Controllers\AgencyController::class, 'bulkStore'])->name('settings.agency.bulk');
+    Route::put('/settings/agency/{agency}', [App\Http\Controllers\AgencyController::class, 'update'])->name('settings.agency.update');
+    Route::delete('/settings/agency/{agency}', [App\Http\Controllers\AgencyController::class, 'destroy'])->name('settings.agency.destroy');
+});
 
 require __DIR__.'/auth.php';

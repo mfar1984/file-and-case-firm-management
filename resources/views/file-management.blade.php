@@ -60,12 +60,9 @@
                         <label class="block text-xs font-medium text-gray-700 mb-2">File Type</label>
                         <select name="file_type" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                             <option value="">Select file type...</option>
-                            <option value="contract" {{ old('file_type') == 'contract' ? 'selected' : '' }}>Contract</option>
-                            <option value="evidence" {{ old('file_type') == 'evidence' ? 'selected' : '' }}>Evidence</option>
-                            <option value="correspondence" {{ old('file_type') == 'correspondence' ? 'selected' : '' }}>Correspondence</option>
-                            <option value="court_document" {{ old('file_type') == 'court_document' ? 'selected' : '' }}>Court Document</option>
-                            <option value="invoice" {{ old('file_type') == 'invoice' ? 'selected' : '' }}>Invoice</option>
-                            <option value="other" {{ old('file_type') == 'other' ? 'selected' : '' }}>Other</option>
+                            @foreach($fileTypes as $type)
+                                <option value="{{ $type->code }}" {{ old('file_type') == $type->code ? 'selected' : '' }}>{{ $type->description }}</option>
+                            @endforeach
                         </select>
                     </div>
                 </div>
@@ -119,12 +116,9 @@
                     </select>
                     <select name="file_type" class="px-3 py-1 border border-gray-300 rounded text-xs">
                         <option value="">All Types</option>
-                        <option value="contract" {{ request('file_type') == 'contract' ? 'selected' : '' }}>Contract</option>
-                        <option value="evidence" {{ request('file_type') == 'evidence' ? 'selected' : '' }}>Evidence</option>
-                        <option value="correspondence" {{ request('file_type') == 'correspondence' ? 'selected' : '' }}>Correspondence</option>
-                        <option value="court_document" {{ request('file_type') == 'court_document' ? 'selected' : '' }}>Court Document</option>
-                        <option value="invoice" {{ request('file_type') == 'invoice' ? 'selected' : '' }}>Invoice</option>
-                        <option value="other" {{ request('file_type') == 'other' ? 'selected' : '' }}>Other</option>
+                        @foreach($fileTypes as $type)
+                            <option value="{{ $type->code }}" {{ request('file_type') == $type->code ? 'selected' : '' }}>{{ $type->description }}</option>
+                        @endforeach
                     </select>
                     <button type="submit" class="px-3 py-1 bg-blue-600 text-white rounded text-xs">Filter</button>
                 </form>
@@ -150,44 +144,44 @@
                         <tbody class="divide-y divide-gray-100">
                             @foreach($files as $file)
                                 <tr class="hover:bg-gray-50">
-                                    <td class="py-3 px-4 text-[11px] font-medium">
+                                    <td class="py-1 px-4 text-[11px] font-medium">
                                         <div class="flex items-center">
                                             <span class="material-icons {{ $file->file_icon_color }} text-sm mr-2">{{ $file->file_icon }}</span>
                                             {{ $file->file_name }}
                                         </div>
                                     </td>
-                                    <td class="py-3 px-4 text-[11px]">{{ $file->case_ref }}</td>
-                                    <td class="py-3 px-4 text-[11px]">
-                                        <span class="inline-block {{ $file->file_type_badge_color }} px-2 py-1 rounded-full text-xs">
+                                    <td class="py-1 px-4 text-[11px]">{{ $file->case_ref }}</td>
+                                    <td class="py-1 px-4 text-[11px]">
+                                        <span class="inline-block {{ $file->file_type_badge_color }} px-1.5 py-0.5 rounded-full text-[10px]">
                                             {{ ucfirst(str_replace('_', ' ', $file->file_type)) }}
                                         </span>
                                     </td>
-                                    <td class="py-3 px-4 text-[11px]">{{ $file->formatted_size }}</td>
-                                    <td class="py-3 px-4 text-[11px]">{{ $file->created_at->format('d/m/Y') }}</td>
-                                    <td class="py-3 px-4 text-[11px]">
-                                        <span class="inline-block {{ $file->status_badge_color }} px-2 py-1 rounded-full text-xs">
+                                    <td class="py-1 px-4 text-[11px]">{{ $file->formatted_size }}</td>
+                                    <td class="py-1 px-4 text-[11px]">{{ $file->created_at->format('d/m/Y') }}</td>
+                                    <td class="py-1 px-4 text-[11px]">
+                                        <span class="inline-block {{ $file->status_badge_color }} px-1.5 py-0.5 rounded-full text-[10px]">
                                             {{ $file->status }}
                                         </span>
                                         @if($file->is_overdue)
-                                            <span class="ml-1 text-red-500 text-xs">⚠️ Overdue</span>
+                                            <span class="ml-1 text-red-500 text-[10px]">⚠️ Overdue</span>
                                         @endif
                                     </td>
-                                    <td class="py-3 px-4">
-                                        <div class="flex justify-center space-x-2 items-center">
-                                            <a href="{{ route('file-management.download', $file->id) }}" class="p-1 bg-blue-50 rounded hover:bg-blue-100 border border-blue-100" title="Download">
-                                                <span class="material-icons text-blue-600 text-xs">download</span>
+                                    <td class="py-1 px-4">
+                                        <div class="flex justify-center space-x-1 items-center">
+                                            <a href="{{ route('file-management.download', $file->id) }}" class="p-0.5 text-blue-600 hover:text-blue-700" title="Download">
+                                                <span class="material-icons text-base">download</span>
                                             </a>
-                                            <button onclick="openStatusModal({{ $file->id }}, '{{ $file->status }}', '{{ $file->taken_by }}', '{{ $file->purpose }}', '{{ $file->expected_return }}', '{{ $file->rack_location }}')" class="p-1 bg-purple-50 rounded hover:bg-purple-100 border border-purple-100" title="Change Status">
-                                                <span class="material-icons text-purple-600 text-xs">swap_horiz</span>
+                                            <button onclick="openStatusModal({{ $file->id }}, '{{ $file->status }}', '{{ $file->taken_by }}', '{{ $file->purpose }}', '{{ $file->expected_return }}', '{{ $file->rack_location }}')" class="p-0.5 text-purple-600 hover:text-purple-700" title="Change Status">
+                                                <span class="material-icons text-base">swap_horiz</span>
                                             </button>
-                                            <a href="#" class="p-1 bg-blue-50 rounded hover:bg-blue-100 border border-blue-100" title="View">
-                                                <span class="material-icons text-blue-600 text-xs">visibility</span>
+                                            <a href="#" class="p-0.5 text-blue-600 hover:text-blue-700" title="View">
+                                                <span class="material-icons text-base">visibility</span>
                                             </a>
                                             <form action="{{ route('file-management.destroy', $file->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this file?')">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Delete">
-                                                    <span class="material-icons text-red-600 text-xs">delete</span>
+                                                <button type="submit" class="p-0.5 text-red-600 hover:text-red-700" title="Delete">
+                                                    <span class="material-icons text-base">delete</span>
                                                 </button>
                                             </form>
                                         </div>
