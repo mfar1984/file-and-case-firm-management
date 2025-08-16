@@ -22,7 +22,7 @@ use Inertia\Inertia;
 |
 */
 
-Route::view('/', 'auth.login');
+Route::view('/', 'auth.login')->middleware('ddos.protection');
 
 Route::get('/dashboard', function () {
     return redirect()->route('overview');
@@ -71,6 +71,11 @@ Route::view('/bill', 'bill')->name('bill.index');
 Route::view('/bill/create', 'bill-create')->name('bill.create');
 
 Route::view('/settings/global', 'settings.global')->name('settings.global');
+
+// DDoS Protection Routes (Public - No Authentication Required)
+Route::get('/ddos/stats', [App\Http\Controllers\DdosConfigController::class, 'getStats'])->name('ddos.stats.public');
+Route::get('/ddos/logs', [App\Http\Controllers\DdosConfigController::class, 'getLogs'])->name('ddos.logs.public');
+Route::get('/ddos/monitoring', [App\Http\Controllers\DdosConfigController::class, 'getMonitoringData'])->name('ddos.monitoring.public');
 
 // Settings Routes
 Route::middleware(['auth'])->group(function () {
@@ -165,6 +170,22 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/agency/bulk', [App\Http\Controllers\AgencyController::class, 'bulkStore'])->name('settings.agency.bulk');
     Route::put('/settings/agency/{agency}', [App\Http\Controllers\AgencyController::class, 'update'])->name('settings.agency.update');
     Route::delete('/settings/agency/{agency}', [App\Http\Controllers\AgencyController::class, 'destroy'])->name('settings.agency.destroy');
+});
+
+// DDoS Configuration Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/settings/ddos', [App\Http\Controllers\DdosConfigController::class, 'index'])->name('settings.ddos.index');
+    Route::post('/settings/ddos', [App\Http\Controllers\DdosConfigController::class, 'store'])->name('settings.ddos.store');
+    Route::get('/settings/ddos/stats', [App\Http\Controllers\DdosConfigController::class, 'getStats'])->name('settings.ddos.stats');
+    Route::get('/settings/ddos/logs', [App\Http\Controllers\DdosConfigController::class, 'getLogs'])->name('settings.ddos.logs');
+    Route::delete('/settings/ddos/logs', [App\Http\Controllers\DdosConfigController::class, 'clearLogs'])->name('settings.ddos.logs.clear');
+    Route::get('/settings/system/logs', [App\Http\Controllers\DdosConfigController::class, 'getSystemLogs'])->name('settings.system.logs');
+    Route::delete('/settings/system/logs', [App\Http\Controllers\DdosConfigController::class, 'clearSystemLogs'])->name('settings.system.logs.clear');
+    Route::get('/settings/monitoring/data', [App\Http\Controllers\DdosConfigController::class, 'getMonitoringData'])->name('settings.monitoring.data');
+    Route::post('/settings/ddos/whitelist', [App\Http\Controllers\DdosConfigController::class, 'addWhitelist'])->name('settings.ddos.whitelist.add');
+    Route::delete('/settings/ddos/whitelist/{ip}', [App\Http\Controllers\DdosConfigController::class, 'removeWhitelist'])->name('settings.ddos.whitelist.remove');
+    Route::post('/settings/ddos/blacklist', [App\Http\Controllers\DdosConfigController::class, 'addBlacklist'])->name('settings.ddos.blacklist.add');
+    Route::delete('/settings/ddos/blacklist/{ip}', [App\Http\Controllers\DdosConfigController::class, 'removeBlacklist'])->name('settings.ddos.blacklist.remove');
 });
 
 require __DIR__.'/auth.php';

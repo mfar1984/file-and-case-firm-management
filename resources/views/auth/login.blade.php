@@ -7,13 +7,13 @@
                 <h1 class="text-sm font-bold text-gray-600 mt-1">NAAELAH SALEH & CO</h1>
             </div>
 
-            <!-- Session Status -->
-            <x-auth-session-status class="mb-4" :status="session('status')" />
+    <!-- Session Status -->
+    <x-auth-session-status class="mb-4" :status="session('status')" />
 
-            <form method="POST" action="{{ route('login') }}">
-                @csrf
+    <form method="POST" action="{{ route('login') }}">
+        @csrf
 
-                <!-- Email Address -->
+        <!-- Email Address -->
                 <div class="relative mb-3">
                     <i class="fas fa-user absolute left-3 top-2.5 text-gray-400 text-xs"></i>
                     <input 
@@ -27,16 +27,16 @@
                         class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Email"
                     />
-                </div>
+        </div>
                 <x-input-error :messages="$errors->get('email')" class="mt-1 text-red-500 text-xs" />
 
-                <!-- Password -->
+        <!-- Password -->
                 <div class="relative mb-3">
                     <i class="fas fa-lock absolute left-3 top-2.5 text-gray-400 text-xs"></i>
                     <input 
                         id="password" 
-                        type="password" 
-                        name="password" 
+                            type="password"
+                            name="password"
                         required 
                         autocomplete="current-password"
                         class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -54,7 +54,7 @@
                 </button>
             </form>
         </div>
-        
+
         <!-- Disclaimer / Privacy / Terms -->
         <div class="text-center mt-2 text-xs text-gray-500">
             <button type="button" @click="showDisclaimer=true" class="hover:underline underline-offset-2 hover:text-blue-600 transition-colors">Disclaimer</button>
@@ -282,5 +282,5 @@
                 </div>
             </div>
         </template>
-     </div>
- </x-guest-layout>
+        </div>
+</x-guest-layout>

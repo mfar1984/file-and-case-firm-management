@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'webhook' => \App\Http\Middleware\WebhookMiddleware::class,
             'permission' => \App\Http\Middleware\CheckPermission::class,
+            'ddos.protection' => \App\Http\Middleware\DdosProtectionMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

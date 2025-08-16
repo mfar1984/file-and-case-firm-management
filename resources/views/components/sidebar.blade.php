@@ -2,7 +2,7 @@
     use App\Helpers\PermissionHelper;
     $caseActive = request()->routeIs('case.index') || request()->routeIs('client.index') || request()->routeIs('partner.index');
     $accountingActive = request()->routeIs('quotation.index') || request()->routeIs('tax-invoice.index') || request()->routeIs('resit.index') || request()->routeIs('voucher.index') || request()->routeIs('bill.index');
-    $settingsActive = request()->routeIs('settings.global') || request()->routeIs('settings.role') || request()->routeIs('settings.user') || request()->routeIs('settings.category') || request()->routeIs('settings.log') || request()->routeIs('settings.case-management');
+    $settingsActive = request()->routeIs('settings.global') || request()->routeIs('settings.role') || request()->routeIs('settings.user') || request()->routeIs('settings.category') || request()->routeIs('settings.log') || request()->routeIs('settings.case-management') || request()->routeIs('settings.ddos.*');
 @endphp
 
 <!-- Logo Section -->
@@ -147,6 +147,12 @@
         </div>
     </div>
     <div id="settings-section" class="hierarchical-menu" style="display: {{ $settingsActive ? 'block' : 'none' }};">
+        @if(PermissionHelper::hasPermission('manage-system-logs'))
+        <a href="{{ route('settings.ddos.index') }}" class="sidebar-submenu-item {{ request()->routeIs('settings.ddos.*') ? 'active' : '' }}">
+            <span class="material-icons text-xs mr-3">security</span>
+            <span class="text-xs">DDoS Config</span>
+        </a>
+        @endif
         @if(PermissionHelper::hasPermission('manage-firm-settings'))
         <a href="{{ route('settings.global') }}" class="sidebar-submenu-item {{ request()->routeIs('settings.global') ? 'active' : '' }}">
             <span class="material-icons text-xs mr-3">tune</span>

@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             CaseFileSeeder::class,
             CategorySeeder::class,
             FileTypeSeeder::class,
+            DdosSettingSeeder::class,
         ]);
     }
 }

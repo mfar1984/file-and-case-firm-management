@@ -1,2 +1,28 @@
 User-agent: *
-Disallow:
+Disallow: /storage/
+Disallow: /bootstrap/
+Disallow: /vendor/
+Disallow: /app/
+Disallow: /config/
+Disallow: /database/
+Disallow: /resources/
+Disallow: /routes/
+Disallow: /tests/
+Disallow: /composer.json
+Disallow: /composer.lock
+Disallow: /package.json
+Disallow: /package-lock.json
+Disallow: /artisan
+Disallow: /webpack.mix.js
+Disallow: /vite.config.js
+Disallow: /tailwind.config.js
+Disallow: /postcss.config.js
+
+# Allow access to public assets
+Allow: /css/
+Allow: /js/
+Allow: /images/
+Allow: /favicon.ico
+
+# Sitemap
+Sitemap: https://yourdomain.com/sitemap.xml
