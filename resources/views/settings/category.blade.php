@@ -10,10 +10,14 @@
     showStatusModal: false,
     showEditTypeModal: false,
     showEditStatusModal: false,
+    showSpecializationModal: false,
+    showEditSpecializationModal: false,
     typeForm: { code: '', description: '', status: 'active' },
     statusForm: { name: '', description: '', color: 'blue', status: 'active' },
     editTypeForm: { id: '', code: '', description: '', status: 'active' },
     editStatusForm: { id: '', name: '', description: '', color: 'blue', status: 'active' },
+    specializationForm: { specialist_name: '', description: '', status: 'active' },
+    editSpecializationForm: { id: '', specialist_name: '', description: '', status: 'active' },
     
     openEditTypeModal(id, code, description, status) {
         this.editTypeForm = { id: id, code: code, description: description, status: status };
@@ -23,6 +27,11 @@
     openEditStatusModal(id, name, description, color, status) {
         this.editStatusForm = { id: id, name: name, description: description, color: color, status: status };
         this.showEditStatusModal = true;
+    },
+
+    openEditSpecializationModal(id, specialist_name, description, status) {
+        this.editSpecializationForm = { id: id, specialist_name: specialist_name, description: description, status: status };
+        this.showEditSpecializationModal = true;
     },
 
     submitTypeForm() {
@@ -285,6 +294,90 @@
             .catch(error => {
                 console.error('Error:', error);
                 alert('An error occurred while deleting the file type.');
+            });
+        }
+    },
+
+    submitSpecializationForm() {
+        const formData = new FormData();
+        formData.append('specialist_name', this.specializationForm.specialist_name);
+        formData.append('description', this.specializationForm.description);
+        formData.append('status', this.specializationForm.status);
+        formData.append('_token', '{{ csrf_token() }}');
+
+        fetch('{{ route("settings.specialization.store") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Specialization created successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while creating the specialization.');
+        });
+
+        this.showSpecializationModal = false;
+        this.specializationForm = { specialist_name: '', description: '', status: 'active' };
+    },
+
+    submitEditSpecializationForm() {
+        const formData = new FormData();
+        formData.append('specialist_name', this.editSpecializationForm.specialist_name);
+        formData.append('description', this.editSpecializationForm.description);
+        formData.append('status', this.editSpecializationForm.status);
+        formData.append('_token', '{{ csrf_token() }}');
+        formData.append('_method', 'PUT');
+
+        fetch('{{ url("/settings/category/specialization") }}/' + this.editSpecializationForm.id, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Specialization updated successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating the specialization.');
+        });
+
+        this.showEditSpecializationModal = false;
+    },
+
+    deleteSpecialization(id) {
+        if (confirm('Are you sure you want to delete this specialization?')) {
+            const formData = new FormData();
+            formData.append('_token', '{{ csrf_token() }}');
+            formData.append('_method', 'DELETE');
+
+            fetch('{{ url("/settings/category/specialization") }}/' + id, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Specialization deleted successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the specialization.');
             });
         }
     }
@@ -1019,8 +1112,86 @@
         </div>
     </div>
 
-    <!-- SPACER -->
-    <div class="h-6 bg-transparent"></div>
+    <!-- Specialization Section -->
+    <div class="bg-white rounded shadow-md border border-gray-300 mt-6">
+        <div class="p-4 md:p-6 border-b border-gray-200">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-start">
+                <div class="mb-4 md:mb-0">
+                    <div class="flex items-center">
+                        <span class="material-icons mr-2 text-purple-600">psychology</span>
+                        <h1 class="text-lg md:text-xl font-bold text-gray-800 text-[14px]">Specialization</h1>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Manage legal specializations and areas of expertise.</p>
+                </div>
+                <button @click="showSpecializationModal = true" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
+                    <span class="material-icons text-xs mr-1">add</span>
+                    Add Specialization
+                </button>
+            </div>
+        </div>
+        
+        <!-- Desktop Table View -->
+        <div class="hidden md:block p-6">
+            <div class="overflow-visible border border-gray-200 rounded">
+                <table class="min-w-full border-collapse">
+                    <thead>
+                        <tr class="bg-primary-light text-white uppercase text-xs">
+                            <th class="py-3 px-4 text-left rounded-tl">Specialist Name</th>
+                            <th class="py-3 px-4 text-left">Description</th>
+                            <th class="py-3 px-4 text-left">Status</th>
+                            <th class="py-3 px-4 text-center rounded-tr">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach($specializations as $spec)
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-1 px-4 text-[11px] font-medium">{{ $spec->specialist_name }}</td>
+                            <td class="py-1 px-4 text-[11px]">{{ $spec->description }}</td>
+                            <td class="py-1 px-4 text-[11px]">
+                                <span class="inline-block {{ $spec->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} px-1.5 py-0.5 rounded-full text-[10px]">{{ ucfirst($spec->status) }}</span>
+                            </td>
+                            <td class="py-1 px-4">
+                                <div class="flex justify-center space-x-1 items-center">
+                                    <button @click="openEditSpecializationModal('{{ $spec->id }}', '{{ $spec->specialist_name }}', '{{ $spec->description }}', '{{ $spec->status }}')" class="p-0.5 text-yellow-600 hover:text-yellow-700" title="Edit">
+                                        <span class="material-icons text-base">edit</span>
+                                    </button>
+                                    <button @click="deleteSpecialization({{ $spec->id }})" class="p-0.5 text-red-600 hover:text-red-700" title="Delete">
+                                        <span class="material-icons text-base">delete</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Mobile Card View for Specializations -->
+        <div class="md:hidden p-4 space-y-4">
+            @foreach($specializations as $spec)
+            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-sm font-medium text-gray-800">{{ $spec->specialist_name }}</span>
+                        <span class="inline-block {{ $spec->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} px-2 py-1 rounded-full text-xs">{{ ucfirst($spec->status) }}</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button @click="openEditSpecializationModal('{{ $spec->id }}', '{{ $spec->specialist_name }}', '{{ $spec->description }}', '{{ $spec->status }}')" class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
+                            <span class="material-icons text-yellow-700 text-sm">edit</span>
+                        </button>
+                        <button @click="deleteSpecialization({{ $spec->id }})" class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
+                            <span class="material-icons text-red-600 text-sm">delete</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="pt-2 border-t border-gray-100">
+                    <span class="text-sm text-gray-700">{{ $spec->description }}</span>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
 
     <!-- Agency Section -->
     <div class="bg-white rounded shadow-md border border-gray-300 mt-6" x-data="{
@@ -1289,6 +1460,96 @@ AADK - Agensi Anti Dadah Kebangsaan Daerah Jelebu"></textarea>
                     <button @click="submitBulk()" class="px-3 py-1 bg-indigo-600 text-white text-xs rounded">Import</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Add Specialization Modal -->
+    <div x-show="showSpecializationModal" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div @click.away="showSpecializationModal = false" class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-gray-800">Add New Specialization</h3>
+                    <button @click="showSpecializationModal = false" class="text-gray-400 hover:text-gray-600">
+                        <span class="material-icons text-xl">close</span>
+                    </button>
+                </div>
+            </div>
+            
+            <form @submit.prevent="submitSpecializationForm()" class="p-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-2">Specialist Name *</label>
+                        <input type="text" x-model="specializationForm.specialist_name" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Criminal Law, Family Law" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-2">Description</label>
+                        <textarea x-model="specializationForm.description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Brief description of the specialization"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-2">Status</label>
+                        <select x-model="specializationForm.status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" @click="showSpecializationModal = false" class="px-4 py-2 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors">
+                        Save Specialization
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Specialization Modal -->
+    <div x-show="showEditSpecializationModal" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div @click.away="showEditSpecializationModal = false" class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-gray-800">Edit Specialization</h3>
+                    <button @click="showEditSpecializationModal = false" class="text-gray-400 hover:text-gray-600">
+                        <span class="material-icons text-xl">close</span>
+                    </button>
+                </div>
+            </div>
+            
+            <form @submit.prevent="submitEditSpecializationForm()" class="p-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-2">Specialist Name *</label>
+                        <input type="text" x-model="editSpecializationForm.specialist_name" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Criminal Law, Family Law" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-2">Description</label>
+                        <textarea x-model="editSpecializationForm.description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Brief description of the specialization"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-2">Status</label>
+                        <select x-model="editSpecializationForm.status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" @click="showEditSpecializationModal = false" class="px-4 py-2 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-yellow-600 text-white text-xs rounded-lg hover:bg-yellow-700 transition-colors">
+                        Update Specialization
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

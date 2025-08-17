@@ -30,8 +30,9 @@
                         </div>
                         <div>
                             <h1 class="text-lg md:text-xl font-bold text-gray-800">{{ $user->name }}</h1>
-                            <p class="text-sm text-gray-600">{{ $user->email }}</p>
-                            <p class="text-xs text-gray-500">User ID: {{ $user->id }}</p>
+                            <p class="text-sm text-gray-600">{{ $user->username }}</p>
+                            <p class="text-xs text-gray-500">{{ $user->email }}</p>
+                            <p class="text-xs text-gray-400">User ID: {{ $user->id }}</p>
                         </div>
                     </div>
                 </div>
@@ -66,6 +67,10 @@
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-2">Full Name</label>
                                 <p class="text-xs text-gray-900 font-medium">{{ $user->name }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-2">Username</label>
+                                <p class="text-xs text-gray-900">{{ $user->username }}</p>
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-2">Email Address</label>

@@ -362,6 +362,10 @@
                             <input type="checkbox" x-model="formData.notify_maintenance" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
                             <span class="ml-2 text-xs text-gray-700">System maintenance alerts</span>
                         </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" x-model="formData.notify_user_accounts" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                            <span class="ml-2 text-xs text-gray-700">User account creation notifications</span>
+                        </label>
                     </div>
                 </div>
                 

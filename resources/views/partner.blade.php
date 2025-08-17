@@ -37,7 +37,7 @@
                             <th class="py-3 px-4 text-left">Email</th>
                             <th class="py-3 px-4 text-left">Specialization</th>
                             <th class="py-3 px-4 text-left">Active Cases</th>
-                            <th class="py-3 px-4 text-left">Status</th>
+                            <th class="py-3 px-4 text-left">Operational Status</th>
                             <th class="py-3 px-4 text-center rounded-tr">Action</th>
                         </tr>
                     </thead>

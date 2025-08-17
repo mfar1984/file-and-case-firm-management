@@ -25,6 +25,7 @@ class Partner extends Model
         'registration_date',
         'notes',
         'is_banned',
+        'user_id',
     ];
 
     protected $casts = [
@@ -52,5 +53,10 @@ class Partner extends Model
             'suspended' => 'bg-yellow-100 text-yellow-800',
             default => 'bg-gray-100 text-gray-800',
         };
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 } 

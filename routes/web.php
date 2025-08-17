@@ -145,6 +145,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/category/file-type', [App\Http\Controllers\CategoryController::class, 'storeFileType'])->name('settings.category.file-type.store');
     Route::put('/settings/category/file-type/{id}', [App\Http\Controllers\CategoryController::class, 'updateFileType'])->name('settings.category.file-type.update');
     Route::delete('/settings/category/file-type/{id}', [App\Http\Controllers\CategoryController::class, 'destroyFileType'])->name('settings.category.file-type.destroy');
+    
+    // Specializations
+    Route::post('/settings/category/specialization', [App\Http\Controllers\CategoryController::class, 'storeSpecialization'])->name('settings.specialization.store');
+    Route::put('/settings/category/specialization/{id}', [App\Http\Controllers\CategoryController::class, 'updateSpecialization'])->name('settings.specialization.update');
+    Route::delete('/settings/category/specialization/{id}', [App\Http\Controllers\CategoryController::class, 'destroySpecialization'])->name('settings.specialization.destroy');
 });
 Route::view('/settings/log', 'settings.log')->name('settings.log');
 Route::view('/settings/case-management', 'settings.case-management')->name('settings.case-management');

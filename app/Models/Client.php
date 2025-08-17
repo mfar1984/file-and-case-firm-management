@@ -10,13 +10,10 @@ class Client extends Model
     use HasFactory;
 
     protected $fillable = [
-        'client_code',
         'name',
         'ic_passport',
         'phone',
         'email',
-        'address_current',
-        'address_correspondence',
         'tin_no',
         'job',
         'salary',
@@ -28,7 +25,15 @@ class Client extends Model
         'financier_bank',
         'lawyers_parties',
         'notes',
-        'is_banned',
+        'client_code',
+        'party_type',
+        'identity_type',
+        'gender',
+        'nationality',
+        'race',
+        'fax',
+        'mobile',
+        'user_id',
     ];
 
     protected $casts = [
@@ -51,5 +56,26 @@ class Client extends Model
     public function getStatusBadgeColorAttribute(): string
     {
         return $this->is_banned ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800';
+    }
+
+    /**
+     * Get all addresses for the client.
+     */
+    public function addresses()
+    {
+        return $this->hasMany(ClientAddress::class);
+    }
+
+    /**
+     * Get the primary address for the client.
+     */
+    public function primaryAddress()
+    {
+        return $this->hasOne(ClientAddress::class)->where('is_primary', true);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

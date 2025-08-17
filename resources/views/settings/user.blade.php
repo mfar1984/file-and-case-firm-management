@@ -45,6 +45,7 @@
                     <thead>
                         <tr class="bg-primary-light text-white uppercase text-xs">
                             <th class="py-3 px-4 text-left rounded-tl">User</th>
+                            <th class="py-3 px-4 text-left">Username</th>
                             <th class="py-3 px-4 text-left">Email</th>
                             <th class="py-3 px-4 text-left">Roles</th>
                             <th class="py-3 px-4 text-left">Status</th>
@@ -68,6 +69,7 @@
                                     </div>
                                 </div>
                             </td>
+                            <td class="py-1 px-4 text-[11px] text-gray-600">{{ $user->username }}</td>
                             <td class="py-1 px-4 text-[11px] text-gray-600">{{ $user->email }}</td>
                             <td class="py-1 px-4 text-[11px]">
                                 <div class="flex flex-wrap gap-1">
@@ -124,7 +126,8 @@
                         </div>
                         <div>
                             <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
-                            <div class="text-xs text-gray-500">{{ $user->email }}</div>
+                            <div class="text-xs text-gray-500">{{ $user->username }}</div>
+                            <div class="text-xs text-gray-400">{{ $user->email }}</div>
                         </div>
                     </div>
                     <div class="flex space-x-1">

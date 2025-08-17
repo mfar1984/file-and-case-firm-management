@@ -21,13 +21,15 @@
         
         <div class="p-4 md:p-6">
             <form action="{{ route('client.store') }}" method="POST" class="space-y-0" x-data="{
-                partyType: '',
-                identityType: '',
-                gender: '',
-                nationality: 'Malaysia',
-                race: '',
-                state: '',
-                country: 'Malaysia',
+                partyType: '{{ old('party_type') }}',
+                identityType: '{{ old('identity_type') }}',
+                identityNumber: '{{ old('identity_number') }}',
+                name: '{{ old('name') }}',
+                gender: '{{ old('gender') }}',
+                nationality: '{{ old('nationality', 'Malaysia') }}',
+                race: '{{ old('race') }}',
+                state: '{{ old('state') }}',
+                country: '{{ old('country', 'Malaysia') }}',
                 
                 identityTypes: [
                     'Government Agency (Criminal)',
@@ -83,7 +85,12 @@
                     'Yemen',
                     'Zambia', 'Zimbabwe'
                 ],
-                activePersonalTab: 'identity'
+                activePersonalTab: 'identity',
+                addresses: [{ address_line1:'{{ old('addresses.0.address_line1') }}', address_line2:'{{ old('addresses.0.address_line2') }}', address_line3:'{{ old('addresses.0.address_line3') }}', postcode:'{{ old('addresses.0.postcode') }}', city:'{{ old('addresses.0.city') }}', state:'{{ old('addresses.0.state') }}', country:'{{ old('addresses.0.country', 'Malaysia') }}' }],
+                phone: '{{ old('phone') }}',
+                fax: '{{ old('fax') }}',
+                mobile: '{{ old('mobile') }}',
+                email: '{{ old('email') }}'
             }">
                 @csrf
                 
@@ -91,12 +98,12 @@
                 <div class="bg-gray-50 p-4 rounded-sm mb-6">
                     <h3 class="text-sm font-semibold text-gray-700 mb-1 flex items-center">
                         <span class="material-icons text-blue-600 text-base mr-2">category</span>
-                        Party Type
+                        Party Type *
                     </h3>
                     <p class="text-xs text-gray-600 mb-4 ml-6">Select the type of party for this client</p>
                     
                     <!-- Tab Design -->
-                    <div class="flex bg-white rounded-sm border border-gray-200 p-1">
+                    <div class="flex bg-white rounded-sm border border-gray-200 p-1 @error('party_type') border-red-500 @enderror">
                         <button 
                             type="button"
                             @click="partyType = 'applicant'"
@@ -123,6 +130,10 @@
                     
                     <!-- Hidden input for form submission -->
                     <input type="hidden" name="party_type" x-model="partyType" required>
+                    
+                    @error('party_type')
+                        <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <!-- SPACER -->
@@ -138,70 +149,88 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Type of Identity *</label>
-                            <select x-model="identityType" name="identity_type" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <select x-model="identityType" name="identity_type" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 @error('identity_type') border-red-500 @enderror" required>
                                 <option value="">Select identity type...</option>
                                 <template x-for="type in identityTypes" :key="type">
                                     <option :value="type" x-text="type"></option>
                                 </template>
                             </select>
+                            @error('identity_type')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2" x-text="identityType || 'Identity Number'">Identity Number *</label>
-                            <input type="text" name="identity_number" value="{{ old('identity_number') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter identity number" required>
+                            <input type="text" name="identity_number" x-model="identityNumber" value="{{ old('identity_number') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 @error('identity_number') border-red-500 @enderror" placeholder="Enter identity number" required>
+                            @error('identity_number')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Full Name *</label>
-                            <input type="text" name="name" value="{{ old('name') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter full name" required>
+                            <input type="text" name="name" x-model="name" value="{{ old('name') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 @error('name') border-red-500 @enderror" placeholder="Enter full name" required>
+                            @error('name')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Gender *</label>
-                            <div class="flex gap-4 items-center h-8">
+                            <div class="flex gap-4 items-center h-8 @error('gender') border border-red-500 rounded-sm p-2 @enderror">
                                 <label class="flex items-center">
-                                    <input type="radio" name="gender" value="male" class="mr-2" required>
+                                    <input type="radio" name="gender" value="male" x-model="gender" class="mr-2" required>
                                     <span class="text-xs text-gray-700">Male</span>
                                 </label>
                                 <label class="flex items-center">
-                                    <input type="radio" name="gender" value="female" class="mr-2">
+                                    <input type="radio" name="gender" value="female" x-model="gender" class="mr-2">
                                     <span class="text-xs text-gray-700">Female</span>
                                 </label>
                                 <label class="flex items-center">
-                                    <input type="radio" name="gender" value="not_specified" class="mr-2">
+                                    <input type="radio" name="gender" value="not_specified" x-model="gender" class="mr-2">
                                     <span class="text-xs text-gray-700">Not Specified</span>
                                 </label>
                             </div>
+                            @error('gender')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Nationality *</label>
-                            <select x-model="nationality" name="nationality" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <select x-model="nationality" name="nationality" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 @error('nationality') border-red-500 @enderror" required>
                                 <template x-for="country in countries" :key="country">
                                     <option :value="country" x-text="country" :selected="country === 'Malaysia'"></option>
                                 </template>
                             </select>
+                            @error('nationality')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Race *</label>
-                            <select x-model="race" name="race" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <select x-model="race" name="race" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 @error('race') border-red-500 @enderror" required>
                                 <option value="">Select race...</option>
                                 <template x-for="raceOption in races" :key="raceOption">
                                     <option :value="raceOption" x-text="raceOption"></option>
                                 </template>
                             </select>
+                            @error('race')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Phone Number</label>
-                            <input type="tel" name="phone" value="{{ old('phone') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter phone number">
+                            <input type="tel" name="phone" x-model="phone" value="{{ old('phone') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter phone number">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Fax Number</label>
-                            <input type="tel" name="fax" value="{{ old('fax') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter fax number">
+                            <input type="tel" name="fax" x-model="fax" value="{{ old('fax') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter fax number">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Mobile Number</label>
-                            <input type="tel" name="mobile" value="{{ old('mobile') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter mobile number">
+                            <input type="tel" name="mobile" x-model="mobile" value="{{ old('mobile') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter mobile number">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Email</label>
-                            <input type="email" name="email" value="{{ old('email') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter email address">
+                            <input type="email" name="email" x-model="email" value="{{ old('email') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter email address">
                         </div>
                     </div>
                 </div>
@@ -210,7 +239,7 @@
                 <div class="h-6 bg-transparent"></div>
 
                 <!-- Address Section -->
-                <div class="bg-gray-50 p-4 rounded-sm mb-6" x-data="{ addresses: [] }">
+                <div class="bg-gray-50 p-4 rounded-sm mb-6">
                     <div class="flex items-start justify-between">
                         <div>
                             <h3 class="text-sm font-semibold text-gray-700 mb-1 flex items-center">
@@ -219,7 +248,7 @@
                             </h3>
                             <p class="text-xs text-gray-600 mb-4 ml-6">Add one or more addresses for this client</p>
                         </div>
-                        <button type="button" @click="addresses.push({ postcode:'', city:'', state:'', country:'Malaysia' })" class="h-7 px-2 rounded-sm bg-blue-600 text-white text-xs font-medium flex items-center">
+                        <button type="button" @click="addresses.push({ address_line1:'', address_line2:'', address_line3:'', postcode:'', city:'', state:'', country:'Malaysia' })" class="h-7 px-2 rounded-sm bg-blue-600 text-white text-xs font-medium flex items-center">
                             <span class="material-icons text-xs mr-1">add</span>
                             Add Address
                         </button>
@@ -233,6 +262,20 @@
                                     <span class="material-icons text-base">remove_circle</span>
                                 </button>
                             </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-2">Address Line 1</label>
+                                    <input type="text" :name="`addresses[${i}][address_line1]`" x-model="addr.address_line1" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter address line 1">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-2">Address Line 2</label>
+                                    <input type="text" :name="`addresses[${i}][address_line2]`" x-model="addr.address_line2" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter address line 2">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-2">Address Line 3</label>
+                                    <input type="text" :name="`addresses[${i}][address_line3]`" x-model="addr.address_line3" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter address line 3">
+                                </div>
+                            </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-2">Postcode</label>
@@ -244,12 +287,15 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-2">State *</label>
-                                    <select :name="`addresses[${i}][state]`" x-model="addr.state" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                    <select :name="`addresses[${i}][state]`" x-model="addr.state" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 @error('addresses.0.state') border-red-500 @enderror" required>
                                         <option value="">Select state...</option>
                                         <template x-for="stateOption in states" :key="stateOption">
                                             <option :value="stateOption" x-text="stateOption"></option>
                                         </template>
                                     </select>
+                                    @error('addresses.0.state')
+                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                    @enderror
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-2">Country *</label>
@@ -369,7 +415,11 @@
                     <a href="{{ route('client.index') }}" class="w-full md:w-auto px-3 py-1.5 text-gray-600 border border-gray-300 rounded-sm text-xs font-medium hover:bg-gray-50 text-center">
                         Cancel
                     </a>
-                    <button type="submit" class="w-full md:w-auto px-3 py-1.5 bg-blue-600 text-white rounded-sm text-xs font-medium hover:bg-blue-700">
+                    <button 
+                        type="submit" 
+                        class="w-full md:w-auto px-3 py-1.5 bg-blue-600 text-white rounded-sm text-xs font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        :disabled="!partyType || !identityType || !identityNumber || !name || !gender || !nationality || !race || !addresses.length || !addresses[0].state || !addresses[0].country"
+                    >
                         Create Client
                     </button>
                 </div>

@@ -1,5 +1,5 @@
 <x-guest-layout>
-    <div class="min-h-screen flex flex-col items-center justify-center bg-gray-100" x-data="{ showDisclaimer:false, showPrivacy:false, showTerms:false }">
+    <div class="min-h-screen flex flex-col items-center justify-center bg-gray-100" x-data="{ showDisclaimer:false, showPrivacy:false, showTerms:false, showEmailVerificationAlert:{{ session('email_verification_required') || $errors->has('username') ? 'true' : 'false' }} }">
         <div class="bg-white p-6 rounded-base shadow-lg w-96 text-center">
             <!-- Logo -->
             <div class="mb-4">
@@ -13,22 +13,22 @@
     <form method="POST" action="{{ route('login') }}">
         @csrf
 
-        <!-- Email Address -->
+        <!-- Username -->
                 <div class="relative mb-3">
                     <i class="fas fa-user absolute left-3 top-2.5 text-gray-400 text-xs"></i>
                     <input 
-                        id="email" 
-                        type="email" 
-                        name="email" 
-                        value="{{ old('email') }}" 
+                        id="username" 
+                        type="text" 
+                        name="username" 
+                        value="{{ old('username') }}" 
                         required 
                         autofocus 
                         autocomplete="username"
                         class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Email"
+                        placeholder="Username"
                     />
         </div>
-                <x-input-error :messages="$errors->get('email')" class="mt-1 text-red-500 text-xs" />
+                <x-input-error :messages="$errors->get('username')" class="mt-1 text-red-500 text-xs" />
 
         <!-- Password -->
                 <div class="relative mb-3">
@@ -278,6 +278,36 @@
                     </div>
                     <div class="mt-4 text-right">
                         <button class="px-3 py-1.5 bg-blue-600 text-white rounded text-xs" @click="showTerms=false">Close</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Email Verification Alert Modal -->
+        <template x-if="showEmailVerificationAlert">
+            <div class="fixed inset-0 z-50" aria-modal="true" role="dialog">
+                <div class="absolute inset-0 bg-black/40" @click="showEmailVerificationAlert=false"></div>
+                <div class="relative mx-auto mt-16 w-full max-w-md bg-white rounded-md shadow-lg p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center">
+                            <span class="material-icons text-yellow-600 mr-2">warning</span>
+                            <h3 class="text-sm font-semibold text-gray-800">Email Verification Required</h3>
+                        </div>
+                        <button class="text-gray-500 hover:text-gray-700" @click="showEmailVerificationAlert=false">
+                            <span class="material-icons text-base">close</span>
+                        </button>
+                    </div>
+                    <div class="text-xs text-gray-700 leading-relaxed mb-4">
+                        <p>{{ session('email_verification_required') ?: $errors->first('username') }}</p>
+                        <p class="mt-2 text-gray-600">If you haven't received the verification email, please check your spam folder or contact the administrator.</p>
+                    </div>
+                    <div class="flex justify-end space-x-2">
+                        <button class="px-3 py-1.5 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400" @click="showEmailVerificationAlert=false">
+                            Close
+                        </button>
+                        <button class="px-3 py-1.5 bg-blue-600 text-white rounded text-xs hover:bg-blue-700" @click="showEmailVerificationAlert=false">
+                            Resend Email
+                        </button>
                     </div>
                 </div>
             </div>

@@ -15,8 +15,9 @@ class CategoryController extends Controller
         $caseTypes = CaseType::orderBy('code')->get();
         $caseStatuses = CaseStatus::orderBy('name')->get();
         $fileTypes = \App\Models\FileType::orderBy('code')->get();
+        $specializations = \App\Models\Specialization::orderBy('specialist_name')->get();
         
-        return view('settings.category', compact('caseTypes', 'caseStatuses', 'fileTypes'));
+        return view('settings.category', compact('caseTypes', 'caseStatuses', 'fileTypes', 'specializations'));
     }
 
     // Case Type Methods
@@ -284,5 +285,38 @@ class CategoryController extends Controller
         $fileType = \App\Models\FileType::findOrFail($id);
         $fileType->delete();
         return response()->json(['success' => true, 'message' => 'File type deleted successfully']);
+    }
+
+    // Specialization Methods
+    public function storeSpecialization(Request $request)
+    {
+        $request->validate([
+            'specialist_name' => 'required|string|max:255|unique:specializations,specialist_name',
+            'description' => 'nullable|string',
+            'status' => 'required|in:active,inactive'
+        ]);
+
+        $specialization = \App\Models\Specialization::create($request->all());
+        return response()->json(['success' => true, 'message' => 'Specialization created successfully', 'data' => $specialization]);
+    }
+
+    public function updateSpecialization(Request $request, $id)
+    {
+        $request->validate([
+            'specialist_name' => 'required|string|max:255|unique:specializations,specialist_name,' . $id,
+            'description' => 'nullable|string',
+            'status' => 'required|in:active,inactive'
+        ]);
+
+        $specialization = \App\Models\Specialization::findOrFail($id);
+        $specialization->update($request->all());
+        return response()->json(['success' => true, 'message' => 'Specialization updated successfully', 'data' => $specialization]);
+    }
+
+    public function destroySpecialization($id)
+    {
+        $specialization = \App\Models\Specialization::findOrFail($id);
+        $specialization->delete();
+        return response()->json(['success' => true, 'message' => 'Specialization deleted successfully']);
     }
 }

@@ -20,7 +20,8 @@ class EmailSetting extends Model
         'notify_new_cases',
         'notify_document_uploads',
         'notify_case_status',
-        'notify_maintenance'
+        'notify_maintenance',
+        'notify_user_accounts'
     ];
 
     protected $casts = [
@@ -28,7 +29,8 @@ class EmailSetting extends Model
         'notify_new_cases' => 'boolean',
         'notify_document_uploads' => 'boolean',
         'notify_case_status' => 'boolean',
-        'notify_maintenance' => 'boolean'
+        'notify_maintenance' => 'boolean',
+        'notify_user_accounts' => 'boolean'
     ];
 
     /**
@@ -47,7 +49,8 @@ class EmailSetting extends Model
             'notify_new_cases' => true,
             'notify_document_uploads' => true,
             'notify_case_status' => true,
-            'notify_maintenance' => false
+            'notify_maintenance' => false,
+            'notify_user_accounts' => true
         ]);
     }
 }

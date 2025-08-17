@@ -64,12 +64,13 @@
                             <input type="email" name="incharge_email" value="{{ old('incharge_email', $partner->incharge_email) }}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-2">Status *</label>
+                            <label class="block text-xs font-medium text-gray-700 mb-2">Operational Status *</label>
                             <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                                 <option value="active" {{ old('status', $partner->status)==='active' ? 'selected' : '' }}>Active</option>
                                 <option value="inactive" {{ old('status', $partner->status)==='inactive' ? 'selected' : '' }}>Inactive</option>
                                 <option value="suspended" {{ old('status', $partner->status)==='suspended' ? 'selected' : '' }}>Suspended</option>
                             </select>
+                            <p class="text-xs text-gray-500 mt-1">Operational status for business activities</p>
                         </div>
                     </div>
                 </div>
@@ -85,12 +86,11 @@
                             <label class="block text-xs font-medium text-gray-700 mb-2">Specialization</label>
                             <select name="specialization" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="">Select Specialization</option>
-                                <option value="civil" {{ old('specialization', $partner->specialization)==='civil' ? 'selected' : '' }}>Civil Law</option>
-                                <option value="criminal" {{ old('specialization', $partner->specialization)==='criminal' ? 'selected' : '' }}>Criminal Law</option>
-                                <option value="family" {{ old('specialization', $partner->specialization)==='family' ? 'selected' : '' }}>Family Law</option>
-                                <option value="corporate" {{ old('specialization', $partner->specialization)==='corporate' ? 'selected' : '' }}>Corporate Law</option>
-                                <option value="property" {{ old('specialization', $partner->specialization)==='property' ? 'selected' : '' }}>Property Law</option>
-                                <option value="general" {{ old('specialization', $partner->specialization)==='general' ? 'selected' : '' }}>General Practice</option>
+                                @foreach($specializations as $specialization)
+                                    <option value="{{ $specialization->specialist_name }}" {{ old('specialization', $partner->specialization) == $specialization->specialist_name ? 'selected' : '' }}>
+                                        {{ $specialization->specialist_name }}
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
                         <div>
