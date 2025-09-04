@@ -1,7 +1,7 @@
 @php 
     use App\Helpers\PermissionHelper;
     $caseActive = request()->routeIs('case.index') || request()->routeIs('client.index') || request()->routeIs('partner.index');
-    $accountingActive = request()->routeIs('quotation.index') || request()->routeIs('tax-invoice.index') || request()->routeIs('resit.index') || request()->routeIs('voucher.index') || request()->routeIs('bill.index');
+    $accountingActive = request()->routeIs('pre-quotation.index') || request()->routeIs('quotation.index') || request()->routeIs('tax-invoice.index') || request()->routeIs('resit.index') || request()->routeIs('voucher.index') || request()->routeIs('bill.index');
     $settingsActive = request()->routeIs('settings.global') || request()->routeIs('settings.role') || request()->routeIs('settings.user') || request()->routeIs('settings.category') || request()->routeIs('settings.log') || request()->routeIs('settings.case-management') || request()->routeIs('settings.ddos.*');
 @endphp
 
@@ -94,6 +94,10 @@
         </div>
     </div>
     <div id="accounting-section" class="hierarchical-menu" style="display: {{ $accountingActive ? 'block' : 'none' }};">
+        <a href="{{ route('pre-quotation.index') }}" class="sidebar-submenu-item {{ request()->routeIs('pre-quotation.index') ? 'active' : '' }}">
+            <span class="material-icons text-xs mr-3">description</span>
+            <span class="text-xs">Pre-Quotation</span>
+        </a>
         <a href="{{ route('quotation.index') }}" class="sidebar-submenu-item {{ request()->routeIs('quotation.index') ? 'active' : '' }}">
             <span class="material-icons text-xs mr-3">request_quote</span>
             <span class="text-xs">Quotation</span>
@@ -102,9 +106,9 @@
             <span class="material-icons text-xs mr-3">receipt_long</span>
             <span class="text-xs">Tax Invoice</span>
         </a>
-        <a href="{{ route('resit.index') }}" class="sidebar-submenu-item {{ request()->routeIs('resit.index') ? 'active' : '' }}">
+        <a href="{{ route('receipt.index') }}" class="sidebar-submenu-item {{ request()->routeIs('receipt.index') ? 'active' : '' }}">
             <span class="material-icons text-xs mr-3">receipt</span>
-            <span class="text-xs">Resit</span>
+            <span class="text-xs">Receipt</span>
         </a>
         <a href="{{ route('voucher.index') }}" class="sidebar-submenu-item {{ request()->routeIs('voucher.index') ? 'active' : '' }}">
             <span class="material-icons text-xs mr-3">confirmation_number</span>

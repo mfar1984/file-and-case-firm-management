@@ -230,16 +230,78 @@
 
 <script>
 function resetPassword(userId) {
-    if (confirm('Are you sure you want to reset the password for this user? A new password will be generated and sent to their email.')) {
-        // Implement password reset functionality
-        alert('Password reset functionality to be implemented');
+    if (confirm('Are you sure you want to reset the password for this user? A new password will be generated.')) {
+        // Show loading state
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<span class="material-icons text-xs mr-1">hourglass_empty</span>Processing...';
+        button.disabled = true;
+        
+        // Call backend API
+        fetch(`/settings/user/${userId}/reset-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Password reset successfully!\n\nNew Password: ${data.new_password}\n\nPlease inform the user of their new password.`);
+                // Refresh page to show updated status
+                location.reload();
+            } else {
+                alert('Failed to reset password: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to reset password. Please try again.');
+        })
+        .finally(() => {
+            // Restore button state
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
     }
 }
 
 function verifyEmail(userId) {
     if (confirm('Are you sure you want to mark this user\'s email as verified?')) {
-        // Implement email verification functionality
-        alert('Email verification functionality to be implemented');
+        // Show loading state
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<span class="material-icons text-xs mr-1">hourglass_empty</span>Processing...';
+        button.disabled = true;
+        
+        // Call backend API
+        fetch(`/settings/user/${userId}/verify-email`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Email verified successfully!');
+                // Refresh page to show updated status
+                location.reload();
+            } else {
+                alert('Failed to verify email: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to verify email. Please try again.');
+        })
+        .finally(() => {
+            // Restore button state
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
     }
 }
 

@@ -185,17 +185,39 @@ class UserController extends Controller
         
         try {
             // Generate new password
-            $newPassword = str_random(10);
+            $newPassword = \Illuminate\Support\Str::random(10);
             
             $user->update([
                 'password' => Hash::make($newPassword)
             ]);
 
-            // TODO: Send email with new password
+            // Send email with new password if email is configured
+            if (\App\Services\EmailConfigurationService::isEmailConfigured()) {
+                try {
+                    // Configure email settings
+                    \App\Services\EmailConfigurationService::configureEmailSettings();
+                    
+                    // Send email
+                    \Mail::send('emails.password-reset', [
+                        'user' => $user,
+                        'newPassword' => $newPassword
+                    ], function($message) use ($user) {
+                        $message->to($user->email, $user->name)
+                                ->subject('Password Reset - Naeelah Firm');
+                    });
+                    
+                    $message = 'Password reset successfully. New password has been sent to user\'s email.';
+                } catch (\Exception $e) {
+                    \Log::error('Failed to send password reset email: ' . $e->getMessage());
+                    $message = 'Password reset successfully. New password: ' . $newPassword . ' (Email notification failed)';
+                }
+            } else {
+                $message = 'Password reset successfully. New password: ' . $newPassword . ' (Email not configured)';
+            }
             
             return response()->json([
                 'success' => true,
-                'message' => 'Password reset successfully.',
+                'message' => $message,
                 'new_password' => $newPassword
             ]);
 

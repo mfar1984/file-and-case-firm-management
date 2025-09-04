@@ -342,8 +342,15 @@
                                     });
                                 
                                 // Fetch location info from settings with error handling
-                                fetch('/settings/weather/get')
+                                fetch('/settings/weather/get', {
+                                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                                        credentials: 'same-origin'
+                                    })
                                     .then(response => {
+                                        if (response.status === 401) {
+                                            // Session expired; avoid redirecting login intent to this endpoint
+                                            return null;
+                                        }
                                         if (!response.ok) {
                                             throw new Error('Location API not available');
                                         }

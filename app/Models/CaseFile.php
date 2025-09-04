@@ -13,7 +13,7 @@ class CaseFile extends Model
         'case_ref',
         'file_name',
         'file_path',
-        'file_type',
+        'category_id',
         'file_size',
         'mime_type',
         'description',
@@ -172,7 +172,7 @@ class CaseFile extends Model
      */
     public function scopeByType($query, $fileType)
     {
-        return $query->where('file_type', $fileType);
+        return $query->where('category_id', $fileType);
     }
 
     /**
@@ -224,5 +224,10 @@ class CaseFile extends Model
                 ELSE 0
             END BETWEEN ? AND ?', [$minSize, $maxSize]
         );
+    }
+
+    public function fileType()
+    {
+        return $this->belongsTo(FileType::class, 'category_id');
     }
 }

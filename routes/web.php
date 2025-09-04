@@ -7,6 +7,7 @@ use App\Http\Controllers\FirmSettingsController;
 use App\Http\Controllers\SystemSettingsController;
 use App\Http\Controllers\EmailSettingsController;
 use App\Http\Controllers\SecuritySettingsController;
+use App\Http\Controllers\CaseController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -37,10 +38,16 @@ Route::middleware('auth')->group(function () {
 // Dummy routes for sidebar
 Route::view('/overview', 'overview')->name('overview');
 Route::view('/calendar', 'calendar')->name('calendar');
-Route::view('/case', 'case')->name('case.index');
-Route::view('/case/create', 'case-create')->name('case.create');
-Route::view('/case/view', 'case-view')->name('case.view');
-Route::view('/case/edit', 'case-edit')->name('case.edit');
+Route::get('/case', [CaseController::class, 'index'])->name('case.index');
+Route::get('/case/create', [CaseController::class, 'create'])->name('case.create');
+Route::post('/case', [CaseController::class, 'store'])->name('case.store');
+Route::put('/case/{id}', [CaseController::class, 'update'])->name('case.update');
+Route::post('/case/{id}/change-status', [CaseController::class, 'changeStatus'])->name('case.change-status');
+Route::post('/case/{id}/timeline', [CaseController::class, 'addTimelineEvent'])->name('case.timeline.store');
+Route::put('/case/{id}/timeline/{timelineId}', [CaseController::class, 'updateTimelineEvent'])->name('case.timeline.update');
+Route::get('/case/{id}', [CaseController::class, 'show'])->name('case.show');
+Route::delete('/case/{id}', [CaseController::class, 'destroy'])->name('case.destroy');
+Route::get('/case/{id}/edit', [CaseController::class, 'edit'])->name('case.edit');
 Route::get('/client', [App\Http\Controllers\ClientController::class, 'index'])->name('client.index');
 Route::get('/client/create', [App\Http\Controllers\ClientController::class, 'create'])->name('client.create');
 Route::post('/client', [App\Http\Controllers\ClientController::class, 'store'])->name('client.store');
@@ -59,16 +66,59 @@ Route::delete('/partner/{id}', [App\Http\Controllers\PartnerController::class, '
 Route::post('/partner/{id}/toggle-ban', [App\Http\Controllers\PartnerController::class, 'toggleBan'])->name('partner.toggle-ban');
 
 // Accounting routes
-Route::view('/quotation', 'quotation')->name('quotation.index');
-Route::view('/quotation/create', 'quotation-create')->name('quotation.create');
-Route::view('/tax-invoice', 'tax-invoice')->name('tax-invoice.index');
-Route::view('/tax-invoice/create', 'tax-invoice-create')->name('tax-invoice.create');
-Route::view('/resit', 'resit')->name('resit.index');
-Route::view('/resit/create', 'resit-create')->name('resit.create');
+// Pre-Quotation routes
+Route::get('/pre-quotation', [App\Http\Controllers\PreQuotationController::class, 'index'])->name('pre-quotation.index');
+Route::get('/pre-quotation/create', [App\Http\Controllers\PreQuotationController::class, 'create'])->name('pre-quotation.create');
+Route::post('/pre-quotation', [App\Http\Controllers\PreQuotationController::class, 'store'])->name('pre-quotation.store');
+Route::get('/pre-quotation/{id}', [App\Http\Controllers\PreQuotationController::class, 'show'])->name('pre-quotation.show');
+Route::get('/pre-quotation/{id}/edit', [App\Http\Controllers\PreQuotationController::class, 'edit'])->name('pre-quotation.edit');
+Route::put('/pre-quotation/{id}', [App\Http\Controllers\PreQuotationController::class, 'update'])->name('pre-quotation.update');
+Route::delete('/pre-quotation/{id}', [App\Http\Controllers\PreQuotationController::class, 'destroy'])->name('pre-quotation.destroy');
+
+// Quotation routes
+Route::get('/quotation', [App\Http\Controllers\QuotationController::class, 'index'])->name('quotation.index');
+Route::get('/quotation/create', [App\Http\Controllers\QuotationController::class, 'create'])->name('quotation.create');
+Route::post('/quotation', [App\Http\Controllers\QuotationController::class, 'store'])->name('quotation.store');
+Route::get('/quotation/{id}', [App\Http\Controllers\QuotationController::class, 'show'])->name('quotation.show');
+Route::get('/quotation/{id}/print', [App\Http\Controllers\QuotationController::class, 'print'])->name('quotation.print');
+Route::delete('/quotation/{id}', [App\Http\Controllers\QuotationController::class, 'destroy'])->name('quotation.destroy');
+Route::patch('/quotation/{id}/accept', [App\Http\Controllers\QuotationController::class, 'accept'])->name('quotation.accept');
+Route::patch('/quotation/{id}/reject', [App\Http\Controllers\QuotationController::class, 'reject'])->name('quotation.reject');
+Route::patch('/quotation/{id}/cancel', [App\Http\Controllers\QuotationController::class, 'cancel'])->name('quotation.cancel');
+Route::patch('/quotation/{id}/reactivate', [App\Http\Controllers\QuotationController::class, 'reactivate'])->name('quotation.reactivate');
+Route::get('/tax-invoice', [App\Http\Controllers\TaxInvoiceController::class, 'index'])->name('tax-invoice.index');
+Route::get('/tax-invoice/create', [App\Http\Controllers\TaxInvoiceController::class, 'create'])->name('tax-invoice.create');
+Route::post('/tax-invoice', [App\Http\Controllers\TaxInvoiceController::class, 'store'])->name('tax-invoice.store');
+Route::get('/tax-invoice/{id}', [App\Http\Controllers\TaxInvoiceController::class, 'show'])->name('tax-invoice.show');
+Route::get('/tax-invoice/{id}/edit', [App\Http\Controllers\TaxInvoiceController::class, 'edit'])->name('tax-invoice.edit');
+Route::put('/tax-invoice/{id}', [App\Http\Controllers\TaxInvoiceController::class, 'update'])->name('tax-invoice.update');
+Route::delete('/tax-invoice/{id}', [App\Http\Controllers\TaxInvoiceController::class, 'destroy'])->name('tax-invoice.destroy');
+Route::patch('/tax-invoice/{id}/send', [App\Http\Controllers\TaxInvoiceController::class, 'send'])->name('tax-invoice.send');
+Route::patch('/tax-invoice/{id}/mark-as-paid', [App\Http\Controllers\TaxInvoiceController::class, 'markAsPaid'])->name('tax-invoice.mark-as-paid');
+Route::patch('/tax-invoice/{id}/mark-as-partially-paid', [App\Http\Controllers\TaxInvoiceController::class, 'markAsPartiallyPaid'])->name('tax-invoice.mark-as-partially-paid');
+Route::patch('/tax-invoice/{id}/mark-as-overdue', [App\Http\Controllers\TaxInvoiceController::class, 'markAsOverdue'])->name('tax-invoice.mark-as-overdue');
+Route::patch('/tax-invoice/{id}/cancel', [App\Http\Controllers\TaxInvoiceController::class, 'cancel'])->name('tax-invoice.cancel');
+Route::get('/receipt', [App\Http\Controllers\ReceiptController::class, 'index'])->name('receipt.index');
+Route::get('/receipt/create', [App\Http\Controllers\ReceiptController::class, 'create'])->name('receipt.create');
+Route::post('/receipt', [App\Http\Controllers\ReceiptController::class, 'store'])->name('receipt.store');
+Route::get('/receipt/{id}', [App\Http\Controllers\ReceiptController::class, 'show'])->name('receipt.show');
+Route::get('/receipt/{id}/edit', [App\Http\Controllers\ReceiptController::class, 'edit'])->name('receipt.edit');
+Route::put('/receipt/{id}', [App\Http\Controllers\ReceiptController::class, 'update'])->name('receipt.update');
+Route::delete('/receipt/{id}', [App\Http\Controllers\ReceiptController::class, 'destroy'])->name('receipt.destroy');
 Route::view('/voucher', 'voucher')->name('voucher.index');
-Route::view('/voucher/create', 'voucher-create')->name('voucher.create');
+Route::get('/voucher/create', function() {
+    return view('voucher-create');
+})->name('voucher.create');
+Route::post('/voucher', [App\Http\Controllers\VoucherController::class, 'store'])->name('voucher.store');
 Route::view('/bill', 'bill')->name('bill.index');
 Route::view('/bill/create', 'bill-create')->name('bill.create');
+
+// Payee Management Routes
+Route::get('/settings/payee', [App\Http\Controllers\PayeeController::class, 'index'])->name('payee.index');
+Route::post('/settings/payee', [App\Http\Controllers\PayeeController::class, 'store'])->name('payee.store');
+Route::put('/settings/payee/{id}', [App\Http\Controllers\PayeeController::class, 'update'])->name('payee.update');
+Route::delete('/settings/payee/{id}', [App\Http\Controllers\PayeeController::class, 'destroy'])->name('payee.destroy');
+Route::patch('/settings/payee/{id}/toggle-status', [App\Http\Controllers\PayeeController::class, 'toggleStatus'])->name('payee.toggle-status');
 
 Route::view('/settings/global', 'settings.global')->name('settings.global');
 
@@ -159,6 +209,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/file-management', [FileManagementController::class, 'index'])->name('file-management.index');
     Route::post('/file-management', [FileManagementController::class, 'store'])->name('file-management.store');
     Route::get('/file-management/download/{id}', [FileManagementController::class, 'download'])->name('file-management.download');
+    Route::get('/file-management/view/{hash}', [FileManagementController::class, 'view'])->name('file-management.view');
     Route::patch('/file-management/{id}/status', [FileManagementController::class, 'updateStatus'])->name('file-management.update-status');
     Route::delete('/file-management/{id}', [FileManagementController::class, 'destroy'])->name('file-management.destroy');
     Route::get('/file-management/cases', [FileManagementController::class, 'getCases'])->name('file-management.cases');

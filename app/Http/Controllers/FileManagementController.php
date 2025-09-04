@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use App\Models\FileType;
+use Illuminate\Support\Str;
 
 class FileManagementController extends Controller
 {
@@ -32,13 +33,13 @@ class FileManagementController extends Controller
             $query->byStatus($request->status);
         }
 
-        $files = $query->orderBy('created_at', 'desc')->get();
+        $files = $query->with('fileType')->orderBy('created_at', 'desc')->get();
 
         // Get available cases for dropdown
-        $cases = CaseFile::distinct()->pluck('case_ref')->filter()->values();
+        $cases = \App\Models\CourtCase::pluck('case_number')->filter()->values();
 
         // Get file types from DB for dropdowns
-        $fileTypes = FileType::active()->orderBy('description')->get(['code','description']);
+        $fileTypes = FileType::active()->orderBy('description')->get(['id','code','description']);
 
         return view('file-management', compact('files', 'cases', 'fileTypes'));
     }
@@ -48,6 +49,15 @@ class FileManagementController extends Controller
      */
     public function store(Request $request)
     {
+        // Debug logging
+        \Log::info('File upload request received', [
+            'all_data' => $request->all(),
+            'case_ref' => $request->case_ref,
+            'file_type' => $request->file_type,
+            'has_files' => $request->hasFile('files'),
+            'files_count' => $request->hasFile('files') ? count($request->file('files')) : 0
+        ]);
+
         $validator = Validator::make($request->all(), [
             'case_ref' => 'required|string',
             'file_type' => 'required|string',
@@ -56,6 +66,7 @@ class FileManagementController extends Controller
         ]);
 
         if ($validator->fails()) {
+            \Log::error('File upload validation failed', ['errors' => $validator->errors()]);
             return back()->withErrors($validator)->withInput();
         }
 
@@ -66,16 +77,32 @@ class FileManagementController extends Controller
                 $fileName = time() . '_' . $file->getClientOriginalName();
                 $filePath = $file->storeAs('case-files', $fileName, 'public');
 
+                \Log::info('Creating CaseFile record', [
+                    'case_ref' => $request->case_ref,
+                    'category_id' => $request->file_type,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_path' => $filePath
+                ]);
+
                 $caseFile = CaseFile::create([
                     'case_ref' => $request->case_ref,
                     'file_name' => $file->getClientOriginalName(),
                     'file_path' => $filePath,
-                    'file_type' => $request->file_type,
+                    'category_id' => $request->file_type,
                     'file_size' => $file->getSize(),
                     'mime_type' => $file->getMimeType(),
                     'description' => $request->description,
                     'status' => 'IN',
                     'rack_location' => 'Rack A-01', // Default location
+                ]);
+
+                // Generate a public view hash and save (without changing schema, reuse id-based hash)
+                $caseFile->public_hash = hash('sha256', $caseFile->id . '|' . $caseFile->file_path . '|' . config('app.key'));
+                // Note: if model doesn't have column, we won't persist; we'll compute on the fly in view()
+
+                \Log::info('CaseFile created successfully', [
+                    'id' => $caseFile->id,
+                    'category_id' => $caseFile->category_id
                 ]);
 
                 $uploadedFiles[] = $caseFile;
@@ -98,6 +125,34 @@ class FileManagementController extends Controller
         }
 
         return Storage::disk('public')->download($file->file_path, $file->file_name);
+    }
+
+    /**
+     * Secure view by hash (stream inline)
+     */
+    public function view($hash)
+    {
+        // Iterate minimal to find match without exposing path
+        $file = CaseFile::latest('id')->get()->first(function ($f) use ($hash) {
+            $computed = hash('sha256', $f->id . '|' . $f->file_path . '|' . config('app.key'));
+            return hash_equals($computed, $hash);
+        });
+
+        if (!$file) {
+            abort(404);
+        }
+
+        if (!Storage::disk('public')->exists($file->file_path)) {
+            abort(404);
+        }
+
+        // Stream inline with correct headers
+        $mime = $file->mime_type ?: Storage::disk('public')->mimeType($file->file_path);
+        $contents = Storage::disk('public')->get($file->file_path);
+        return response($contents, 200, [
+            'Content-Type' => $mime,
+            'Content-Disposition' => 'inline; filename="' . ($file->file_name ?? basename($file->file_path)) . '"'
+        ]);
     }
 
     /**

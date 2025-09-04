@@ -23,6 +23,7 @@
                     firm_name: '',
                     registration_number: '',
                     phone_number: '',
+                    fax_number: '',
                     email: '',
                     address: '',
                     website: '',
@@ -53,6 +54,11 @@
                         <label class="block text-xs font-medium text-gray-700 mb-2">Phone Number *</label>
                         <input type="tel" x-model="formData.phone_number" placeholder="Enter phone number" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                     </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-2">Fax No</label>
+                        <input type="tel" x-model="formData.fax_number" placeholder="Enter fax number" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
                     
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Email Address *</label>
@@ -70,8 +76,8 @@
                     </div>
                     
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-2">Tax Registration Number</label>
-                        <input type="text" x-model="formData.tax_registration_number" placeholder="Enter tax registration number" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <label class="block text-xs font-medium text-gray-700 mb-2">SST Registration No.</label>
+                        <input type="text" x-model="formData.tax_registration_number" placeholder="Enter SST registration number" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                 </div>
                 

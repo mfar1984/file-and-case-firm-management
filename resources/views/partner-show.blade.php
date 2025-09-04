@@ -57,7 +57,7 @@
                 </div>
                 <div class="p-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div>
+                    <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Firm Name</label>
                             <p class="text-[11px] text-gray-900 font-medium">{{ $partner->firm_name }}</p>
                         </div>
@@ -74,24 +74,24 @@
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Contact No</label>
                             <p class="text-[11px] text-gray-900">{{ $partner->contact_no }}</p>
-                        </div>
-                        <div>
+                    </div>
+                    <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Email</label>
                             <p class="text-[11px] text-gray-900">{{ $partner->email ?? 'N/A' }}</p>
-                        </div>
+                    </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Operational Status</label>
                             <span class="inline-block {{ $partner->status_badge_color }} px-2 py-1 rounded-full text-[11px] font-medium">
                                 {{ ucfirst($partner->status) }}
                             </span>
-                        </div>
-                        <div>
+                    </div>
+                    <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Ban Status</label>
                             <span class="inline-block {{ $partner->is_banned ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }} px-2 py-1 rounded-full text-[11px] font-medium">
                                 {{ $partner->is_banned ? 'Banned' : 'Not Banned' }}
                             </span>
-                        </div>
-                        <div>
+                    </div>
+                    <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">User Account</label>
                             @if($partner->user)
                                 <span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-[11px] font-medium">
@@ -144,8 +144,8 @@
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Email</label>
                             <p class="text-[11px] text-gray-900">{{ $partner->incharge_email ?? 'N/A' }}</p>
-                        </div>
-                        <div>
+                    </div>
+                    <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Bar Council Number</label>
                             <p class="text-[11px] text-gray-900">{{ $partner->bar_council_number ?? 'N/A' }}</p>
                         </div>
@@ -163,15 +163,15 @@
                 </div>
                 <div class="p-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div>
+                    <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Specialization</label>
                             <p class="text-[11px] text-gray-900">{{ $partner->specialization ?? 'N/A' }}</p>
-                        </div>
-                        <div>
+                    </div>
+                    <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Years of Experience</label>
                             <p class="text-[11px] text-gray-900">{{ $partner->years_of_experience ? $partner->years_of_experience . ' years' : 'N/A' }}</p>
-                        </div>
-                        <div>
+                    </div>
+                    <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Registration Date</label>
                             <p class="text-[11px] text-gray-900">{{ $partner->registration_date ? $partner->registration_date->format('d F Y') : 'N/A' }}</p>
                         </div>

@@ -20,6 +20,7 @@ class FirmSettingsController extends Controller
             'firm_name' => 'required|string|max:255',
             'registration_number' => 'nullable|string|max:100',
             'phone_number' => 'required|string|max:50',
+            'fax_number' => 'nullable|string|max:50',
             'email' => 'required|email|max:255',
             'address' => 'required|string',
             'website' => 'nullable|url|max:255',

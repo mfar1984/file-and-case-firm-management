@@ -4,6 +4,31 @@
     Voucher > Add New Voucher
 @endsection
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const payeeSelect = document.getElementById('payeeSelect');
+    const payeeAddress = document.getElementById('payeeAddress');
+    const contactPerson = document.getElementById('contactPerson');
+    const phoneNumber = document.getElementById('phoneNumber');
+    
+    payeeSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        
+        if (selectedOption.value) {
+            // Auto-populate payee details
+            payeeAddress.value = selectedOption.dataset.address || '';
+            contactPerson.value = selectedOption.dataset.contact || '';
+            phoneNumber.value = selectedOption.dataset.phone || '';
+        } else {
+            // Clear fields if no payee selected
+            payeeAddress.value = '';
+            contactPerson.value = '';
+            phoneNumber.value = '';
+        }
+    });
+});
+</script>
+
 @section('content')
 <style>
 /* Hide number input spinners for all browsers */
@@ -26,7 +51,8 @@ input[type='number'] {
             <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Create a new payment voucher for expenses.</p>
         </div>
         
-        <form class="p-4 md:p-6">
+        <form class="p-4 md:p-6" method="POST" action="{{ route('voucher.store') }}">
+            @csrf
             <!-- Payee Selection and Voucher Details -->
             <div class="grid grid-cols-1 gap-6 mb-8">
                 <!-- Payee Information -->
@@ -35,27 +61,29 @@ input[type='number'] {
                     
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Payee Name *</label>
-                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        <select name="payee_id" id="payeeSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                             <option value="">Select payee</option>
-                            <option value="TNB">TNB Berhad</option>
-                            <option value="RENT">Office Rent Sdn Bhd</option>
-                            <option value="INTERNET">Internet Provider</option>
-                            <option value="SUPPLIES">Office Supplies</option>
-                            <option value="MAINTENANCE">Maintenance Service</option>
-                            <option value="SALARY">Staff Salary</option>
+                            @foreach(\App\Models\Payee::where('is_active', true)->orderBy('name')->get() as $payee)
+                                <option value="{{ $payee->id }}" 
+                                        data-address="{{ $payee->address }}"
+                                        data-contact="{{ $payee->contact_person }}"
+                                        data-phone="{{ $payee->phone }}">
+                                    {{ $payee->name }} ({{ $payee->category }})
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                     
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Payee Address</label>
-                        <textarea class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" rows="3" readonly>Payee address will auto-populate</textarea>
+                        <textarea name="payee_address" id="payeeAddress" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" rows="3" readonly placeholder="Payee address will auto-populate"></textarea>
                     </div>
                     
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Contact</label>
                         <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
-                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" value="Contact Person" readonly>
-                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" value="Phone Number" readonly>
+                            <input type="text" name="contact_person" id="contactPerson" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" placeholder="Contact Person" readonly>
+                            <input type="text" name="phone" id="phoneNumber" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" placeholder="Phone Number" readonly>
                         </div>
                     </div>
                 </div>
@@ -66,17 +94,17 @@ input[type='number'] {
                     
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Voucher No. *</label>
-                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" value="Auto-generated" readonly>
+                        <input type="text" name="voucher_no" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" value="Auto-generated" readonly>
                     </div>
                     
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Payment Date *</label>
-                        <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" value="2025-08-05" required>
+                        <input type="date" name="payment_date" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" value="{{ date('Y-m-d') }}" required>
                     </div>
                     
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Payment Method *</label>
-                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        <select name="payment_method" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                             <option value="">Select payment method</option>
                             <option value="cash">Cash</option>
                             <option value="bank_transfer">Bank Transfer</option>
@@ -88,12 +116,12 @@ input[type='number'] {
                     
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Approved By *</label>
-                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter approver name" required>
+                        <input type="text" name="approved_by" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter approver name" required>
                     </div>
                     
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Remark</label>
-                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter any additional remarks">
+                        <input type="text" name="remark" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter any additional remarks">
                     </div>
                 </div>
             </div>
@@ -101,21 +129,23 @@ input[type='number'] {
             <!-- Expense Breakdown Section -->
             <div class="mb-8" x-data="{
     expenses: [
-        { description: 'Electricity bill for January 2025', category: 'Utilities', amount: 850 }
+        { description: '', category: '', amount: 0 }
     ],
     totalAmount() {
         return this.expenses.reduce((sum, expense) => sum + expense.amount, 0);
     },
     addExpense() {
-        this.expenses.push({ description: '', category: 'Utilities', amount: 0 });
+        this.expenses.push({ description: '', category: '', amount: 0 });
     },
     insertExpense() {
-        this.expenses.unshift({ description: '', category: 'Utilities', amount: 0 });
+        this.expenses.unshift({ description: '', category: '', amount: 0 });
     },
     removeExpense(idx) {
-        this.expenses.splice(idx, 1);
+        if (this.expenses.length > 1) {
+            this.expenses.splice(idx, 1);
+        }
     }
-}">
+}" x-init="$watch('expenses', value => { document.getElementById('expensesJson').value = JSON.stringify(value); }, {deep: true}); document.getElementById('expensesJson').value = JSON.stringify(expenses);">
                 <!-- Add/Insert Buttons Above Table -->
                 <div class="flex flex-row items-end space-x-8 my-3">
                     <div class="flex flex-col items-center">
@@ -151,15 +181,10 @@ input[type='number'] {
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         <select x-model="expense.category" class="w-32 px-3 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-left">
-                                            <option value="Utilities">Utilities</option>
-                                            <option value="Rent">Rent</option>
-                                            <option value="Salary">Salary</option>
-                                            <option value="Internet">Internet</option>
-                                            <option value="Supplies">Supplies</option>
-                                            <option value="Maintenance">Maintenance</option>
-                                            <option value="Insurance">Insurance</option>
-                                            <option value="Marketing">Marketing</option>
-                                            <option value="Other">Other</option>
+                                            <option value="">Select Category</option>
+                                            @foreach(\App\Models\ExpenseCategory::active()->orderBy('name')->get() as $cat)
+                                                <option value="{{ $cat->name }}">{{ $cat->name }}</option>
+                                            @endforeach
                                         </select>
                                     </td>
                                     <td class="px-4 py-3 text-center">
@@ -194,15 +219,10 @@ input[type='number'] {
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-1">Category</label>
                                     <select x-model="expense.category" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                        <option value="Utilities">Utilities</option>
-                                        <option value="Rent">Rent</option>
-                                        <option value="Salary">Salary</option>
-                                        <option value="Internet">Internet</option>
-                                        <option value="Supplies">Supplies</option>
-                                        <option value="Maintenance">Maintenance</option>
-                                        <option value="Insurance">Insurance</option>
-                                        <option value="Marketing">Marketing</option>
-                                        <option value="Other">Other</option>
+                                        <option value="">Select Category</option>
+                                        @foreach(\App\Models\ExpenseCategory::active()->orderBy('name')->get() as $cat)
+                                            <option value="{{ $cat->name }}">{{ $cat->name }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                                 <div>
@@ -232,6 +252,7 @@ input[type='number'] {
                     </div>
                 </div>
             </div>
+            <input type="hidden" id="expensesJson" name="expenses" value="[]">
             
             <!-- Form Actions -->
             <div class="flex flex-col md:flex-row justify-end space-y-2 md:space-y-0 md:space-x-3 pt-6">

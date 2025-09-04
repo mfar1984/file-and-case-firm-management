@@ -12,12 +12,16 @@
     showEditStatusModal: false,
     showSpecializationModal: false,
     showEditSpecializationModal: false,
+    showPayeeModal: false,
+    showEditPayeeModal: false,
     typeForm: { code: '', description: '', status: 'active' },
     statusForm: { name: '', description: '', color: 'blue', status: 'active' },
     editTypeForm: { id: '', code: '', description: '', status: 'active' },
     editStatusForm: { id: '', name: '', description: '', color: 'blue', status: 'active' },
     specializationForm: { specialist_name: '', description: '', status: 'active' },
     editSpecializationForm: { id: '', specialist_name: '', description: '', status: 'active' },
+            payeeForm: { name: '', category: '', address: '', contact_person: '', phone: '', email: '', status: '1' },
+        editPayeeForm: { id: '', name: '', category: '', address: '', contact_person: '', phone: '', email: '', status: '1' },
     
     openEditTypeModal(id, code, description, status) {
         this.editTypeForm = { id: id, code: code, description: description, status: status };
@@ -32,6 +36,11 @@
     openEditSpecializationModal(id, specialist_name, description, status) {
         this.editSpecializationForm = { id: id, specialist_name: specialist_name, description: description, status: status };
         this.showEditSpecializationModal = true;
+    },
+
+    openEditPayeeModal(id, name, category, address, contact_person, phone, email, status) {
+        this.editPayeeForm = { id: id, name: name, category: category, address: address, contact_person: contact_person, phone: phone, email: email, status: status };
+        this.showEditPayeeModal = true;
     },
 
     submitTypeForm() {
@@ -356,6 +365,95 @@
         this.showEditSpecializationModal = false;
     },
 
+    submitPayeeForm() {
+        const formData = new FormData();
+        formData.append('name', this.payeeForm.name);
+        formData.append('category', this.payeeForm.category);
+        formData.append('address', this.payeeForm.address);
+        formData.append('contact_person', this.payeeForm.contact_person);
+        formData.append('phone', this.payeeForm.phone);
+        formData.append('email', this.payeeForm.email);
+        formData.append('status', this.payeeForm.status);
+        formData.append('_token', '{{ csrf_token() }}');
+
+        fetch('{{ route("payee.store") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Payee created successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while creating the payee.');
+        });
+
+        this.showPayeeModal = false;
+        this.payeeForm = { name: '', category: '', address: '', contact_person: '', phone: '', email: '', status: 'active' };
+    },
+
+    submitEditPayeeForm() {
+        const formData = new FormData();
+        formData.append('name', this.editPayeeForm.name);
+        formData.append('category', this.editPayeeForm.category);
+        formData.append('address', this.editPayeeForm.address);
+        formData.append('contact_person', this.editPayeeForm.contact_person);
+        formData.append('phone', this.editPayeeForm.phone);
+        formData.append('email', this.editPayeeForm.email);
+        formData.append('status', this.editPayeeForm.status);
+        formData.append('_token', '{{ csrf_token() }}');
+
+        fetch('{{ route("payee.update", ["id" => ":id"]) }}'.replace(':id', this.editPayeeForm.id), {
+            method: 'PUT',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Payee updated successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating the payee.');
+        });
+
+        this.showEditPayeeModal = false;
+    },
+
+    deletePayee(id) {
+        if (confirm('Are you sure you want to delete this payee?')) {
+            fetch('{{ route("payee.destroy", ["id" => ":id"]) }}'.replace(':id', id), {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Payee deleted successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the payee.');
+            });
+        }
+    },
+
     deleteSpecialization(id) {
         if (confirm('Are you sure you want to delete this specialization?')) {
             const formData = new FormData();
@@ -547,6 +645,8 @@
             </div>
         </div>
     </div>
+
+    <!-- Expense Categories Section [temporarily removed on request] -->
 
     <!-- Category Status Section -->
     <div class="bg-white rounded shadow-md border border-gray-300">
@@ -1193,6 +1293,130 @@
         </div>
     </div>
 
+    <!-- Payee List Section -->
+    <div class="bg-white rounded shadow-md border border-gray-300 mt-6">
+        <div class="p-4 md:p-6 border-b border-gray-200">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-start">
+                <div class="mb-4 md:mb-0">
+                    <div class="flex items-center">
+                        <span class="material-icons mr-2 text-purple-600">payment</span>
+                        <h1 class="text-lg md:text-xl font-bold text-gray-800 text-[14px]">Payee List</h1>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Manage payee information for payment vouchers.</p>
+                </div>
+                <button @click="showPayeeModal = true" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
+                    <span class="material-icons text-xs mr-1">add</span>
+                    Add Payee
+                </button>
+            </div>
+        </div>
+        
+        @php
+            $payees = \App\Models\Payee::orderBy('name')->get();
+        @endphp
+        
+        @if($payees->count() > 0)
+        <!-- Desktop Table View -->
+        <div class="hidden md:block p-6">
+            <div class="overflow-visible border border-gray-200 rounded">
+                <table class="min-w-full border-collapse">
+                    <thead>
+                        <tr class="bg-primary-light text-white uppercase text-xs">
+                            <th class="py-3 px-4 text-left rounded-tl">Payee Name</th>
+                            <th class="py-3 px-4 text-left">Category</th>
+                            <th class="py-3 px-4 text-left">Contact Person</th>
+                            <th class="py-3 px-4 text-left">Phone</th>
+                            <th class="py-3 px-4 text-left">Status</th>
+                            <th class="py-3 px-4 text-center rounded-tr">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach($payees as $payee)
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-1 px-4 text-[11px] font-medium">{{ $payee->name }}</td>
+                            <td class="py-1 px-4 text-[11px]">
+                                <span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-[10px]">
+                                    {{ $payee->category }}
+                                </span>
+                            </td>
+                            <td class="py-1 px-4 text-[11px]">{{ $payee->contact_person ?? 'N/A' }}</td>
+                            <td class="py-1 px-4 text-[11px]">{{ $payee->phone ?? 'N/A' }}</td>
+                            <td class="py-1 px-4 text-[11px]">
+                                <span class="inline-block {{ $payee->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} px-1.5 py-0.5 rounded-full text-[10px]">{{ $payee->is_active ? 'Active' : 'Inactive' }}</span>
+                            </td>
+                            <td class="py-1 px-4">
+                                <div class="flex justify-center space-x-1 items-center">
+                                    <button @click="openEditPayeeModal('{{ $payee->id }}', '{{ $payee->name }}', '{{ $payee->category }}', '{{ $payee->address ?? '' }}', '{{ $payee->contact_person ?? '' }}', '{{ $payee->phone ?? '' }}', '{{ $payee->email ?? '' }}', '{{ $payee->is_active ? '1' : '0' }}')" class="p-0.5 text-yellow-600 hover:text-yellow-700" title="Edit">
+                                        <span class="material-icons text-base">edit</span>
+                                    </button>
+                                    <button @click="deletePayee({{ $payee->id }})" class="p-0.5 text-red-600 hover:text-red-700" title="Delete">
+                                        <span class="material-icons text-base">delete</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Mobile Card View for Payees -->
+        <div class="md:hidden p-4 space-y-4">
+            @foreach($payees as $payee)
+            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-sm font-medium text-gray-800">{{ $payee->name }}</span>
+                        <span class="inline-block {{ $payee->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} px-2 py-1 rounded-full text-xs">{{ $payee->is_active ? 'Active' : 'Inactive' }}</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button @click="openEditPayeeModal('{{ $payee->id }}', '{{ $payee->name }}', '{{ $payee->category }}', '{{ $payee->address ?? '' }}', '{{ $payee->contact_person ?? '' }}', '{{ $payee->phone ?? '' }}', '{{ $payee->email ?? '' }}', '{{ $payee->is_active ? '1' : '0' }}')" class="p-2 bg-yellow-50 rounded hover:bg-yellow-100 border border-yellow-100">
+                            <span class="material-icons text-yellow-700 text-sm">edit</span>
+                        </button>
+                        <button @click="deletePayee({{ $payee->id }})" class="p-2 bg-red-50 rounded hover:bg-red-100 border border-red-100">
+                            <span class="material-icons text-red-600 text-sm">delete</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="pt-2 border-t border-gray-100">
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-xs text-gray-500">Category:</span>
+                            <span class="text-xs font-medium text-blue-600">{{ $payee->category }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-xs text-gray-500">Contact:</span>
+                            <span class="text-xs font-medium">{{ $payee->contact_person ?? 'N/A' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-xs text-gray-500">Phone:</span>
+                            <span class="text-xs font-medium">{{ $payee->phone ?? 'N/A' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @else
+        <div class="hidden md:block p-6">
+            <div class="text-center py-8">
+                <span class="material-icons text-gray-400 text-4xl mb-2">payment</span>
+                <p class="text-sm text-gray-500">No payees available</p>
+                <p class="text-xs text-gray-400">Add payees to manage payment vouchers</p>
+            </div>
+        </div>
+        
+        <div class="md:hidden p-4">
+            <div class="text-center py-8">
+                <span class="material-icons text-gray-400 text-4xl mb-2">payment</span>
+                <p class="text-sm text-gray-500">No payees available</p>
+                <p class="text-xs text-gray-400">Add payees to manage payment vouchers</p>
+            </div>
+        </div>
+        @endif
+    </div>
+
     <!-- Agency Section -->
     <div class="bg-white rounded shadow-md border border-gray-300 mt-6" x-data="{
         showAgencyModal: false,
@@ -1552,6 +1776,154 @@ AADK - Agensi Anti Dadah Kebangsaan Daerah Jelebu"></textarea>
             </form>
         </div>
     </div>
+
+    <!-- Add Payee Modal -->
+    <div x-show="showPayeeModal" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div @click.away="showPayeeModal = false" class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800">Add New Payee</h3>
+                <button @click="showPayeeModal = false" class="text-gray-400 hover:text-gray-600">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            
+            <form @submit.prevent="submitPayeeForm()" class="p-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Payee Name *</label>
+                        <input type="text" x-model="payeeForm.name" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., TNB Berhad" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Category *</label>
+                        <select x-model="payeeForm.category" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <option value="">Select category</option>
+                            <option value="Utilities">Utilities</option>
+                            <option value="Rent">Rent</option>
+                            <option value="Salary">Salary</option>
+                            <option value="Internet">Internet</option>
+                            <option value="Supplies">Supplies</option>
+                            <option value="Maintenance">Maintenance</option>
+                            <option value="Insurance">Insurance</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Address</label>
+                        <textarea x-model="payeeForm.address" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Full address"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Contact Person</label>
+                        <input type="text" x-model="payeeForm.contact_person" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Contact person name">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Phone</label>
+                        <input type="text" x-model="payeeForm.phone" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Phone number">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" x-model="payeeForm.email" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Email address">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Status</label>
+                        <select x-model="payeeForm.status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" @click="showPayeeModal = false" class="px-4 py-2 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition-colors">
+                        Save Payee
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Payee Modal -->
+    <div x-show="showEditPayeeModal" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div @click.away="showEditPayeeModal = false" class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800">Edit Payee</h3>
+                <button @click="showEditPayeeModal = false" class="text-gray-400 hover:text-gray-600">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            
+            <form @submit.prevent="submitEditPayeeForm()" class="p-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Payee Name *</label>
+                        <input type="text" x-model="editPayeeForm.name" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., TNB Berhad" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Category *</label>
+                        <select x-model="editPayeeForm.category" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <option value="">Select category</option>
+                            <option value="Utilities">Utilities</option>
+                            <option value="Rent">Rent</option>
+                            <option value="Salary">Salary</option>
+                            <option value="Internet">Internet</option>
+                            <option value="Supplies">Supplies</option>
+                            <option value="Maintenance">Maintenance</option>
+                            <option value="Insurance">Insurance</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Address</label>
+                        <textarea x-model="editPayeeForm.address" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Full address"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Contact Person</label>
+                        <input type="text" x-model="editPayeeForm.contact_person" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Contact person name">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Phone</label>
+                        <input type="text" x-model="editPayeeForm.phone" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Phone number">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" x-model="editPayeeForm.email" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Email address">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Status</label>
+                        <select x-model="editPayeeForm.status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:ring-2 focus:ring-blue-500">
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" @click="showEditPayeeModal = false" class="px-4 py-2 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-yellow-600 text-white text-xs rounded-lg hover:bg-yellow-700 transition-colors">
+                        Update Payee
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -1805,6 +2177,91 @@ function deleteFileType(id) {
         .catch(error => {
             console.error('Error:', error);
             alert('An error occurred while deleting the file type.');
+        });
+    }
+}
+
+// Payee Functions
+function submitPayeeForm() {
+    const formData = new FormData();
+    formData.append('name', document.querySelector('[x-data]').__x.$data.payeeForm.name);
+    formData.append('category', document.querySelector('[x-data]').__x.$data.payeeForm.category);
+    formData.append('address', document.querySelector('[x-data]').__x.$data.payeeForm.address);
+    formData.append('contact_person', document.querySelector('[x-data]').__x.$data.payeeForm.contact_person);
+    formData.append('phone', document.querySelector('[x-data]').__x.$data.payeeForm.phone);
+    formData.append('email', document.querySelector('[x-data]').__x.$data.payeeForm.email);
+    formData.append('status', document.querySelector('[x-data]').__x.$data.payeeForm.status);
+    formData.append('_token', '{{ csrf_token() }}');
+
+    fetch('{{ route("payee.store") }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Payee created successfully!');
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while creating the payee.');
+    });
+}
+
+function submitEditPayeeForm() {
+    const formData = new FormData();
+    formData.append('name', document.querySelector('[x-data]').__x.$data.editPayeeForm.name);
+    formData.append('category', document.querySelector('[x-data]').__x.$data.editPayeeForm.category);
+    formData.append('address', document.querySelector('[x-data]').__x.$data.editPayeeForm.address);
+    formData.append('contact_person', document.querySelector('[x-data]').__x.$data.editPayeeForm.contact_person);
+    formData.append('phone', document.querySelector('[x-data]').__x.$data.editPayeeForm.phone);
+    formData.append('email', document.querySelector('[x-data]').__x.$data.editPayeeForm.email);
+    formData.append('status', document.querySelector('[x-data]').__x.$data.editPayeeForm.status);
+    formData.append('_token', '{{ csrf_token() }}');
+
+    fetch('{{ route("payee.update", ["id" => ":id"]) }}'.replace(':id', document.querySelector('[x-data]').__x.$data.editPayeeForm.id), {
+        method: 'PUT',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Payee updated successfully!');
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating the payee.');
+    });
+}
+
+function deletePayee(id) {
+    if (confirm('Are you sure you want to delete this payee?')) {
+        fetch('{{ route("payee.destroy", ["id" => ":id"]) }}'.replace(':id', id), {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Payee deleted successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the payee.');
         });
     }
 }
