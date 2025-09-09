@@ -120,8 +120,8 @@
             </div>
 
             <!-- Applicant Information -->
-            <div class="bg-gray-50 p-4 rounded-sm mb-6">
-                <div class="p-2 border-b border-gray-200 bg-gradient-to-r from-orange-600 to-orange-700 text-white -mx-4 -mt-4">
+            <div class="bg-blue-50 p-4 rounded-sm mb-6">
+                <div class="p-2 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700 text-white -mx-4 -mt-4">
                     <div class="flex items-center">
                         <span class="material-icons mr-2 text-xs">person</span>
                         <h2 class="text-sm font-semibold">Applicant Information</h2>
@@ -168,8 +168,8 @@
             </div>
 
             <!-- Respondent Information -->
-            <div class="bg-gray-50 p-4 rounded-sm mb-6">
-                <div class="p-2 border-b border-gray-200 bg-gradient-to-r from-red-600 to-red-700 text-white -mx-4 -mt-4">
+            <div class="bg-blue-50 p-4 rounded-sm mb-6">
+                <div class="p-2 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700 text-white -mx-4 -mt-4">
                     <div class="flex items-center">
                         <span class="material-icons mr-2 text-xs">person_remove</span>
                         <h2 class="text-sm font-semibold">Respondent Information</h2>
@@ -216,18 +216,18 @@
             </div>
 
             <!-- Financial Information -->
-            <div class="bg-gray-50 p-4 rounded-sm mb-6">
-                <div class="p-2 border-b border-gray-200 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white -mx-4 -mt-4">
+            <div class="bg-blue-50 p-4 rounded-sm mb-6">
+                <div class="p-2 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700 text-white -mx-4 -mt-4">
                     <div class="flex justify-between items-center">
                         <div class="flex items-center">
                             <span class="material-icons mr-2 text-xs">account_balance_wallet</span>
                             <h2 class="text-sm font-semibold">Financial Information</h2>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <a href="{{ route('quotation.create', ['case_id' => $case->id, 'case_number' => $case->case_number]) }}" class="bg-white text-emerald-700 px-3 py-1 rounded-md text-[11px] font-medium hover:bg-gray-50">
+                            <a href="{{ route('quotation.create', ['case_id' => $case->id, 'case_number' => $case->case_number]) }}" class="bg-white text-blue-700 px-3 py-1 rounded-md text-[11px] font-medium hover:bg-gray-50">
                                 Create Quotation
                             </a>
-                            <a href="{{ route('tax-invoice.create', ['case_id' => $case->id, 'case_number' => $case->case_number]) }}" class="bg-white text-emerald-700 px-3 py-1 rounded-md text-[11px] font-medium hover:bg-gray-50">
+                            <a href="{{ route('tax-invoice.create', ['case_id' => $case->id, 'case_number' => $case->case_number]) }}" class="bg-white text-blue-700 px-3 py-1 rounded-md text-[11px] font-medium hover:bg-gray-50">
                                 Create Invoice
                             </a>
                             <a href="{{ route('receipt.create', ['case_id' => $case->id, 'case_number' => $case->case_number]) }}" class="bg-white text-emerald-700 px-3 py-1 rounded-md text-[11px] font-medium hover:bg-gray-50">
@@ -412,14 +412,14 @@
             </div>
 
             <!-- Case Timeline -->
-            <div class="bg-gray-50 p-4 rounded-sm mb-6">
-                <div class="p-2 border-b border-gray-200 bg-gradient-to-r from-green-600 to-green-700 text-white -mx-4 -mt-4">
+            <div class="bg-blue-50 p-4 rounded-sm mb-6">
+                <div class="p-2 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700 text-white -mx-4 -mt-4">
                     <div class="flex justify-between items-center">
                         <div class="flex items-center">
                             <span class="material-icons mr-2 text-xs">timeline</span>
                             <h2 class="text-sm font-semibold">Case Timeline</h2>
                         </div>
-                        <button @click="$dispatch('open-modal', 'add-timeline')" class="bg-white text-green-600 px-3 py-1 rounded-md text-xs font-medium flex items-center hover:bg-gray-50 transition-colors">
+                        <button @click="$dispatch('open-modal', 'add-timeline')" class="bg-white text-blue-600 px-3 py-1 rounded-md text-xs font-medium flex items-center hover:bg-gray-50 transition-colors">
                             <span class="material-icons text-xs mr-1">add</span>
                             Add Event
                         </button>
@@ -441,14 +441,8 @@
                                     <div class="relative flex items-start">
                                         <!-- Timeline Marker (Left) -->
                                         <div class="absolute left-56 transform -translate-x-1/2">
-                                            <div class="w-4 h-4 {{ $event->getStatusColor() }} rounded-full border-2 border-white shadow-sm flex items-center justify-center">
-                                                @if($event->isCompleted())
-                                                    <span class="material-icons text-white text-xs">check</span>
-                                                @elseif($event->isActive())
-                                                    <div class="w-2 h-2 bg-white rounded-full"></div>
-                                                @else
-                                                    <span class="material-icons text-white text-xs">{{ $event->getStatusIcon() }}</span>
-                                                @endif
+                                            <div class="w-5 h-5 {{ $event->getStatusColor() }} rounded-full border-2 border-white shadow-sm flex items-center justify-center">
+                                                <span class="material-icons text-white text-sm">{{ $event->getStatusIcon() }}</span>
                                             </div>
                                         </div>
                                         
@@ -466,25 +460,20 @@
                                         <div class="ml-8 flex-1 pl-4">
                                             <div class="flex justify-between items-start mb-2">
                                                 <h3 class="text-xs font-medium text-gray-900">{{ $event->title }}</h3>
-                                                <button @click="$dispatch('open-modal', 'edit-timeline-{{ $event->id }}')" class="text-gray-400 hover:text-blue-600 transition-colors" title="Edit Event">
-                                                    <span class="material-icons text-sm">edit</span>
-                                                </button>
+                                                <div class="flex space-x-1">
+                                                    <button @click="console.log('Edit button clicked for event {{ $event->id }}'); $dispatch('open-modal', 'edit-timeline-{{ $event->id }}')" class="text-gray-400 hover:text-blue-600 transition-colors" title="Edit Event">
+                                                        <span class="material-icons text-sm">edit</span>
+                                                    </button>
+                                                    <button @click="deleteTimelineEvent({{ $event->id }})" class="text-gray-400 hover:text-red-600 transition-colors" title="Delete Event">
+                                                        <span class="material-icons text-sm">delete</span>
+                                                    </button>
+                                                </div>
                                             </div>
                                             <p class="text-xs text-gray-600 leading-relaxed mb-3">
                                                 {{ $event->description }}
                                             </p>
                                             
-                                            <!-- Interactive Elements for Active Events -->
-                                            @if($event->isActive())
-                                                <div class="flex flex-col space-y-2">
-                                                    <button class="px-4 py-2 text-blue-600 border border-blue-600 rounded text-xs font-medium bg-white hover:bg-blue-50 transition-colors w-fit">
-                                                        REFRESH
-                                                    </button>
-                                                    <a href="#" class="text-blue-600 text-xs hover:underline w-fit">
-                                                        CHOOSE ANOTHER METHOD
-                                                    </a>
-                                                </div>
-                                            @endif
+                                            <!-- Interactive Elements for Active Events - Removed as not needed -->
                                             
                                             <!-- Event Metadata -->
                                             @if($event->metadata && count($event->metadata) > 0)
@@ -515,14 +504,14 @@
             </div>
 
             <!-- Documents -->
-            <div class="bg-gray-50 p-4 rounded-sm mb-6">
-                <div class="p-2 border-b border-gray-200 bg-gradient-to-r from-purple-600 to-purple-700 text-white -mx-4 -mt-4">
+            <div class="bg-blue-50 p-4 rounded-sm mb-6">
+                <div class="p-2 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700 text-white -mx-4 -mt-4">
                     <div class="flex justify-between items-center">
                         <div class="flex items-center">
                             <span class="material-icons mr-2 text-xs">folder</span>
                             <h2 class="text-sm font-semibold">Documents</h2>
                         </div>
-                        <button @click="$dispatch('open-modal', 'file-management')" class="bg-white text-purple-600 px-3 py-1 rounded-md text-xs font-medium flex items-center hover:bg-gray-50 transition-colors">
+                        <button @click="$dispatch('open-modal', 'file-management')" class="bg-white text-blue-600 px-3 py-1 rounded-md text-xs font-medium flex items-center hover:bg-gray-50 transition-colors">
                             <span class="material-icons text-xs mr-1">cloud_upload</span>
                             Upload File
                         </button>
@@ -568,34 +557,44 @@
             </div>
 
             <!-- Quick Actions -->
-            <div class="bg-gray-50 p-4 rounded-sm mb-6">
-                <div class="p-2 border-b border-gray-200 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white -mx-4 -mt-4">
+            <div class="bg-blue-50 p-4 rounded-sm mb-6">
+                <div class="p-2 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700 text-white -mx-4 -mt-4">
                     <div class="flex items-center">
                         <span class="material-icons mr-2 text-xs">flash_on</span>
                         <h2 class="text-sm font-semibold">Quick Actions</h2>
                     </div>
                 </div>
                 <div class="p-4">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <button class="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors border border-blue-100">
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                        <a href="{{ route('tax-invoice.create') }}?case_id={{ $case->id }}" class="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors border border-blue-100">
                             <span class="material-icons text-blue-600 text-lg mb-2">receipt</span>
                             <span class="text-[11px] font-medium text-blue-700">Create Invoice</span>
-                        </button>
-                        
-                        <button class="flex flex-col items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors border border-green-100">
+                        </a>
+
+                        <a href="{{ route('calendar') }}" class="flex flex-col items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors border border-green-100">
                             <span class="material-icons text-green-600 text-lg mb-2">event</span>
                             <span class="text-[11px] font-medium text-green-700">Schedule Hearing</span>
-                        </button>
-                        
-                        <button class="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors border border-purple-100">
+                        </a>
+
+                        <a href="mailto:{{ $case->client->email ?? '' }}?subject=Regarding Case: {{ $case->case_number }}" class="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors border border-purple-100">
                             <span class="material-icons text-purple-600 text-lg mb-2">email</span>
                             <span class="text-[11px] font-medium text-purple-700">Send Email</span>
-                        </button>
-                        
-                        <button class="flex flex-col items-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors border border-orange-100">
+                        </a>
+
+                        <a href="tel:{{ $case->client->phone ?? '' }}" class="flex flex-col items-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors border border-orange-100">
                             <span class="material-icons text-orange-600 text-lg mb-2">phone</span>
                             <span class="text-[11px] font-medium text-orange-700">Call Client</span>
-                        </button>
+                        </a>
+
+                        <a href="{{ route('quotation.create') }}?case_id={{ $case->id }}" class="flex flex-col items-center p-4 bg-teal-50 rounded-lg hover:bg-teal-100 transition-colors border border-teal-100">
+                            <span class="material-icons text-teal-600 text-lg mb-2">request_quote</span>
+                            <span class="text-[11px] font-medium text-teal-700">Create Quote</span>
+                        </a>
+
+                        <a href="{{ route('file-management.index') }}?case_id={{ $case->id }}" class="flex flex-col items-center p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors border border-indigo-100">
+                            <span class="material-icons text-indigo-600 text-lg mb-2">folder_open</span>
+                            <span class="text-[11px] font-medium text-indigo-700">Manage Files</span>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -707,6 +706,8 @@
         event_time: '',
         description: '',
         location: '',
+        add_to_calendar: false,
+        reminder: '',
         status: '',
         priority: '',
         case_type: '',
@@ -720,8 +721,8 @@
     },
     isSubmitting: false
 }" 
-     @open-modal.window="if ($event.detail === 'add-timeline') open = true"
-     @close-modal.window="open = false"
+     @open-modal.window="if ($event.detail === 'add-timeline') { open = true; window.activeTimelineModal = $data; }"
+     @close-modal.window="open = false; if (window.activeTimelineModal === $data) window.activeTimelineModal = null;"
      x-show="open" 
      x-cloak
      class="fixed inset-0 z-50 overflow-y-auto" 
@@ -766,11 +767,9 @@
                                     <label class="block text-xs font-medium text-gray-700 mb-1">Event Status *</label>
                                     <select x-model="timelineData.status" name="status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500" required>
                                         <option value="">Select Status</option>
-                                        <option value="completed">Completed</option>
-                                        <option value="active">On Progress</option>
-                                        <option value="active">On Going</option>
-                                        <option value="active">Processing</option>
-                                        <option value="cancelled">Cancelled</option>
+                                        @foreach($eventStatuses as $eventStatus)
+                                            <option value="{{ $eventStatus->name }}">{{ $eventStatus->display_name }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                             </div>
@@ -790,7 +789,53 @@
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
                                 <textarea x-model="timelineData.description" name="description" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500" rows="3" placeholder="Enter event description"></textarea>
                             </div>
-                            
+
+                            <!-- Add to Calendar Option -->
+                            <div class="bg-blue-50 p-4 rounded-sm border border-blue-200">
+                                <div class="flex items-start space-x-3">
+                                    <div class="flex items-center h-5">
+                                        <input type="checkbox" x-model="timelineData.add_to_calendar" name="add_to_calendar" value="1"
+                                               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="text-xs font-medium text-gray-700 flex items-center">
+                                            <span class="material-icons text-blue-600 text-sm mr-1">event_available</span>
+                                            Add to Calendar
+                                        </label>
+                                        <p class="text-xs text-gray-600 mt-1">
+                                            This event will appear in the calendar view and can be used for scheduling and reminders.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Calendar-specific fields (shown when checkbox is checked) -->
+                                <div x-show="timelineData.add_to_calendar" x-transition class="mt-4 pt-4 border-t border-blue-200">
+                                    <div class="grid grid-cols-1 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Reminder</label>
+                                            <select x-model="timelineData.reminder" name="reminder" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                <option value="">No Reminder</option>
+                                                <option value="15">15 minutes before</option>
+                                                <option value="30">30 minutes before</option>
+                                                <option value="60">1 hour before</option>
+                                                <option value="1440">1 day before</option>
+                                                <option value="2880">2 days before</option>
+                                                <option value="10080">1 week before</option>
+                                            </select>
+                                        </div>
+                                        <div class="bg-gray-50 p-3 rounded border">
+                                            <div class="flex items-center text-xs text-gray-600">
+                                                <span class="material-icons text-sm mr-2">info</span>
+                                                <div>
+                                                    <p><strong>Location:</strong> Will use Court Location from Case Information</p>
+                                                    <p><strong>Category:</strong> Will use Event Type selected above</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- COMPREHENSIVE METADATA FIELDS -->
                             <div class="border-t border-gray-200 pt-4 mt-4">
                                 <div class="flex justify-between items-center mb-3">
@@ -903,30 +948,10 @@
 
 <!-- Edit Timeline Event Modals -->
 @foreach($case->timeline as $event)
-<div x-data="{
-    open: false,
-    timelineData: {
-        title: @json($event->title ?? ''),
-        event_type: @json($event->event_type ?? ''),
-        event_date: @json($event->event_date ? $event->event_date->format('Y-m-d') : ''),
-        event_time: @json($event->event_time ? $event->event_time->format('H:i') : ''),
-        description: @json($event->description ?? ''),
-        location: @json($event->location ?? ''),
-        status: @json($event->status ?? ''),
-        priority: @json($event->metadata['priority'] ?? ''),
-        case_type: @json($event->metadata['case_type'] ?? ''),
-        case_number: @json($event->metadata['case_number'] ?? ''),
-        judge_name: @json($event->metadata['judge_name'] ?? ''),
-        filing_date: @json($event->metadata['filing_date'] ?? ''),
-        court_location: @json($event->metadata['court_location'] ?? ''),
-        hearing_type: @json($event->metadata['hearing_type'] ?? ''),
-        parties_notified: @json($event->metadata['parties_notified'] ?? ''),
-        custom_metadata: []
-    },
-    isSubmitting: false
-}"
-     @open-modal.window="if ($event.detail === 'edit-timeline-{{ $event->id }}') open = true"
-     @close-modal.window="open = false"
+<div x-data="editTimelineModal{{ $event->id }}()"
+     id="edit-timeline-modal-{{ $event->id }}"
+     @open-modal.window="console.log('Modal event received:', $event.detail, 'Expected:', 'edit-timeline-{{ $event->id }}'); if ($event.detail === 'edit-timeline-{{ $event->id }}') { console.log('Opening modal for event {{ $event->id }}'); open = true; window.activeTimelineModal = $data; }"
+     @close-modal.window="open = false; if (window.activeTimelineModal === $data) window.activeTimelineModal = null;"
      x-show="open"
      x-cloak
      class="fixed inset-0 z-50 overflow-y-auto"
@@ -947,7 +972,7 @@
                         </div>
                         <div class="border-b border-gray-200 mb-6"></div>
 
-                        <form class="space-y-4" @submit.prevent="submitEditTimelineEvent({{ $event->id }})">
+                        <form class="space-y-4" @submit.prevent="submitEditTimelineEventFromForm({{ $event->id }}, $data)">
                             @csrf
                             @method('PUT')
                             <div>
@@ -972,11 +997,9 @@
                                     <label class="block text-xs font-medium text-gray-700 mb-1">Event Status *</label>
                                     <select x-model="timelineData.status" name="status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                                         <option value="">Select Status</option>
-                                        <option value="completed">Completed</option>
-                                        <option value="active">On Progress</option>
-                                        <option value="active">On Going</option>
-                                        <option value="active">Processing</option>
-                                        <option value="cancelled">Cancelled</option>
+                                        @foreach($eventStatuses as $eventStatus)
+                                            <option value="{{ $eventStatus->name }}">{{ $eventStatus->display_name }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                             </div>
@@ -995,6 +1018,52 @@
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
                                 <textarea x-model="timelineData.description" name="description" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Enter event description"></textarea>
+                            </div>
+
+                            <!-- Add to Calendar Option -->
+                            <div class="bg-blue-50 p-4 rounded-sm border border-blue-200">
+                                <div class="flex items-start space-x-3">
+                                    <div class="flex items-center h-5">
+                                        <input type="checkbox" x-model="timelineData.add_to_calendar" name="add_to_calendar" value="1"
+                                               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="text-xs font-medium text-gray-700 flex items-center">
+                                            <span class="material-icons text-blue-600 text-sm mr-1">event_available</span>
+                                            Add to Calendar
+                                        </label>
+                                        <p class="text-xs text-gray-600 mt-1">
+                                            This event will appear in the calendar view and can be used for scheduling and reminders.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Calendar-specific fields (shown when checkbox is checked) -->
+                                <div x-show="timelineData.add_to_calendar" x-transition class="mt-4 pt-4 border-t border-blue-200">
+                                    <div class="grid grid-cols-1 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Reminder</label>
+                                            <select x-model="timelineData.reminder" name="reminder" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                <option value="">No Reminder</option>
+                                                <option value="15">15 minutes before</option>
+                                                <option value="30">30 minutes before</option>
+                                                <option value="60">1 hour before</option>
+                                                <option value="1440">1 day before</option>
+                                                <option value="2880">2 days before</option>
+                                                <option value="10080">1 week before</option>
+                                            </select>
+                                        </div>
+                                        <div class="bg-gray-50 p-3 rounded border">
+                                            <div class="flex items-center text-xs text-gray-600">
+                                                <span class="material-icons text-sm mr-2">info</span>
+                                                <div>
+                                                    <p><strong>Location:</strong> Will use Court Location from Case Information</p>
+                                                    <p><strong>Category:</strong> Will use Event Type selected above</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- COMPREHENSIVE METADATA FIELDS -->
@@ -1096,7 +1165,7 @@
                 </div>
             </div>
             <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button type="button" @click="submitEditTimelineEvent({{ $event->id }})" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs font-medium" :disabled="isSubmitting">
+                <button type="button" @click="submitEditTimelineEventFromForm({{ $event->id }}, $data)" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs font-medium" :disabled="isSubmitting">
                     <span x-text="isSubmitting ? 'Updating...' : 'Update Event'"></span>
                 </button>
                 <button @click="open = false" type="button" class="mt-3 bg-white text-gray-700 hover:bg-gray-50 px-3 py-1 rounded-md text-xs font-medium border border-gray-300 sm:mt-0 sm:ml-3">
@@ -1278,6 +1347,39 @@
 </div>
 
 <script>
+// Global variable to track active modal
+window.activeTimelineModal = null;
+
+// Edit Timeline Modal Functions
+@foreach($case->timeline as $event)
+function editTimelineModal{{ $event->id }}() {
+    return {
+        open: false,
+        timelineData: {
+            title: {{ Js::from($event->title ?? '') }},
+            event_type: {{ Js::from($event->event_type ?? '') }},
+            event_date: {{ Js::from($event->event_date ? $event->event_date->format('Y-m-d') : '') }},
+            event_time: {{ Js::from($event->event_date ? $event->event_date->format('H:i') : '') }},
+            description: {{ Js::from($event->description ?? '') }},
+            location: {{ Js::from($event->location ?? '') }},
+            add_to_calendar: {{ Js::from(isset($event->metadata['add_to_calendar']) ? (bool)$event->metadata['add_to_calendar'] : false) }},
+            reminder: {{ Js::from($event->metadata['reminder'] ?? '') }},
+            status: {{ Js::from($event->status ?? '') }},
+            priority: {{ Js::from($event->metadata['priority'] ?? '') }},
+            case_type: {{ Js::from($event->metadata['case_type'] ?? '') }},
+            case_number: {{ Js::from($event->metadata['case_number'] ?? '') }},
+            judge_name: {{ Js::from($event->metadata['judge_name'] ?? '') }},
+            filing_date: {{ Js::from($event->metadata['filing_date'] ?? '') }},
+            court_location: {{ Js::from($event->metadata['court_location'] ?? '') }},
+            hearing_type: {{ Js::from($event->metadata['hearing_type'] ?? '') }},
+            parties_notified: {{ Js::from($event->metadata['parties_notified'] ?? '') }},
+            custom_metadata: []
+        },
+        isSubmitting: false
+    }
+}
+@endforeach
+
 // File input handling for modal
 document.getElementById('modalFileInput').addEventListener('change', function(e) {
     const files = Array.from(e.target.files);
@@ -1360,7 +1462,11 @@ function submitTimelineEvent() {
     formData.append('location', alpine.timelineData.location || '');
     formData.append('status', alpine.timelineData.status || ''); // Add status to form data
     formData.append('_token', csrfToken);
-    
+
+    // Append calendar fields
+    formData.append('add_to_calendar', alpine.timelineData.add_to_calendar ? '1' : '0');
+    formData.append('reminder', alpine.timelineData.reminder || '');
+
     // Append metadata fields
     formData.append('priority', alpine.timelineData.priority || '');
     formData.append('case_type', alpine.timelineData.case_type || '');
@@ -1468,18 +1574,71 @@ function resetTimelineForm() {
 
 // Auto-fill current case data
 function autoFillCurrentCase() {
-    const modal = document.querySelector('[x-data*="timelineData"]');
-    if (!modal) return;
+    // Try to find the active modal (either add or edit)
+    let alpine = null;
 
-    const alpine = Alpine.$data(modal);
-    if (!alpine) return;
+    // Check for Add Timeline modal
+    const addModal = document.querySelector('[x-data*="timelineData"]');
+    if (addModal && addModal.style.display !== 'none') {
+        try {
+            alpine = addModal._x_dataStack ? addModal._x_dataStack[0] : null;
+            if (!alpine && window.Alpine) {
+                alpine = window.Alpine.$data(addModal);
+            }
+        } catch (e) {
+            console.error('Error accessing Add modal Alpine data:', e);
+        }
+    }
+
+    // Check for Edit Timeline modals if add modal not found
+    if (!alpine) {
+        const editModals = document.querySelectorAll('[id^="edit-timeline-modal-"]');
+        console.log('Found edit modals:', editModals.length);
+
+        for (let modal of editModals) {
+            try {
+                // Get Alpine data first
+                let modalAlpine = modal._x_dataStack ? modal._x_dataStack[0] : null;
+                if (!modalAlpine && window.Alpine) {
+                    modalAlpine = window.Alpine.$data(modal);
+                }
+
+                console.log('Modal:', modal.id, 'Alpine data:', modalAlpine);
+
+                // Check if modal is open via Alpine data
+                if (modalAlpine && modalAlpine.open === true && modalAlpine.timelineData) {
+                    console.log('Found open edit modal:', modal.id);
+                    alpine = modalAlpine;
+                    break;
+                }
+            } catch (e) {
+                console.error('Error accessing Edit modal Alpine data:', e);
+            }
+        }
+    }
+
+    // Fallback to global active modal
+    if (!alpine && window.activeTimelineModal && window.activeTimelineModal.timelineData) {
+        console.log('Using global active modal as fallback');
+        alpine = window.activeTimelineModal;
+    }
+
+    if (!alpine || !alpine.timelineData) {
+        console.error('Could not find active modal or Alpine data');
+        console.log('Available modals:', document.querySelectorAll('[id^="edit-timeline-modal-"]'));
+        console.log('Global active modal:', window.activeTimelineModal);
+        alert('Error: Could not access form data. Please make sure a modal is open.');
+        return;
+    }
+
+    console.log('Auto-filling case data for:', alpine);
 
     // Populate fields from the current case object
-    alpine.timelineData.case_type = @json($case->caseType->description ?? "");
-    alpine.timelineData.case_number = @json($case->case_number ?? "");
-    alpine.timelineData.court_location = @json($case->court_location ?? "");
-    // The parties_notified field is now a single string, not an array of IDs.
-    // We need to set it to the ID of the first party if available, or an empty string.
+    alpine.timelineData.case_type = {{ Js::from($case->caseType->description ?? "") }};
+    alpine.timelineData.case_number = {{ Js::from($case->case_number ?? "") }};
+    alpine.timelineData.court_location = {{ Js::from($case->court_location ?? "") }};
+
+    // Set parties notified
     @if($case->parties->count() > 0)
         alpine.timelineData.parties_notified = {{ $case->parties->first()->id }};
     @else
@@ -1488,12 +1647,12 @@ function autoFillCurrentCase() {
 
     // Optional: Auto-fill other fields if they exist
     @if($case->priority_level)
-        alpine.timelineData.priority = @json($case->priority_level);
+        alpine.timelineData.priority = {{ Js::from($case->priority_level) }};
     @endif
     @if($case->judge_name)
-        alpine.timelineData.judge_name = @json($case->judge_name);
+        alpine.timelineData.judge_name = {{ Js::from($case->judge_name) }};
     @endif
-    
+
     // Show success message
     alert('Current case data has been auto-filled!');
 }
@@ -1501,14 +1660,27 @@ function autoFillCurrentCase() {
 // Edit Timeline Event Function
 function submitEditTimelineEvent(eventId) {
     // Get the specific edit timeline modal
-    const modal = document.querySelector(`[x-data*="edit-timeline-${eventId}"]`);
+    const modal = document.getElementById(`edit-timeline-modal-${eventId}`);
     if (!modal) {
+        console.error('Modal not found for event ID:', eventId);
         return;
     }
 
     // Get Alpine.js data properly
-    const alpine = Alpine.$data(modal);
+    let alpine;
+    try {
+        alpine = modal._x_dataStack ? modal._x_dataStack[0] : null;
+        if (!alpine && window.Alpine) {
+            // Try alternative method
+            alpine = window.Alpine.$data(modal);
+        }
+    } catch (e) {
+        console.error('Error accessing Alpine.js data:', e);
+    }
+
     if (!alpine) {
+        console.error('Alpine.js data not found for modal:', eventId);
+        alert('Error: Could not access form data. Please refresh the page and try again.');
         return;
     }
 
@@ -1562,9 +1734,14 @@ function submitEditTimelineEvent(eventId) {
         }
     })
     .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         return response.json();
     })
     .then(data => {
+        console.log('Response data:', data);
         if (data.success) {
             // Show success message
             alert('Timeline event updated successfully!');
@@ -1575,15 +1752,144 @@ function submitEditTimelineEvent(eventId) {
             // Reload page to show updated timeline event
             window.location.reload();
         } else {
-            alert('Error: ' + data.message);
+            alert('Error: ' + (data.message || 'Unknown error occurred'));
         }
     })
     .catch(error => {
-        alert('Failed to update timeline event. Please try again.');
+        console.error('Fetch error:', error);
+        alert('Failed to update timeline event. Please check console for details.');
     })
     .finally(() => {
         alpine.isSubmitting = false;
     });
 }
+
+// Alternative approach using Alpine context directly
+function submitEditTimelineEventFromForm(eventId, alpineContext) {
+    console.log('submitEditTimelineEventFromForm called with:', eventId, alpineContext);
+
+    if (!alpineContext || !alpineContext.timelineData) {
+        console.error('Alpine context or timelineData not available');
+        alert('Error: Form data not accessible. Please refresh the page and try again.');
+        return;
+    }
+
+    if (alpineContext.isSubmitting) {
+        console.log('Already submitting, ignoring...');
+        return;
+    }
+
+    // Validate required fields
+    if (!alpineContext.timelineData.title || !alpineContext.timelineData.event_type || !alpineContext.timelineData.event_date || !alpineContext.timelineData.status) {
+        alert('Please fill in all required fields (Title, Event Type, Event Date, and Status)');
+        return;
+    }
+
+    alpineContext.isSubmitting = true;
+
+    // Get form data
+    const formData = new FormData();
+    formData.append('title', alpineContext.timelineData.title);
+    formData.append('event_type', alpineContext.timelineData.event_type);
+    formData.append('event_date', alpineContext.timelineData.event_date);
+    formData.append('event_time', alpineContext.timelineData.event_time || '');
+    formData.append('description', alpineContext.timelineData.description || '');
+    formData.append('location', alpineContext.timelineData.location || '');
+    formData.append('status', alpineContext.timelineData.status || '');
+    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+    formData.append('_method', 'PUT');
+
+    // Append calendar fields
+    formData.append('add_to_calendar', alpineContext.timelineData.add_to_calendar ? '1' : '0');
+    formData.append('reminder', alpineContext.timelineData.reminder || '');
+
+    // Append metadata fields
+    formData.append('priority', alpineContext.timelineData.priority || '');
+    formData.append('case_type', alpineContext.timelineData.case_type || '');
+    formData.append('case_number', alpineContext.timelineData.case_number || '');
+    formData.append('judge_name', alpineContext.timelineData.judge_name || '');
+    formData.append('filing_date', alpineContext.timelineData.filing_date || '');
+    formData.append('court_location', alpineContext.timelineData.court_location || '');
+    formData.append('hearing_type', alpineContext.timelineData.hearing_type || '');
+    formData.append('parties_notified', alpineContext.timelineData.parties_notified || '');
+
+    // Append custom metadata
+    if (alpineContext.timelineData.custom_metadata) {
+        alpineContext.timelineData.custom_metadata.forEach(meta => {
+            if (meta.key && meta.value) {
+                formData.append(`custom_metadata[${meta.key}]`, meta.value);
+            }
+        });
+    }
+
+    console.log('Submitting to URL:', `/case/{{ $case->id }}/timeline/${eventId}`);
+
+    // Submit to backend
+    fetch(`/case/{{ $case->id }}/timeline/${eventId}`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+            // Show success message
+            alert('Timeline event updated successfully!');
+
+            // Close modal
+            alpineContext.open = false;
+
+            // Reload page to show updated timeline event
+            window.location.reload();
+        } else {
+            alert('Error: ' + (data.message || 'Unknown error occurred'));
+        }
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+        alert('Failed to update timeline event. Please check console for details.');
+    })
+    .finally(() => {
+        alpineContext.isSubmitting = false;
+    });
+}
+
+// Delete timeline event function
+function deleteTimelineEvent(eventId) {
+    if (!confirm('Are you sure you want to delete this timeline event? This action cannot be undone.')) {
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('_token', '{{ csrf_token() }}');
+    formData.append('_method', 'DELETE');
+
+    fetch(`{{ url('/case/' . $case->id . '/timeline') }}/${eventId}`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Timeline event deleted successfully!');
+            window.location.reload();
+        } else {
+            alert('Error: ' + (data.message || 'Failed to delete timeline event'));
+        }
+    })
+    .catch(error => {
+        console.error('Delete error:', error);
+        alert('Failed to delete timeline event. Please try again.');
+    });
+}
 </script>
-@endsection 
+@endsection

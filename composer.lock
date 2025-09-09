@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4ab7d16705c87755782b2a4d5f3992da",
+    "content-hash": "26c50e4255f2f7f89763fa440c3a53e4",
     "packages": [
         {
             "name": "barryvdh/laravel-dompdf",
@@ -3336,119 +3336,6 @@
             "time": "2023-04-04T09:54:51+00:00"
         },
         {
-            "name": "psr/http-server-handler",
-            "version": "1.0.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/php-fig/http-server-handler.git",
-                "reference": "84c4fb66179be4caaf8e97bd239203245302e7d4"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/http-server-handler/zipball/84c4fb66179be4caaf8e97bd239203245302e7d4",
-                "reference": "84c4fb66179be4caaf8e97bd239203245302e7d4",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.0",
-                "psr/http-message": "^1.0 || ^2.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.0.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Psr\\Http\\Server\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "PHP-FIG",
-                    "homepage": "https://www.php-fig.org/"
-                }
-            ],
-            "description": "Common interface for HTTP server-side request handler",
-            "keywords": [
-                "handler",
-                "http",
-                "http-interop",
-                "psr",
-                "psr-15",
-                "psr-7",
-                "request",
-                "response",
-                "server"
-            ],
-            "support": {
-                "source": "https://github.com/php-fig/http-server-handler/tree/1.0.2"
-            },
-            "time": "2023-04-10T20:06:20+00:00"
-        },
-        {
-            "name": "psr/http-server-middleware",
-            "version": "1.0.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/php-fig/http-server-middleware.git",
-                "reference": "c1481f747daaa6a0782775cd6a8c26a1bf4a3829"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/http-server-middleware/zipball/c1481f747daaa6a0782775cd6a8c26a1bf4a3829",
-                "reference": "c1481f747daaa6a0782775cd6a8c26a1bf4a3829",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.0",
-                "psr/http-message": "^1.0 || ^2.0",
-                "psr/http-server-handler": "^1.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.0.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Psr\\Http\\Server\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "PHP-FIG",
-                    "homepage": "https://www.php-fig.org/"
-                }
-            ],
-            "description": "Common interface for HTTP server-side middleware",
-            "keywords": [
-                "http",
-                "http-interop",
-                "middleware",
-                "psr",
-                "psr-15",
-                "psr-7",
-                "request",
-                "response"
-            ],
-            "support": {
-                "issues": "https://github.com/php-fig/http-server-middleware/issues",
-                "source": "https://github.com/php-fig/http-server-middleware/tree/1.0.2"
-            },
-            "time": "2023-04-11T06:14:47+00:00"
-        },
-        {
             "name": "psr/log",
             "version": "3.0.2",
             "source": {
@@ -4011,29 +3898,45 @@
             "time": "2025-08-05T09:57:14+00:00"
         },
         {
-            "name": "shieldon/event-dispatcher",
-            "version": "1.0.0",
+            "name": "spatie/laravel-activitylog",
+            "version": "4.10.2",
             "source": {
                 "type": "git",
-                "url": "https://github.com/terrylinooo/event-dispatcher.git",
-                "reference": "7ade01568f13c75f938c02f8054a008a082de0e5"
+                "url": "https://github.com/spatie/laravel-activitylog.git",
+                "reference": "bb879775d487438ed9a99e64f09086b608990c10"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/terrylinooo/event-dispatcher/zipball/7ade01568f13c75f938c02f8054a008a082de0e5",
-                "reference": "7ade01568f13c75f938c02f8054a008a082de0e5",
+                "url": "https://api.github.com/repos/spatie/laravel-activitylog/zipball/bb879775d487438ed9a99e64f09086b608990c10",
+                "reference": "bb879775d487438ed9a99e64f09086b608990c10",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.1.0"
+                "illuminate/config": "^8.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0",
+                "illuminate/database": "^8.69 || ^9.27 || ^10.0 || ^11.0 || ^12.0",
+                "illuminate/support": "^8.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0",
+                "php": "^8.1",
+                "spatie/laravel-package-tools": "^1.6.3"
             },
             "require-dev": {
-                "phpunit/phpunit": "^7"
+                "ext-json": "*",
+                "orchestra/testbench": "^6.23 || ^7.0 || ^8.0 || ^9.0 || ^10.0",
+                "pestphp/pest": "^1.20 || ^2.0 || ^3.0"
             },
             "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Spatie\\Activitylog\\ActivitylogServiceProvider"
+                    ]
+                }
+            },
             "autoload": {
+                "files": [
+                    "src/helpers.php"
+                ],
                 "psr-4": {
-                    "Shieldon\\Event\\": "src/Event/"
+                    "Spatie\\Activitylog\\": "src"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -4042,50 +3945,79 @@
             ],
             "authors": [
                 {
-                    "name": "Terry Lin",
-                    "email": "contact@terryl.in",
-                    "homepage": "https://terryl.in",
+                    "name": "Freek Van der Herten",
+                    "email": "freek@spatie.be",
+                    "homepage": "https://spatie.be",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Sebastian De Deyne",
+                    "email": "sebastian@spatie.be",
+                    "homepage": "https://spatie.be",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Tom Witkowski",
+                    "email": "dev.gummibeer@gmail.com",
+                    "homepage": "https://gummibeer.de",
                     "role": "Developer"
                 }
             ],
-            "description": "Event dispatcher for PHP.",
-            "homepage": "https://github.com/terrylinooo/event-dispatcher",
+            "description": "A very simple activity logger to monitor the users of your website or application",
+            "homepage": "https://github.com/spatie/activitylog",
             "keywords": [
-                "HOOK",
-                "dispatcher",
-                "event",
-                "wordpress-filter"
+                "activity",
+                "laravel",
+                "log",
+                "spatie",
+                "user"
             ],
             "support": {
-                "issues": "https://github.com/terrylinooo/event-dispatcher/issues",
-                "source": "https://github.com/terrylinooo/event-dispatcher/tree/1.0.0"
+                "issues": "https://github.com/spatie/laravel-activitylog/issues",
+                "source": "https://github.com/spatie/laravel-activitylog/tree/4.10.2"
             },
-            "time": "2020-08-14T02:15:41+00:00"
+            "funding": [
+                {
+                    "url": "https://spatie.be/open-source/support-us",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/spatie",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-06-15T06:59:49+00:00"
         },
         {
-            "name": "shieldon/messenger",
-            "version": "1.6.2",
+            "name": "spatie/laravel-package-tools",
+            "version": "1.92.7",
             "source": {
                 "type": "git",
-                "url": "https://github.com/terrylinooo/messenger.git",
-                "reference": "5a533e513ed34163ac1f89f4ef578cad12c9cacd"
+                "url": "https://github.com/spatie/laravel-package-tools.git",
+                "reference": "f09a799850b1ed765103a4f0b4355006360c49a5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/terrylinooo/messenger/zipball/5a533e513ed34163ac1f89f4ef578cad12c9cacd",
-                "reference": "5a533e513ed34163ac1f89f4ef578cad12c9cacd",
+                "url": "https://api.github.com/repos/spatie/laravel-package-tools/zipball/f09a799850b1ed765103a4f0b4355006360c49a5",
+                "reference": "f09a799850b1ed765103a4f0b4355006360c49a5",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.1.0"
+                "illuminate/contracts": "^9.28|^10.0|^11.0|^12.0",
+                "php": "^8.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^7"
+                "mockery/mockery": "^1.5",
+                "orchestra/testbench": "^7.7|^8.0|^9.0|^10.0",
+                "pestphp/pest": "^1.23|^2.1|^3.1",
+                "phpunit/php-code-coverage": "^9.0|^10.0|^11.0",
+                "phpunit/phpunit": "^9.5.24|^10.5|^11.5",
+                "spatie/pest-plugin-test-time": "^1.1|^2.2"
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "Shieldon\\Messenger\\": "src/Messenger"
+                    "Spatie\\LaravelPackageTools\\": "src"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -4094,196 +4026,28 @@
             ],
             "authors": [
                 {
-                    "name": "Terry Lin",
-                    "email": "contact@terryl.in",
-                    "homepage": "https://terryl.in",
+                    "name": "Freek Van der Herten",
+                    "email": "freek@spatie.be",
                     "role": "Developer"
                 }
             ],
-            "description": "Sending messages to the third-party services made easy for PHP.",
-            "homepage": "https://github.com/terrylinooo/messenger",
+            "description": "Tools for creating Laravel packages",
+            "homepage": "https://github.com/spatie/laravel-package-tools",
             "keywords": [
-                "Messenger",
-                "mailer",
-                "message",
-                "smtp"
+                "laravel-package-tools",
+                "spatie"
             ],
             "support": {
-                "issues": "https://github.com/terrylinooo/messenger/issues",
-                "source": "https://github.com/terrylinooo/messenger/tree/1.6.2"
+                "issues": "https://github.com/spatie/laravel-package-tools/issues",
+                "source": "https://github.com/spatie/laravel-package-tools/tree/1.92.7"
             },
-            "time": "2020-07-11T18:18:07+00:00"
-        },
-        {
-            "name": "shieldon/psr-http",
-            "version": "1.2.7",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/terrylinooo/psr-http.git",
-                "reference": "79cd50a871cad912fbe14fbf7eea44831e3da854"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/terrylinooo/psr-http/zipball/79cd50a871cad912fbe14fbf7eea44831e3da854",
-                "reference": "79cd50a871cad912fbe14fbf7eea44831e3da854",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.1.0",
-                "psr/http-factory": "^1.0",
-                "psr/http-message": "^1.1 || ^2.0",
-                "psr/http-server-handler": "^1.0",
-                "psr/http-server-middleware": "^1.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^9"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Shieldon\\Psr7\\": "src/Psr7",
-                    "Shieldon\\Psr15\\": "src/Psr15",
-                    "Shieldon\\Psr17\\": "src/Psr17"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
+            "funding": [
                 {
-                    "name": "Terry Lin",
-                    "email": "contact@terryl.in",
-                    "homepage": "https://terryl.in",
-                    "role": "Developer"
+                    "url": "https://github.com/spatie",
+                    "type": "github"
                 }
             ],
-            "description": "HTTP implementation for PSR standard.",
-            "homepage": "https://github.com/terrylinooo/psr-http",
-            "keywords": [
-                "php-http",
-                "psr-15",
-                "psr-17",
-                "psr7"
-            ],
-            "support": {
-                "issues": "https://github.com/terrylinooo/psr-http/issues",
-                "source": "https://github.com/terrylinooo/psr-http/tree/1.2.7"
-            },
-            "time": "2023-06-06T07:59:41+00:00"
-        },
-        {
-            "name": "shieldon/shieldon",
-            "version": "2.1.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/terrylinooo/shieldon.git",
-                "reference": "72cf49cf58d9828816e8e445fb1708ceb18676ec"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/terrylinooo/shieldon/zipball/72cf49cf58d9828816e8e445fb1708ceb18676ec",
-                "reference": "72cf49cf58d9828816e8e445fb1708ceb18676ec",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.1.0",
-                "psr/http-factory": "*",
-                "psr/http-message": "*",
-                "shieldon/event-dispatcher": "^1",
-                "shieldon/messenger": "^1",
-                "shieldon/psr-http": "^1.2",
-                "shieldon/web-security": "^1"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^8 || ^9 || ^10"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Shieldon\\Firewall\\": "src/Firewall"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Terry Lin",
-                    "email": "contact@terryl.in",
-                    "homepage": "https://terryl.in",
-                    "role": "Developer"
-                }
-            ],
-            "description": "Web application firewall for PHP.",
-            "homepage": "https://github.com/terrylinooo/shieldon",
-            "keywords": [
-                "anti-scraping",
-                "firewall",
-                "web-application-firewall",
-                "web-security",
-                "www-authenticate",
-                "xss-filter",
-                "xss-protection"
-            ],
-            "support": {
-                "issues": "https://github.com/terrylinooo/shieldon/issues",
-                "source": "https://github.com/terrylinooo/shieldon/tree/2.1.1"
-            },
-            "time": "2023-06-17T08:48:17+00:00"
-        },
-        {
-            "name": "shieldon/web-security",
-            "version": "1.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/terrylinooo/web-security.git",
-                "reference": "05a5837db2f8777548ed945f676aaccfc7a35427"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/terrylinooo/web-security/zipball/05a5837db2f8777548ed945f676aaccfc7a35427",
-                "reference": "05a5837db2f8777548ed945f676aaccfc7a35427",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.1.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^7"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Shieldon\\Security\\": "src/Security/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Terry Lin",
-                    "email": "contact@terryl.in",
-                    "homepage": "https://terryl.in",
-                    "role": "Developer"
-                }
-            ],
-            "description": "XSS protection for PHP.",
-            "homepage": "https://github.com/terrylinooo/web-security",
-            "keywords": [
-                "firewall",
-                "web-security",
-                "xss-filter",
-                "xss-protection"
-            ],
-            "support": {
-                "issues": "https://github.com/terrylinooo/web-security/issues",
-                "source": "https://github.com/terrylinooo/web-security/tree/master"
-            },
-            "time": "2020-07-22T08:06:14+00:00"
+            "time": "2025-07-17T15:46:43+00:00"
         },
         {
             "name": "spatie/laravel-permission",

@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class PreQuotation extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'quotation_no',
@@ -80,5 +82,13 @@ class PreQuotation extends Model
             'cancelled' => 'Cancelled',
             default => ucfirst($this->status ?? 'pending'),
         };
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['quotation_no', 'client_name', 'status', 'total_amount'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

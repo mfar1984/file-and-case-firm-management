@@ -56,13 +56,7 @@ DB_DATABASE=your_database_name
 DB_USERNAME=your_database_user
 DB_PASSWORD=your_database_password
 
-# DDoS Protection (Fixed)
-DDOS_PROTECTION_ENABLED=true
-DDOS_RATE_LIMIT_MINUTE=100
-DDOS_RATE_LIMIT_HOUR=1000
-DDOS_BLOCK_DURATION=3600
-DDOS_SHIELDON_ENABLED=false
-DDOS_LOGGING_ENABLED=true
+
 ```
 
 ### **Step 4: Set Permissions**

@@ -163,6 +163,17 @@ class QuotationController extends Controller
             ]);
         }
 
+        // Log quotation creation
+        activity()
+            ->performedOn($quotation)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'total_amount' => $total,
+                'items_count' => count($validated['items'])
+            ])
+            ->log("Quotation {$quotation->quotation_no} created");
+
         return redirect()->route('quotation.show', $quotation->id)->with('success', 'Quotation created');
     }
 
@@ -182,6 +193,16 @@ class QuotationController extends Controller
         $totalItems = $quotation->items->count();
         $totalPages = max(1, ceil($totalItems / $itemsPerPage));
         
+        // Log quotation print
+        activity()
+            ->performedOn($quotation)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'action' => 'print'
+            ])
+            ->log("Quotation {$quotation->quotation_no} printed");
+
         $pdf = Pdf::loadView('quotation-print', compact('quotation', 'firmSettings', 'totalPages'));
         return $pdf->download('quotation-' . $quotation->quotation_no . '.pdf');
     }
@@ -189,6 +210,19 @@ class QuotationController extends Controller
     public function destroy($id)
     {
         $quotation = Quotation::with('items')->findOrFail($id);
+
+        // Log quotation deletion before deleting
+        activity()
+            ->performedOn($quotation)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'quotation_no' => $quotation->quotation_no,
+                'total_amount' => $quotation->total,
+                'status' => $quotation->status
+            ])
+            ->log("Quotation {$quotation->quotation_no} deleted");
+
         // Simple delete with cascade of items
         foreach ($quotation->items as $item) {
             $item->delete();
@@ -211,7 +245,18 @@ class QuotationController extends Controller
             }
             
             $quotation->update(['status' => 'accepted']);
-            
+
+            // Log the accept action
+            activity()
+                ->performedOn($quotation)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'old_status' => 'pending',
+                    'new_status' => 'accepted'
+                ])
+                ->log("Quotation {$quotation->quotation_no} accepted");
+
             return response()->json([
                 'success' => true,
                 'message' => 'Quotation accepted successfully',
@@ -240,7 +285,18 @@ class QuotationController extends Controller
             }
             
             $quotation->update(['status' => 'rejected']);
-            
+
+            // Log the reject action
+            activity()
+                ->performedOn($quotation)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'old_status' => 'pending',
+                    'new_status' => 'rejected'
+                ])
+                ->log("Quotation {$quotation->quotation_no} rejected");
+
             return response()->json([
                 'success' => true,
                 'message' => 'Quotation rejected successfully',
@@ -268,8 +324,20 @@ class QuotationController extends Controller
                 ], 400);
             }
             
+            $oldStatus = $quotation->status;
             $quotation->update(['status' => 'cancelled']);
-            
+
+            // Log the cancel action
+            activity()
+                ->performedOn($quotation)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'old_status' => $oldStatus,
+                    'new_status' => 'cancelled'
+                ])
+                ->log("Quotation {$quotation->quotation_no} cancelled");
+
             return response()->json([
                 'success' => true,
                 'message' => 'Quotation cancelled successfully',
@@ -297,8 +365,20 @@ class QuotationController extends Controller
                 ], 400);
             }
             
+            $oldStatus = $quotation->status;
             $quotation->update(['status' => 'pending']);
-            
+
+            // Log the reactivate action
+            activity()
+                ->performedOn($quotation)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'old_status' => $oldStatus,
+                    'new_status' => 'pending'
+                ])
+                ->log("Quotation {$quotation->quotation_no} reactivated");
+
             return response()->json([
                 'success' => true,
                 'message' => 'Quotation reactivated successfully',

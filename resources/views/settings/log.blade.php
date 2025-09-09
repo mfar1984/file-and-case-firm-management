@@ -1,212 +1,198 @@
 @extends('layouts.app')
 
 @section('breadcrumb')
-    Settings > Log Activity
+    Settings > Activity Logs
+@endsection
+
+@section('styles')
+<style>
+.custom-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 8px center;
+    background-repeat: no-repeat;
+    background-size: 16px 16px;
+    padding-right: 32px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+</style>
 @endsection
 
 @section('content')
-<div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto space-y-6">
-    <!-- Header -->
-    <div class="bg-white rounded shadow-md border border-gray-300">
-        <div class="p-4 md:p-6 border-b border-gray-200">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <span class="material-icons mr-2 text-red-600">history</span>
-                    <h2 class="text-lg font-semibold text-gray-800 text-[14px]">System Logs & Monitoring</h2>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <button type="button" onclick="refreshAllLogs()" class="px-3 py-1.5 bg-blue-600 text-white rounded-sm text-xs font-medium hover:bg-blue-700">
-                        Refresh All
-                    </button>
-                    <button type="button" onclick="exportLogs()" class="px-3 py-1.5 bg-green-600 text-white rounded-sm text-xs font-medium hover:bg-green-700">
-                        Export
-                    </button>
-                </div>
-            </div>
-            <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Comprehensive logging and monitoring for DDoS protection, system events, and security incidents.</p>
+<div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto">
+    <!-- Success/Error Messages -->
+    @if(session('success'))
+        <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+            {{ session('success') }}
         </div>
-    </div>
+    @endif
 
-    <!-- DDoS Protection Logs Section -->
-    <div class="bg-white rounded shadow-md border border-gray-300">
-        <div class="p-4 md:p-6 border-b border-gray-200">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <span class="material-icons mr-2 text-purple-600">security</span>
-                    <h3 class="text-md font-semibold text-gray-800 text-[13px]">DDoS Protection Logs</h3>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <button type="button" onclick="refreshDdosLogs()" class="px-3 py-1.5 bg-blue-600 text-white rounded-sm text-xs font-medium hover:bg-blue-700">
-                        Refresh
-                    </button>
-                    <button type="button" onclick="clearDdosLogs()" class="px-3 py-1.5 bg-red-600 text-white rounded-sm text-xs font-medium hover:bg-red-700">
-                        Clear
-                    </button>
-                </div>
-            </div>
+    @if(session('error'))
+        <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            {{ session('error') }}
         </div>
-        
-        <div class="p-4 md:p-6">
-            <!-- DDoS Log Filters -->
-            <div class="mb-4 flex flex-wrap gap-2">
-                <button type="button" onclick="filterDdosLogs('all')" class="px-3 py-1.5 bg-gray-600 text-white rounded-sm text-xs font-medium hover:bg-gray-700 ddos-log-filter active" data-filter="all">
-                    All
-                </button>
-                <button type="button" onclick="filterDdosLogs('warning')" class="px-3 py-1.5 bg-yellow-600 text-white rounded-sm text-xs font-medium hover:bg-yellow-700 ddos-log-filter" data-filter="warning">
-                    Warnings
-                </button>
-                <button type="button" onclick="filterDdosLogs('error')" class="px-3 py-1.5 bg-red-600 text-white rounded-sm text-xs font-medium hover:bg-red-700 ddos-log-filter" data-filter="error">
-                    Errors
-                </button>
-                <button type="button" onclick="filterDdosLogs('info')" class="px-3 py-1.5 bg-blue-600 text-white rounded-sm text-xs font-medium hover:bg-blue-700 ddos-log-filter" data-filter="info">
-                    Info
-                </button>
-            </div>
-            
-            <!-- DDoS Logs Container -->
-            <div id="ddos-logs-container" class="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
-                <div class="text-center text-gray-500 text-sm">
-                    Loading DDoS logs...
-                </div>
-            </div>
-            
-            <!-- DDoS Log Stats -->
-            <div class="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
-                <div class="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                    <div class="text-lg font-bold text-blue-600" id="ddos-total-logs">0</div>
-                    <div class="text-xs text-gray-600">Total Logs</div>
-                </div>
-                <div class="bg-yellow-50 rounded-lg p-3 border border-yellow-200">
-                    <div class="text-lg font-bold text-yellow-600" id="ddos-warning-logs">0</div>
-                    <div class="text-xs text-gray-600">Warnings</div>
-                </div>
-                <div class="bg-red-50 rounded-lg p-3 border border-red-200">
-                    <div class="text-lg font-bold text-red-600" id="ddos-error-logs">0</div>
-                    <div class="text-xs text-gray-600">Errors</div>
-                </div>
-                <div class="bg-green-50 rounded-lg p-3 border border-green-200">
-                    <div class="text-lg font-bold text-green-600" id="ddos-info-logs">0</div>
-                    <div class="text-xs text-gray-600">Info</div>
-                </div>
-            </div>
-        </div>
-    </div>
+    @endif
 
-    <!-- System Logs Section -->
     <div class="bg-white rounded shadow-md border border-gray-300">
         <div class="p-4 md:p-6 border-b border-gray-200">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <span class="material-icons mr-2 text-orange-600">computer</span>
-                    <h3 class="text-md font-semibold text-gray-800 text-[13px]">System Logs</h3>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <button type="button" onclick="refreshSystemLogs()" class="px-3 py-1.5 bg-blue-600 text-white rounded-sm text-xs font-medium hover:bg-blue-700">
-                        Refresh
-                    </button>
-                    <button type="button" onclick="clearSystemLogs()" class="px-3 py-1.5 bg-red-600 text-white rounded-sm text-xs font-medium hover:bg-red-700">
-                        Clear
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <div class="p-4 md:p-6">
-            <!-- Search and Filters -->
-            <div class="mb-4 flex flex-wrap gap-2 items-center">
-                <input type="text" id="system-log-search" placeholder="Search logs..." class="px-3 py-1.5 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <button type="button" onclick="searchSystemLogs()" class="px-3 py-1.5 bg-gray-600 text-white rounded-sm text-xs font-medium hover:bg-gray-700">
-                    Search
-                </button>
-                <button type="button" onclick="filterSystemLogs('all')" class="px-3 py-1.5 bg-gray-600 text-white rounded-sm text-xs font-medium hover:bg-gray-700 system-log-filter active" data-filter="all">
-                    All
-                </button>
-                <button type="button" onclick="filterSystemLogs('warning')" class="px-3 py-1.5 bg-yellow-600 text-white rounded-sm text-xs font-medium hover:bg-yellow-700 system-log-filter" data-filter="warning">
-                    Warnings
-                </button>
-                <button type="button" onclick="filterSystemLogs('error')" class="px-3 py-1.5 bg-red-600 text-white rounded-sm text-xs font-medium hover:bg-red-700 system-log-filter" data-filter="error">
-                    Errors
-                </button>
-                <button type="button" onclick="filterSystemLogs('info')" class="px-3 py-1.5 bg-blue-600 text-white rounded-sm text-xs font-medium hover:bg-blue-700 system-log-filter" data-filter="info">
-                    Info
-                </button>
-            </div>
-            
-            <!-- System Logs Container -->
-            <div id="system-logs-container" class="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
-                <div class="text-center text-gray-500 text-sm">
-                    Loading system logs...
-                </div>
-            </div>
-            
-            <!-- System Log Stats -->
-            <div class="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
-                <div class="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                    <div class="text-lg font-bold text-blue-600" id="system-total-logs">0</div>
-                    <div class="text-xs text-gray-600">Total Logs</div>
-                </div>
-                <div class="bg-yellow-50 rounded-lg p-3 border border-yellow-200">
-                    <div class="text-lg font-bold text-yellow-600" id="system-warning-logs">0</div>
-                    <div class="text-xs text-gray-600">Warnings</div>
-                </div>
-                <div class="bg-red-50 rounded-lg p-3 border border-red-200">
-                    <div class="text-lg font-bold text-red-600" id="system-error-logs">0</div>
-                    <div class="text-xs text-gray-600">Errors</div>
-                </div>
-                <div class="bg-green-50 rounded-lg p-3 border border-green-200">
-                    <div class="text-lg font-bold text-green-600" id="system-info-logs">0</div>
-                    <div class="text-xs text-gray-600">Info</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Real-time Monitoring -->
-    <div class="bg-white rounded shadow-md border border-gray-300">
-        <div class="p-4 md:p-6 border-b border-gray-200">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <span class="material-icons mr-2 text-green-600">monitor</span>
-                    <h3 class="text-md font-semibold text-gray-800 text-[13px]">Real-time Monitoring</h3>
-                </div>
-                <div class="flex items-center space-x-2">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-start">
+                <div class="mb-4 md:mb-0">
                     <div class="flex items-center">
-                        <div class="w-3 h-3 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-                        <span class="text-xs text-gray-600">Live</span>
+                        <span class="material-icons mr-2 text-red-600">history</span>
+                        <h1 class="text-lg md:text-xl font-bold text-gray-800 text-[14px]">Activity Logs</h1>
                     </div>
-                    <span class="text-xs text-gray-500">Auto-refresh: 10s</span>
+                    <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">View and manage system activity logs and user actions.</p>
                 </div>
+                
+                <!-- Clear Log Button -->
+                <button onclick="clearAllLogs()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
+                    <span class="material-icons text-xs mr-1">delete_sweep</span>
+                    Clear Logs
+                </button>
             </div>
         </div>
-        
-        <div class="p-4 md:p-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <div class="text-lg font-bold text-blue-600" id="active-connections">0</div>
-                            <div class="text-xs text-gray-600">Active Connections</div>
-                        </div>
-                        <span class="material-icons text-blue-600">wifi</span>
+
+        <!-- Desktop Table View -->
+        <div class="hidden md:block p-6">
+            <!-- Controls Above Table -->
+            <div class="flex justify-between items-center mb-2">
+                <!-- Left: Show Entries -->
+                <div class="flex items-center gap-2">
+                    <label for="perPage" class="text-xs text-gray-700">Show:</label>
+                    <select id="perPage" onchange="changePerPage()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span class="text-xs text-gray-700">entries</span>
+                </div>
+
+                <!-- Right: Search and Filters -->
+                <div class="flex gap-2 items-center">
+                    <input type="text" id="searchFilter" placeholder="Search activity, user, or description..."
+                           onkeyup="filterLogs()"
+                           class="border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-64">
+
+                    <select id="eventFilter" onchange="filterLogs()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="">All Events</option>
+                        <option value="created">Created</option>
+                        <option value="updated">Updated</option>
+                        <option value="deleted">Deleted</option>
+                        <option value="login">Login</option>
+                        <option value="logout">Logout</option>
+                    </select>
+
+                    <button onclick="filterLogs()" class="px-3 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
+                        🔍 Search
+                    </button>
+
+                    <button onclick="resetFilters()" class="px-3 py-2 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors">
+                        🔄 Reset
+                    </button>
+                </div>
+            </div>
+            <div class="overflow-visible border border-gray-200 rounded">
+                <table class="min-w-full border-collapse">
+                    <thead>
+                        <tr class="bg-primary-light text-white uppercase text-xs">
+                            <th class="py-3 px-4 text-left rounded-tl">Date/Time</th>
+                            <th class="py-3 px-4 text-left">User</th>
+                            <th class="py-3 px-4 text-left">Action</th>
+                            <th class="py-3 px-4 text-left">Description</th>
+                            <th class="py-3 px-4 text-left">Level</th>
+                            <th class="py-3 px-4 text-center rounded-tr">IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-table-body">
+                        <!-- Logs will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Mobile Card View -->
+        <div class="md:hidden p-4">
+            <!-- Mobile Controls -->
+            <div class="space-y-3 mb-4">
+                <!-- Show Entries -->
+                <div class="flex items-center gap-2">
+                    <label for="perPageMobile" class="text-xs text-gray-700">Show:</label>
+                    <select id="perPageMobile" onchange="changePerPage()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span class="text-xs text-gray-700">entries</span>
+                </div>
+
+                <!-- Search and Filters -->
+                <div class="space-y-2">
+                    <input type="text" id="searchFilterMobile" placeholder="Search activity, user, or description..."
+                           onkeyup="filterLogs()"
+                           class="w-full border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+
+                    <div class="flex gap-2">
+                        <select id="eventFilterMobile" onchange="filterLogs()" class="custom-select flex-1 border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                            <option value="">All Events</option>
+                            <option value="created">Created</option>
+                            <option value="updated">Updated</option>
+                            <option value="deleted">Deleted</option>
+                            <option value="login">Login</option>
+                            <option value="logout">Logout</option>
+                        </select>
+
+                        <button onclick="filterLogs()" class="px-3 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
+                            🔍
+                        </button>
+
+                        <button onclick="resetFilters()" class="px-3 py-2 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors">
+                            🔄
+                        </button>
                     </div>
                 </div>
-                <div class="bg-green-50 rounded-lg p-4 border border-green-200">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <div class="text-lg font-bold text-green-600" id="requests-per-minute">0</div>
-                            <div class="text-xs text-gray-600">Requests/Min</div>
-                        </div>
-                        <span class="material-icons text-green-600">speed</span>
-                    </div>
+            </div>
+
+            <div class="space-y-4" id="logs-mobile-container">
+                <!-- Mobile cards will be populated here -->
+            </div>
+        </div>
+
+        <!-- Pagination Section -->
+        <div class="p-6">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                <!-- Left: Page Info -->
+                <div class="text-xs text-gray-600">
+                    <span id="pageInfo">Showing 1 to 25 of 100 records</span>
                 </div>
-                <div class="bg-red-50 rounded-lg p-4 border border-red-200">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <div class="text-lg font-bold text-red-600" id="blocked-requests-live">0</div>
-                            <div class="text-xs text-gray-600">Blocked Requests</div>
-                        </div>
-                        <span class="material-icons text-red-600">block</span>
+
+                <!-- Right: Pagination -->
+                <div class="flex items-center gap-1">
+                    <button id="prevBtn" onclick="firstPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lt;&lt;
+                    </button>
+
+                    <button id="prevSingleBtn" onclick="previousPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lt;
+                    </button>
+
+                    <div id="pageNumbers" class="flex items-center gap-1 mx-2">
+                        <!-- Page numbers will be populated here -->
                     </div>
+
+                    <button id="nextSingleBtn" onclick="nextPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &gt;
+                    </button>
+
+                    <button id="nextBtn" onclick="lastPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &gt;&gt;
+                    </button>
                 </div>
             </div>
         </div>
@@ -214,320 +200,371 @@
 </div>
 
 <script>
-// Global variables
-let ddosLogs = [];
-let systemLogs = [];
-let currentDdosFilter = 'all';
-let currentSystemFilter = 'all';
+let activityLogs = [];
+let filteredLogs = [];
+let currentPage = 1;
+let perPage = 25;
 
-// Initialize everything when page loads
+// Initialize page
 document.addEventListener('DOMContentLoaded', function() {
-    loadDdosLogs();
-    loadSystemLogs();
-    startRealTimeMonitoring();
+    loadActivityLogs();
 });
 
-// DDoS Logs functionality
-function loadDdosLogs() {
-    fetch('{{ route("ddos.logs.public") }}', {
+function loadActivityLogs() {
+    fetch('{{ route("settings.log.data") }}', {
         method: 'GET',
         headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
         }
     })
     .then(response => response.json())
     .then(data => {
-        ddosLogs = data.logs;
-        displayDdosLogs(ddosLogs);
-        updateDdosLogStats(data.stats);
+        activityLogs = data.logs;
+        filteredLogs = activityLogs;
+        currentPage = 1;
+        displayLogs();
+        updatePagination();
     })
     .catch(error => {
-        console.error('Error loading DDoS logs:', error);
-        document.getElementById('ddos-logs-container').innerHTML = '<div class="text-center text-red-500 text-sm">Error loading DDoS logs</div>';
+        console.error('Error loading activity logs:', error);
+        showError('Failed to load activity logs');
     });
 }
 
-function displayDdosLogs(logs) {
-    const container = document.getElementById('ddos-logs-container');
-    
-    if (logs.length === 0) {
-        container.innerHTML = '<div class="text-center text-gray-500 text-sm">No DDoS logs found</div>';
+function displayLogs() {
+    const tableBody = document.getElementById('logs-table-body');
+    const mobileContainer = document.getElementById('logs-mobile-container');
+
+    // Calculate pagination
+    const startIndex = (currentPage - 1) * perPage;
+    const endIndex = startIndex + perPage;
+    const paginatedLogs = filteredLogs.slice(startIndex, endIndex);
+
+    if (paginatedLogs.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-500 text-sm">No activity logs found</td></tr>';
+        mobileContainer.innerHTML = '<div class="text-center text-gray-500 text-sm py-8">No activity logs found</div>';
         return;
     }
-    
-    const logsHtml = logs.map(log => {
-        const levelClass = getLevelClass(log.level);
-        const levelIcon = getLevelIcon(log.level);
-        
-        return `
-            <div class="log-entry ${levelClass} p-3 mb-2 rounded-lg border-l-4">
-                <div class="flex items-start justify-between">
-                    <div class="flex items-start space-x-2">
-                        <span class="material-icons text-sm mt-0.5">${levelIcon}</span>
-                        <div class="flex-1">
-                            <div class="text-xs text-gray-600 mb-1">${log.timestamp}</div>
-                            <div class="text-sm">${log.message}</div>
-                        </div>
+
+    // Desktop table
+    let tableHtml = '';
+    paginatedLogs.forEach(log => {
+        const levelBadge = getLevelBadge(log.level);
+        tableHtml += `
+            <tr class="border-b border-gray-200 hover:bg-gray-50">
+                <td class="py-3 px-4 text-xs">${log.datetime}</td>
+                <td class="py-3 px-4 text-xs">${log.user}</td>
+                <td class="py-3 px-4 text-xs">${log.action}</td>
+                <td class="py-3 px-4 text-xs">${log.description}</td>
+                <td class="py-3 px-4 text-xs">${levelBadge}</td>
+                <td class="py-3 px-4 text-xs text-center">${log.ip_address}</td>
+            </tr>
+        `;
+    });
+    tableBody.innerHTML = tableHtml;
+
+    // Mobile cards
+    let mobileHtml = '';
+    paginatedLogs.forEach(log => {
+        const levelBadge = getLevelBadge(log.level);
+        mobileHtml += `
+            <div class="bg-gray-50 rounded border p-4">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <h3 class="font-medium text-sm">${log.action}</h3>
+                        <p class="text-xs text-gray-600">${log.user}</p>
                     </div>
-                    <span class="text-xs px-2 py-1 rounded-full ${getLevelBadgeClass(log.level)}">${log.level.toUpperCase()}</span>
+                    ${levelBadge}
+                </div>
+                <div class="space-y-1 text-xs">
+                    <div><strong>Description:</strong> ${log.description}</div>
+                    <div><strong>Date/Time:</strong> ${log.datetime}</div>
+                    <div><strong>IP Address:</strong> ${log.ip_address}</div>
                 </div>
             </div>
         `;
-    }).join('');
-    
-    container.innerHTML = logsHtml;
-}
-
-function filterDdosLogs(level) {
-    currentDdosFilter = level;
-    
-    // Update filter buttons
-    document.querySelectorAll('.ddos-log-filter').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.filter === level) {
-            btn.classList.add('active');
-        }
     });
-    
-    // Filter logs
-    let filteredLogs = ddosLogs;
-    if (level !== 'all') {
-        filteredLogs = ddosLogs.filter(log => log.level === level);
-    }
-    
-    displayDdosLogs(filteredLogs);
+    mobileContainer.innerHTML = mobileHtml;
 }
 
-function refreshDdosLogs() {
-    loadDdosLogs();
-}
-
-function clearDdosLogs() {
-    if (confirm('Are you sure you want to clear all DDoS protection logs? This action cannot be undone.')) {
-        fetch('{{ route("settings.ddos.logs.clear") }}', {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                loadDdosLogs();
-                alert('DDoS logs cleared successfully');
-            }
-        })
-        .catch(error => {
-            console.error('Error clearing DDoS logs:', error);
-            alert('Error clearing DDoS logs');
-        });
+function getLevelBadge(level) {
+    switch (level) {
+        case 'info':
+            return '<span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">Info</span>';
+        case 'warning':
+            return '<span class="inline-block bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">Warning</span>';
+        case 'error':
+            return '<span class="inline-block bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">Error</span>';
+        default:
+            return '<span class="inline-block bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">Unknown</span>';
     }
 }
 
-function updateDdosLogStats(stats) {
-    document.getElementById('ddos-total-logs').textContent = stats.total;
-    document.getElementById('ddos-warning-logs').textContent = stats.warning;
-    document.getElementById('ddos-error-logs').textContent = stats.error;
-    document.getElementById('ddos-info-logs').textContent = stats.info;
-}
+// Pagination Functions
+function updatePagination() {
+    const totalItems = filteredLogs.length;
+    const totalPages = Math.ceil(totalItems / perPage);
+    const startItem = totalItems === 0 ? 0 : (currentPage - 1) * perPage + 1;
+    const endItem = Math.min(currentPage * perPage, totalItems);
 
-// System Logs functionality
-function loadSystemLogs() {
-    fetch('{{ route("settings.system.logs") }}', {
-        method: 'GET',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        systemLogs = data.logs;
-        displaySystemLogs(systemLogs);
-        updateSystemLogStats(data.stats);
-    })
-    .catch(error => {
-        console.error('Error loading system logs:', error);
-        document.getElementById('system-logs-container').innerHTML = '<div class="text-center text-red-500 text-sm">Error loading system logs</div>';
-    });
-}
+    // Update page info
+    document.getElementById('pageInfo').textContent = `Showing ${startItem} to ${endItem} of ${totalItems} records`;
 
-function displaySystemLogs(logs) {
-    const container = document.getElementById('system-logs-container');
-    
-    if (logs.length === 0) {
-        container.innerHTML = '<div class="text-center text-gray-500 text-sm">No system logs found</div>';
-        return;
+    // Update pagination buttons
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevSingleBtn = document.getElementById('prevSingleBtn');
+    const nextSingleBtn = document.getElementById('nextSingleBtn');
+
+    prevBtn.disabled = currentPage === 1;
+    prevSingleBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+    nextSingleBtn.disabled = currentPage === totalPages || totalPages === 0;
+
+    // Update page numbers
+    const pageNumbers = document.getElementById('pageNumbers');
+    let pageHtml = '';
+
+    // Show page numbers (max 5 visible)
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+
+    if (endPage - startPage < 4) {
+        startPage = Math.max(1, endPage - 4);
     }
-    
-    const logsHtml = logs.map(log => {
-        const levelClass = getLevelClass(log.level);
-        const levelIcon = getLevelIcon(log.level);
-        
-        return `
-            <div class="log-entry ${levelClass} p-3 mb-2 rounded-lg border-l-4">
-                <div class="flex items-start justify-between">
-                    <div class="flex items-start space-x-2">
-                        <span class="material-icons text-sm mt-0.5">${levelIcon}</span>
-                        <div class="flex-1">
-                            <div class="text-xs text-gray-600 mb-1">${log.timestamp}</div>
-                            <div class="text-sm">${log.message}</div>
-                        </div>
-                    </div>
-                    <span class="text-xs px-2 py-1 rounded-full ${getLevelBadgeClass(log.level)}">${log.level.toUpperCase()}</span>
-                </div>
-            </div>
+
+    for (let i = startPage; i <= endPage; i++) {
+        const isActive = i === currentPage;
+        pageHtml += `
+            <button onclick="goToPage(${i})"
+                    class="w-8 h-8 flex items-center justify-center text-xs transition-colors ${isActive ? 'bg-blue-500 text-white rounded-full' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full'}">
+                ${i}
+            </button>
         `;
-    }).join('');
-    
-    container.innerHTML = logsHtml;
+    }
+
+    pageNumbers.innerHTML = pageHtml;
 }
 
-function filterSystemLogs(level) {
-    currentSystemFilter = level;
-    
-    // Update filter buttons
-    document.querySelectorAll('.system-log-filter').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.filter === level) {
-            btn.classList.add('active');
-        }
+function goToPage(page) {
+    currentPage = page;
+    displayLogs();
+    updatePagination();
+}
+
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        displayLogs();
+        updatePagination();
+    }
+}
+
+function nextPage() {
+    const totalPages = Math.ceil(filteredLogs.length / perPage);
+    if (currentPage < totalPages) {
+        currentPage++;
+        displayLogs();
+        updatePagination();
+    }
+}
+
+function firstPage() {
+    currentPage = 1;
+    displayLogs();
+    updatePagination();
+}
+
+function lastPage() {
+    const totalPages = Math.ceil(filteredLogs.length / perPage);
+    currentPage = totalPages;
+    displayLogs();
+    updatePagination();
+}
+
+function changePerPage() {
+    // Get value from either desktop or mobile
+    const newPerPage = parseInt(document.getElementById('perPage')?.value ||
+                               document.getElementById('perPageMobile')?.value || 25);
+
+    // Sync values between desktop and mobile
+    if (document.getElementById('perPage')) document.getElementById('perPage').value = newPerPage;
+    if (document.getElementById('perPageMobile')) document.getElementById('perPageMobile').value = newPerPage;
+
+    perPage = newPerPage;
+    currentPage = 1;
+    displayLogs();
+    updatePagination();
+}
+
+// Filter Functions
+function filterLogs() {
+    // Get values from both desktop and mobile inputs
+    const searchTerm = (document.getElementById('searchFilter')?.value ||
+                       document.getElementById('searchFilterMobile')?.value || '').toLowerCase();
+    const eventFilter = (document.getElementById('eventFilter')?.value ||
+                        document.getElementById('eventFilterMobile')?.value || '').toLowerCase();
+
+    // Sync values between desktop and mobile
+    if (document.getElementById('searchFilter')) document.getElementById('searchFilter').value = searchTerm;
+    if (document.getElementById('searchFilterMobile')) document.getElementById('searchFilterMobile').value = searchTerm;
+    if (document.getElementById('eventFilter')) document.getElementById('eventFilter').value = eventFilter;
+    if (document.getElementById('eventFilterMobile')) document.getElementById('eventFilterMobile').value = eventFilter;
+
+    filteredLogs = activityLogs.filter(log => {
+        // Search filter
+        const matchesSearch = searchTerm === '' ||
+            log.description.toLowerCase().includes(searchTerm) ||
+            log.user.toLowerCase().includes(searchTerm) ||
+            log.action.toLowerCase().includes(searchTerm) ||
+            log.ip_address.toLowerCase().includes(searchTerm);
+
+        // Event filter
+        const matchesEvent = eventFilter === '' ||
+            log.description.toLowerCase().includes(eventFilter) ||
+            log.action.toLowerCase().includes(eventFilter);
+
+        return matchesSearch && matchesEvent;
     });
-    
-    // Filter logs
-    let filteredLogs = systemLogs;
-    if (level !== 'all') {
-        filteredLogs = systemLogs.filter(log => log.level === level);
-    }
-    
-    displaySystemLogs(filteredLogs);
+
+    currentPage = 1;
+    displayLogs();
+    updatePagination();
 }
 
-function searchSystemLogs() {
-    const searchTerm = document.getElementById('system-log-search').value.toLowerCase();
-    
-    if (!searchTerm) {
-        displaySystemLogs(systemLogs);
-        return;
-    }
-    
-    const filteredLogs = systemLogs.filter(log => 
-        log.message.toLowerCase().includes(searchTerm) ||
-        log.timestamp.toLowerCase().includes(searchTerm)
-    );
-    
-    displaySystemLogs(filteredLogs);
-}
+function resetFilters() {
+    // Reset both desktop and mobile inputs
+    if (document.getElementById('searchFilter')) document.getElementById('searchFilter').value = '';
+    if (document.getElementById('searchFilterMobile')) document.getElementById('searchFilterMobile').value = '';
+    if (document.getElementById('eventFilter')) document.getElementById('eventFilter').value = '';
+    if (document.getElementById('eventFilterMobile')) document.getElementById('eventFilterMobile').value = '';
 
-function refreshSystemLogs() {
-    loadSystemLogs();
-}
-
-function clearSystemLogs() {
-    if (confirm('Are you sure you want to clear all system logs? This action cannot be undone.')) {
-        fetch('{{ route("settings.system.logs.clear") }}', {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                loadSystemLogs();
-                alert('System logs cleared successfully');
-            }
-        })
-        .catch(error => {
-            console.error('Error clearing system logs:', error);
-            alert('Error clearing system logs');
-        });
-    }
-}
-
-function updateSystemLogStats(stats) {
-    document.getElementById('system-total-logs').textContent = stats.total;
-    document.getElementById('system-warning-logs').textContent = stats.warning;
-    document.getElementById('system-error-logs').textContent = stats.error;
-    document.getElementById('system-info-logs').textContent = stats.info;
-}
-
-// Real-time monitoring
-function startRealTimeMonitoring() {
-    // Update monitoring data every 10 seconds
-    setInterval(updateMonitoringData, 10000);
-    updateMonitoringData(); // Initial update
-}
-
-function updateMonitoringData() {
-    fetch('{{ route("settings.monitoring.data") }}', {
-        method: 'GET',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('active-connections').textContent = data.active_connections || 0;
-        document.getElementById('requests-per-minute').textContent = data.requests_per_minute || 0;
-        document.getElementById('blocked-requests-live').textContent = data.blocked_requests || 0;
-    })
-    .catch(error => {
-        console.error('Error updating monitoring data:', error);
-    });
-}
-
-// Utility functions
-function refreshAllLogs() {
-    loadDdosLogs();
-    loadSystemLogs();
+    filteredLogs = activityLogs;
+    currentPage = 1;
+    displayLogs();
+    updatePagination();
 }
 
 function exportLogs() {
-    const data = {
-        ddos_logs: ddosLogs,
-        system_logs: systemLogs,
-        export_time: new Date().toISOString()
-    };
-    
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
+    // Create CSV content
+    const headers = ['Date/Time', 'User', 'Action', 'Description', 'Level', 'IP Address'];
+    const csvContent = [
+        headers.join(','),
+        ...filteredLogs.map(log => [
+            `"${log.datetime}"`,
+            `"${log.user}"`,
+            `"${log.action}"`,
+            `"${log.description}"`,
+            `"${log.level}"`,
+            `"${log.ip_address}"`
+        ].join(','))
+    ].join('\n');
+
+    // Download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `logs-export-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `activity_logs_${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    window.URL.revokeObjectURL(url);
 }
 
-function getLevelClass(level) {
-    switch (level) {
-        case 'error': return 'bg-red-50 border-red-200';
-        case 'warning': return 'bg-yellow-50 border-yellow-200';
-        case 'info': return 'bg-blue-50 border-blue-200';
-        default: return 'bg-gray-50 border-gray-200';
+function clearAllLogs() {
+    if (confirm('Are you sure you want to clear all activity logs? This action cannot be undone.')) {
+        fetch('/settings/log/clear', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('All activity logs have been cleared successfully', 'success');
+                loadActivityLogs();
+            } else {
+                showNotification('Failed to clear logs: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Error clearing logs: ' + error.message, 'error');
+        });
     }
 }
 
-function getLevelIcon(level) {
-    switch (level) {
-        case 'error': return 'error';
-        case 'warning': return 'warning';
-        case 'info': return 'info';
-        default: return 'info';
+function clearAllLogs() {
+    if (confirm('Are you sure you want to clear all activity logs? This action cannot be undone.')) {
+        fetch('{{ route("settings.log.clear") }}', {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                loadActivityLogs(); // Reload logs
+                showSuccess(data.message);
+            } else {
+                showError(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error clearing logs:', error);
+            showError('Failed to clear logs');
+        });
     }
 }
 
-function getLevelBadgeClass(level) {
-    switch (level) {
-        case 'error': return 'bg-red-100 text-red-800';
-        case 'warning': return 'bg-yellow-100 text-yellow-800';
-        case 'info': return 'bg-blue-100 text-blue-800';
-        default: return 'bg-gray-100 text-gray-800';
-    }
+function showSuccess(message) {
+    // Create success notification
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded z-50';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
 }
+
+function showError(message) {
+    // Create error notification
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
+
+// Refresh function
+function refreshLogs() {
+    const refreshIcon = document.getElementById('refreshIcon');
+    refreshIcon.style.animation = 'spin 1s linear infinite';
+
+    loadActivityLogs().then(() => {
+        refreshIcon.style.animation = '';
+    });
+}
+
+// Add CSS for spin animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(style);
 </script>
-@endsection 
+@endsection

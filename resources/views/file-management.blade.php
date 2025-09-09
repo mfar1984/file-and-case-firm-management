@@ -49,6 +49,43 @@
         
         <!-- Desktop Table View -->
         <div class="hidden md:block p-6">
+            <!-- Controls Above Table -->
+            <div class="flex justify-between items-center mb-2">
+                <!-- Left: Show Entries -->
+                <div class="flex items-center gap-2">
+                    <label for="perPage" class="text-xs text-gray-700">Show:</label>
+                    <select id="perPage" onchange="changePerPage()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span class="text-xs text-gray-700">entries</span>
+                </div>
+
+                <!-- Right: Search and Filters -->
+                <div class="flex gap-2 items-center">
+                    <input type="text" id="searchFilter" placeholder="Search files..."
+                           onkeyup="filterFiles()"
+                           class="border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-64">
+
+                    <select id="typeFilter" onchange="filterFiles()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="">All Types</option>
+                        <option value="pdf">PDF</option>
+                        <option value="doc">Document</option>
+                        <option value="image">Image</option>
+                        <option value="excel">Excel</option>
+                    </select>
+
+                    <button onclick="filterFiles()" class="px-3 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
+                        🔍 Search
+                    </button>
+
+                    <button onclick="resetFilters()" class="px-3 py-2 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors">
+                        🔄 Reset
+                    </button>
+                </div>
+            </div>
             <!-- Filter Section - Above table, right aligned -->
             <div class="flex justify-end mb-4">
                 <form method="GET" class="flex space-x-2">
@@ -140,6 +177,43 @@
             @endif
         </div>
 
+        <!-- Pagination Section -->
+        <div class="p-6">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                <!-- Left: Page Info -->
+                <div class="text-xs text-gray-600">
+                    <span id="pageInfo">Showing 1 to 25 of 100 records</span>
+                </div>
+
+                <!-- Right: Pagination -->
+                <div class="flex items-center gap-1">
+                    <button id="prevBtn" onclick="firstPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lt;&lt;
+                    </button>
+
+                    <button id="prevSingleBtn" onclick="previousPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lt;
+                    </button>
+
+                    <div id="pageNumbers" class="flex items-center gap-1 mx-2">
+                        <!-- Page numbers will be populated here -->
+                    </div>
+
+                    <button id="nextSingleBtn" onclick="nextPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &gt;
+                    </button>
+
+                    <button id="nextBtn" onclick="lastPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &gt;&gt;
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Mobile Card View -->
         <div class="md:hidden p-4 space-y-4">
             <!-- Filter Section for Mobile - Above cards -->
@@ -226,6 +300,184 @@
         </div>
     </div>
 </div>
+
+<style>
+.custom-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 8px center;
+    background-repeat: no-repeat;
+    background-size: 16px 16px;
+    padding-right: 32px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+</style>
+
+<script>
+// Pagination variables
+let currentPage = 1;
+let perPage = 25;
+let allFiles = [];
+let filteredFiles = [];
+
+// Initialize pagination
+function initializePagination() {
+    const fileRows = document.querySelectorAll('tbody tr');
+    allFiles = Array.from(fileRows).map((row, index) => ({
+        id: index,
+        element: row,
+        searchText: row.textContent.toLowerCase()
+    }));
+
+    filteredFiles = [...allFiles];
+    displayFiles();
+    updatePagination();
+}
+
+function displayFiles() {
+    const startIndex = (currentPage - 1) * perPage;
+    const endIndex = startIndex + perPage;
+
+    allFiles.forEach(file => {
+        if (file.element) file.element.style.display = 'none';
+    });
+
+    const filesToShow = filteredFiles.slice(startIndex, endIndex);
+    filesToShow.forEach(file => {
+        if (file.element) file.element.style.display = '';
+    });
+}
+
+function updatePagination() {
+    const totalItems = filteredFiles.length;
+    const totalPages = Math.ceil(totalItems / perPage);
+    const startItem = totalItems === 0 ? 0 : (currentPage - 1) * perPage + 1;
+    const endItem = Math.min(currentPage * perPage, totalItems);
+
+    if (document.getElementById('pageInfo')) {
+        document.getElementById('pageInfo').textContent = `Showing ${startItem} to ${endItem} of ${totalItems} records`;
+    }
+
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevSingleBtn = document.getElementById('prevSingleBtn');
+    const nextSingleBtn = document.getElementById('nextSingleBtn');
+
+    if (prevBtn) prevBtn.disabled = currentPage === 1;
+    if (prevSingleBtn) prevSingleBtn.disabled = currentPage === 1;
+    if (nextBtn) nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+    if (nextSingleBtn) nextSingleBtn.disabled = currentPage === totalPages || totalPages === 0;
+
+    updatePageNumbers(totalPages);
+}
+
+function updatePageNumbers(totalPages) {
+    const pageNumbersContainer = document.getElementById('pageNumbers');
+    if (!pageNumbersContainer) return;
+
+    pageNumbersContainer.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    let pageHtml = '';
+    for (let i = startPage; i <= endPage; i++) {
+        const isActive = i === currentPage;
+        pageHtml += `
+            <button onclick="goToPage(${i})"
+                    class="w-8 h-8 flex items-center justify-center text-xs transition-colors ${isActive ? 'bg-blue-500 text-white rounded-full' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full'}">
+                ${i}
+            </button>
+        `;
+    }
+    pageNumbersContainer.innerHTML = pageHtml;
+}
+
+function changePerPage() {
+    const newPerPage = parseInt(document.getElementById('perPage')?.value || 25);
+
+    if (document.getElementById('perPage')) document.getElementById('perPage').value = newPerPage;
+
+    perPage = newPerPage;
+    currentPage = 1;
+    displayFiles();
+    updatePagination();
+}
+
+function filterFiles() {
+    const searchTerm = (document.getElementById('searchFilter')?.value || '').toLowerCase();
+    const typeFilter = (document.getElementById('typeFilter')?.value || '');
+
+    filteredFiles = allFiles.filter(file => {
+        const matchesSearch = searchTerm === '' || file.searchText.includes(searchTerm);
+        const matchesType = typeFilter === '' || file.searchText.includes(typeFilter.toLowerCase());
+
+        return matchesSearch && matchesType;
+    });
+
+    currentPage = 1;
+    displayFiles();
+    updatePagination();
+}
+
+function resetFilters() {
+    if (document.getElementById('searchFilter')) document.getElementById('searchFilter').value = '';
+    if (document.getElementById('typeFilter')) document.getElementById('typeFilter').value = '';
+
+    filteredFiles = [...allFiles];
+    currentPage = 1;
+    displayFiles();
+    updatePagination();
+}
+
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        displayFiles();
+        updatePagination();
+    }
+}
+
+function nextPage() {
+    const totalPages = Math.ceil(filteredFiles.length / perPage);
+    if (currentPage < totalPages) {
+        currentPage++;
+        displayFiles();
+        updatePagination();
+    }
+}
+
+function firstPage() {
+    currentPage = 1;
+    displayFiles();
+    updatePagination();
+}
+
+function lastPage() {
+    const totalPages = Math.ceil(filteredFiles.length / perPage);
+    currentPage = totalPages;
+    displayFiles();
+    updatePagination();
+}
+
+function goToPage(page) {
+    currentPage = page;
+    displayFiles();
+    updatePagination();
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    initializePagination();
+});
+</script>
 
 <!-- File Management Modal -->
 <div x-data="{

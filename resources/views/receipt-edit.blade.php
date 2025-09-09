@@ -185,12 +185,12 @@ function toggleReferenceFields() {
     const quotationDiv = document.getElementById('quotation_select_div');
     const invoiceDiv = document.getElementById('invoice_select_div');
     const caseDiv = document.getElementById('case_select_div');
-    
+
     // Hide all
     quotationDiv.classList.add('hidden');
     invoiceDiv.classList.add('hidden');
     caseDiv.classList.add('hidden');
-    
+
     // Show selected
     if (referenceType === 'quotation') {
         quotationDiv.classList.remove('hidden');
@@ -199,9 +199,11 @@ function toggleReferenceFields() {
     } else if (referenceType === 'case') {
         caseDiv.classList.remove('hidden');
     }
-    
-    // Clear data
-    clearReferenceData();
+
+    // Only clear data if this is a user-initiated change, not during page load
+    if (document.readyState === 'complete') {
+        clearReferenceData();
+    }
 }
 
 function togglePaymentFields() {
@@ -265,12 +267,28 @@ function clearReferenceData() {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-    // Set initial reference type and show relevant fields
+    // Set initial reference type and show relevant fields (without clearing data)
     const referenceType = document.getElementById('reference_type').value;
     if (referenceType) {
-        toggleReferenceFields();
+        const quotationDiv = document.getElementById('quotation_select_div');
+        const invoiceDiv = document.getElementById('invoice_select_div');
+        const caseDiv = document.getElementById('case_select_div');
+
+        // Hide all divs first
+        quotationDiv.classList.add('hidden');
+        invoiceDiv.classList.add('hidden');
+        caseDiv.classList.add('hidden');
+
+        // Show relevant div based on existing data
+        if (referenceType === 'quotation') {
+            quotationDiv.classList.remove('hidden');
+        } else if (referenceType === 'tax_invoice') {
+            invoiceDiv.classList.remove('hidden');
+        } else if (referenceType === 'case') {
+            caseDiv.classList.remove('hidden');
+        }
     }
-    
+
     // Set initial payment method and show relevant fields
     const paymentMethod = document.querySelector('select[name="payment_method"]').value;
     if (paymentMethod) {

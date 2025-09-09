@@ -127,6 +127,19 @@ class ClientController extends Controller
         } else {
             $message .= ' User account created with username: ' . $userResult['username'] . ' and password: ' . $userResult['password'] . '. Email verification required.';
         }
+
+        // Log client creation
+        activity()
+            ->performedOn($client)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'client_name' => $client->name,
+                'ic_passport' => $client->ic_passport,
+                'email' => $client->email
+            ])
+            ->log("Client {$client->name} created");
+
         return redirect()->route('client.index')->with('success', $message);
     }
 
@@ -246,6 +259,19 @@ class ClientController extends Controller
     public function destroy($id)
     {
         $client = Client::findOrFail($id);
+
+        // Log client deletion before deleting
+        activity()
+            ->performedOn($client)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'client_name' => $client->name,
+                'ic_passport' => $client->ic_passport,
+                'email' => $client->email
+            ])
+            ->log("Client {$client->name} deleted");
+
         $client->delete();
         return redirect()->route('client.index')->with('success', 'Client deleted successfully');
     }

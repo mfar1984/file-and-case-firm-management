@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Quotation extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'case_id',
@@ -211,6 +213,14 @@ class Quotation extends Model
                 $quotation->total_words = $quotation->convertToWords($quotation->total);
             }
         });
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['quotation_no', 'client_name', 'status', 'total', 'valid_until'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }
 

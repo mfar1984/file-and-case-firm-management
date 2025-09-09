@@ -62,9 +62,24 @@
             .footer {
                 page-break-inside: avoid; /* Don't break footer content */
                 break-inside: avoid; /* Modern CSS */
+                page-break-before: auto; /* Allow page break when space < 5mm */
             }
             .item-table {
-                page-break-after: avoid;
+                page-break-after: auto; /* Allow page break after table */
+            }
+            /* Force table repetition for DomPDF */
+            .item-table {
+                page-break-inside: auto !important;
+            }
+            .item-table thead {
+                display: table-header-group !important;
+            }
+            .item-table tbody {
+                display: table-row-group !important;
+            }
+            /* Automatic page break when space is limited */
+            .item-table tbody tr:last-child {
+                page-break-after: auto;
             }
         }
         .company-info {
@@ -82,7 +97,7 @@
         }
         .contact-label {
             display: inline-block;
-            width: 60pt; /* Fixed width untuk alignment */
+            width: 70pt; /* Fixed width untuk alignment */
             text-align: left;
             vertical-align: baseline; /* Ensure consistent vertical alignment */
         }
@@ -186,8 +201,81 @@
         .item-table tbody {
             display: table-row-group;
         }
+        
+        /* 3-Section Layout System - Table Section */
+        .item-table {
+            /* Calculate available space: A4(297mm) - Header(75mm) - Footer(30mm) = ~192mm */
+            max-height: 180mm !important; /* Safe limit untuk table section */
+            page-break-before: auto;
+            page-break-after: auto;
+            margin-bottom: 15mm !important; /* Add bottom margin untuk gap */
+        }
+        
+        .item-table tbody {
+            /* Limit tbody to trigger page break at item ~16 */
+            max-height: 150mm !important; /* ~16 rows at 9-10mm per row */
+            overflow: visible !important; /* Allow page break flow */
+            padding-bottom: 15mm !important; /* Padding bottom untuk tbody supaya data tidak sampai edge */
+        }
+        
+        /* Force page break when tbody reaches limit - REMOVE aggressive break */
+        /* .item-table tbody tr:nth-child(16) ~ tr {
+            page-break-before: always; 
+        } */
+        
+        /* Better approach - use natural page break with height limits */
+        .item-table tbody tr {
+            page-break-inside: avoid; /* Don't break individual rows */
+        }
+        
+        /* Add padding untuk tbody rows supaya tidak sampai edge */
+        .item-table tbody tr:last-child {
+            padding-bottom: 20mm !important; /* Extra padding untuk last row */
+        }
+        
+        .item-table tbody tr td {
+            padding-bottom: 3mm !important; /* Individual cell padding bottom */
+        }
+        
+        @media print {
+            .item-table {
+                max-height: 180mm !important;
+                page-break-inside: auto !important;
+                margin-bottom: 20mm !important; /* Increase bottom margin untuk print */
+            }
+            
+            .item-table tbody {
+                max-height: 150mm !important;
+                page-break-inside: auto !important;
+                padding-bottom: 25mm !important; /* Increase padding bottom untuk tbody supaya data tidak sampai edge */
+            }
+            
+            /* Extra padding untuk last row dalam print */
+            .item-table tbody tr:last-child td {
+                padding-bottom: 15mm !important; /* Extra padding untuk last row cells */
+            }
+            
+            /* Ensure thead repeats on new pages */
+            .item-table thead {
+                display: table-header-group !important;
+                page-break-after: avoid !important;
+            }
+        }
         .item-table tbody tr {
             page-break-inside: avoid; /* Avoid breaking rows */
+        }
+        
+        /* Table repetition on page breaks */
+        .item-table {
+            page-break-before: auto;
+            page-break-after: auto;
+            max-height: 180mm !important; /* Limit table height untuk page break */
+        }
+        
+        /* Table tbody limit untuk gap dengan footer */
+        .item-table tbody {
+            max-height: 150mm !important; /* Limit tbody height */
+            overflow: hidden !important; /* Hide overflow untuk page break */
         }
         
         /* For DomPDF compatibility - ensure content flows properly */
@@ -254,28 +342,110 @@
          * FOOTER
          */
         .footer {
-            margin-top: 20mm;
-            padding-top: 10mm;
-            border-top: 1px solid #eee;
+            margin-top: 5mm;
+            padding: 0 !important;
             font-size: 9pt;
-            page-break-inside: avoid; /* Don't break footer */
-            break-inside: avoid; /* Modern CSS property */
+            page-break-inside: avoid;
+            break-inside: avoid;
+            page-break-before: auto;
+        }
+        
+        /* Auto page break logic - when table gets too close to footer */
+        .main-content + .footer {
+            /* If less than 10mm space available, force page break */
+            page-break-before: auto;
+        }
+        
+        /* Footer positioning for all scenarios */
+        @media screen {
+            .footer {
+                position: relative; /* Normal flow for screen */
+            }
+        }
+        
+        
+        @media print {
+            /* Override any global CSS that might interfere */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+            
+            @page {
+                margin: 20mm 15mm 15mm 15mm !important; /* Consistent margins */
+                size: A4 !important;
+            }
+            
+            html {
+                height: 100% !important;
+            }
+            
+            body {
+                margin: 0 !important;
+                padding: 0 !important;
+                padding-top: 75mm !important; /* Space untuk fixed header */
+                box-sizing: border-box !important;
+            }
+            
+            .header {
+                flex-shrink: 0 !important; /* Header won't shrink */
+                /* Header repeats on every page */
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                height: 75mm !important; /* Fixed header height */
+                background: white !important;
+                z-index: 1000 !important;
+                padding: 5mm 15mm 2mm 15mm !important;
+                box-sizing: border-box !important;
+            }
+            
+            .main-content {
+                margin-bottom: 5mm !important;
+                padding-bottom: 10mm !important;
+            }
+            
+            .footer {
+                position: relative !important;
+                width: 100% !important;
+                background: white !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                page-break-inside: avoid !important;
+            }
+            
+            .footer * {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            .footer-top {
+                margin-bottom: 2mm !important;
+            }
+            
+            .footer-bottom {
+                margin-top: 2mm !important;
+                margin-bottom: 0 !important;
+            }
+            
         }
         .footer-content {
-            padding: 0;
+            padding: 0 !important; /* Remove ALL padding */
+            margin: 0 !important; /* Remove ALL margin */
         }
         .footer-top {
             display: flex;
             justify-content: space-between;
-            margin-top: 15mm;
-            margin-bottom: 15mm;
+            margin: 0 !important;
+            margin-bottom: 2mm !important;
         }
         .left-section {
             width: 55%;
             float: left;
         }
         .right-section {
-            width: 40%;
+            width: 30%;
             float: right;
         }
         .summary-table-bordered {
@@ -286,7 +456,7 @@
         .summary-label-bordered {
             text-align: right !important;
             font-weight: bold !important;
-            padding: 6pt 2pt !important;
+            padding: 4pt 2pt !important;
             border: none !important;
             background-color: transparent !important;
         }
@@ -295,32 +465,43 @@
             padding: 1pt 3pt !important;
             border: 1px solid #000 !important;
             background-color: transparent !important;
-            min-width: 40pt !important;
-            width: 40pt !important;
-            max-width: 40pt !important;
+            min-width: 25pt !important;
+            width: 25pt !important;
+            max-width: 25pt !important;
         }
         .summary-value-bordered.total-row {
             font-weight: bold !important;
             background-color: #e0e0e0 !important;
             border: 1px solid #000 !important;
             padding: 1pt 3pt !important;
-            width: 40pt !important;
-            max-width: 40pt !important;
+            width: 30pt !important;
+            max-width: 30pt !important;
         }
         .footer-bottom {
-            margin-top: 20mm;
+            margin-top: 2mm !important;
+            margin-bottom: 0 !important;
+            text-align: left !important;
+            float: none !important;
         }
         .signature-line {
-            width: 200pt;
+            width: 120pt;
             border-top: 1px solid #000;
-            margin-bottom: 5pt;
+            margin-bottom: 1pt;
+            margin-top: 60pt !important;
+            height: 1pt;
+            margin-left: 0;
         }
         .authorised-signature {
-            margin-top: 10mm;
-            width: 50%;
-            float: left;
-            border-top: 1px solid #333;
-            padding-top: 5mm;
+            margin: 0;
+            margin-bottom: 0 !important;
+            width: 120pt;
+            text-align: left;
+            display: block;
+        }
+        
+        .authorised-signature strong {
+            text-align: left; /* Ensure text is left aligned */
+            display: block; /* Block display for proper alignment */
         }
         
         .amount-in-words {
@@ -332,8 +513,10 @@
         }
 
         .note-section {
-            margin-bottom: 5mm;
-            font-size: 9pt;
+            margin-bottom: 2mm;
+            font-size: 8pt;
+            line-height: 1.2;
+            text-align: justify;
         }
     </style>
 </head>
@@ -414,9 +597,6 @@
                     <div class="amount-in-words">
                         Ringgit Malaysia: {{ $quotation->total_words ?? 'Amount in Words' }}
                     </div>
-                    <div class="note-section">
-                        <strong>Note:</strong> {{ $quotation->remark ?? '' }}
-                    </div>
                 </div>
 
                 <div class="right-section">
@@ -438,6 +618,11 @@
             </div>
 
             <div class="clear"></div>
+            
+            <!-- Reminder section after Total -->
+            <div class="note-section" style="margin-top: 5mm;">
+                <strong>Reminder:</strong> Pursuant to the Solicitor's Remuneration Order 2005, interest 8% on the total sum billed will be charges from the expiration of one (1) month of the billing dates
+            </div>
 
             <!-- Bottom section with signature -->
             <div class="footer-bottom">

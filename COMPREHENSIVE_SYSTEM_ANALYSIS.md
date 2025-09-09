@@ -119,7 +119,7 @@
 - Other documents
 
 ### 7. Settings & Configuration
-**Primary Tables**: `firm_settings`, `system_settings`, `email_settings`, `security_settings`, `weather_settings`, `ddos_settings`
+**Primary Tables**: `firm_settings`, `system_settings`, `email_settings`, `security_settings`, `weather_settings`
 
 **Configuration Areas**:
 - **Firm Settings**: Company information and branding
@@ -127,7 +127,6 @@
 - **Email Settings**: SMTP configuration and notifications
 - **Security Settings**: Password policies and session management
 - **Weather Integration**: API settings for weather data
-- **DDoS Protection**: Security monitoring and IP management
 
 ### 8. Category Management
 **Primary Tables**: `case_types`, `case_statuses`, `file_types`, `specializations`, `expense_categories`
@@ -364,15 +363,7 @@ This system represents a comprehensive legal practice management solution with i
 - Configuration management
 - Webhook support
 
-### DDoS Protection Module
-**Controller**: `DdosConfigController`
-**Routes**: `/settings/ddos/*`
-**Features**:
-- Request rate limiting
-- IP whitelisting/blacklisting
-- Attack monitoring
-- Log management
-- Real-time statistics
+
 
 ## Business Logic Flow
 

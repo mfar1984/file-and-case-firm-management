@@ -27,6 +27,43 @@
         
         <!-- Desktop Table View -->
         <div class="hidden md:block p-6">
+            <!-- Controls Above Table -->
+            <div class="flex justify-between items-center mb-2">
+                <!-- Left: Show Entries -->
+                <div class="flex items-center gap-2">
+                    <label for="perPage" class="text-xs text-gray-700">Show:</label>
+                    <select id="perPage" onchange="changePerPage()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span class="text-xs text-gray-700">entries</span>
+                </div>
+
+                <!-- Right: Search and Filters -->
+                <div class="flex gap-2 items-center">
+                    <input type="text" id="searchFilter" placeholder="Search tax invoices..."
+                           onkeyup="filterTaxInvoices()"
+                           class="border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-64">
+
+                    <select id="statusFilter" onchange="filterTaxInvoices()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="">All Status</option>
+                        <option value="Draft">Draft</option>
+                        <option value="Sent">Sent</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Overdue">Overdue</option>
+                    </select>
+
+                    <button onclick="filterTaxInvoices()" class="px-3 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
+                        🔍 Search
+                    </button>
+
+                    <button onclick="resetFilters()" class="px-3 py-2 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors">
+                        🔄 Reset
+                    </button>
+                </div>
+            </div>
             <div class="overflow-visible border border-gray-200 rounded">
                 <table class="min-w-full border-collapse">
                     <thead>
@@ -116,9 +153,87 @@
                 </table>
             </div>
         </div>
-        
+
+        <!-- Pagination Section -->
+        <div class="p-6">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                <!-- Left: Page Info -->
+                <div class="text-xs text-gray-600">
+                    <span id="pageInfo">Showing 1 to 25 of 100 records</span>
+                </div>
+
+                <!-- Right: Pagination -->
+                <div class="flex items-center gap-1">
+                    <button id="prevBtn" onclick="firstPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lt;&lt;
+                    </button>
+
+                    <button id="prevSingleBtn" onclick="previousPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lt;
+                    </button>
+
+                    <div id="pageNumbers" class="flex items-center gap-1 mx-2">
+                        <!-- Page numbers will be populated here -->
+                    </div>
+
+                    <button id="nextSingleBtn" onclick="nextPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &gt;
+                    </button>
+
+                    <button id="nextBtn" onclick="lastPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &gt;&gt;
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Mobile Card View -->
-        <div class="md:hidden p-4 space-y-4">
+        <div class="md:hidden p-4">
+            <!-- Mobile Controls -->
+            <div class="space-y-3 mb-4">
+                <!-- Show Entries -->
+                <div class="flex items-center gap-2">
+                    <label for="perPageMobile" class="text-xs text-gray-700">Show:</label>
+                    <select id="perPageMobile" onchange="changePerPage()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span class="text-xs text-gray-700">entries</span>
+                </div>
+
+                <!-- Search and Filters -->
+                <div class="space-y-2">
+                    <input type="text" id="searchFilterMobile" placeholder="Search tax invoices..."
+                           onkeyup="filterTaxInvoices()"
+                           class="w-full border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+
+                    <div class="flex gap-2">
+                        <select id="statusFilterMobile" onchange="filterTaxInvoices()" class="custom-select flex-1 border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                            <option value="">All Status</option>
+                            <option value="Draft">Draft</option>
+                            <option value="Sent">Sent</option>
+                            <option value="Paid">Paid</option>
+                            <option value="Overdue">Overdue</option>
+                        </select>
+
+                        <button onclick="filterTaxInvoices()" class="px-3 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
+                            🔍
+                        </button>
+
+                        <button onclick="resetFilters()" class="px-3 py-2 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors">
+                            🔄
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4" id="taxinvoices-mobile-container">
             @forelse($taxInvoices as $inv)
             <div class="bg-gray-50 rounded-lg border border-gray-200 p-4">
                 <div class="flex justify-between items-start mb-3">
@@ -204,9 +319,199 @@
                 </div>
             </div>
             @endforelse
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+.custom-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 8px center;
+    background-repeat: no-repeat;
+    background-size: 16px 16px;
+    padding-right: 32px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+</style>
+
+<script>
+// Pagination variables
+let currentPage = 1;
+let perPage = 25;
+let allTaxInvoices = [];
+let filteredTaxInvoices = [];
+
+// Initialize pagination
+function initializePagination() {
+    const taxInvoiceRows = document.querySelectorAll('tbody tr');
+    allTaxInvoices = Array.from(taxInvoiceRows).map((row, index) => ({
+        id: index,
+        element: row,
+        searchText: row.textContent.toLowerCase()
+    }));
+
+    filteredTaxInvoices = [...allTaxInvoices];
+    displayTaxInvoices();
+    updatePagination();
+}
+
+function displayTaxInvoices() {
+    const startIndex = (currentPage - 1) * perPage;
+    const endIndex = startIndex + perPage;
+
+    allTaxInvoices.forEach(invoice => {
+        if (invoice.element) invoice.element.style.display = 'none';
+    });
+
+    const invoicesToShow = filteredTaxInvoices.slice(startIndex, endIndex);
+    invoicesToShow.forEach(invoice => {
+        if (invoice.element) invoice.element.style.display = '';
+    });
+}
+
+function updatePagination() {
+    const totalItems = filteredTaxInvoices.length;
+    const totalPages = Math.ceil(totalItems / perPage);
+    const startItem = totalItems === 0 ? 0 : (currentPage - 1) * perPage + 1;
+    const endItem = Math.min(currentPage * perPage, totalItems);
+
+    if (document.getElementById('pageInfo')) {
+        document.getElementById('pageInfo').textContent = `Showing ${startItem} to ${endItem} of ${totalItems} records`;
+    }
+
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevSingleBtn = document.getElementById('prevSingleBtn');
+    const nextSingleBtn = document.getElementById('nextSingleBtn');
+
+    if (prevBtn) prevBtn.disabled = currentPage === 1;
+    if (prevSingleBtn) prevSingleBtn.disabled = currentPage === 1;
+    if (nextBtn) nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+    if (nextSingleBtn) nextSingleBtn.disabled = currentPage === totalPages || totalPages === 0;
+
+    updatePageNumbers(totalPages);
+}
+
+function updatePageNumbers(totalPages) {
+    const pageNumbersContainer = document.getElementById('pageNumbers');
+    if (!pageNumbersContainer) return;
+
+    pageNumbersContainer.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    let pageHtml = '';
+    for (let i = startPage; i <= endPage; i++) {
+        const isActive = i === currentPage;
+        pageHtml += `
+            <button onclick="goToPage(${i})"
+                    class="w-8 h-8 flex items-center justify-center text-xs transition-colors ${isActive ? 'bg-blue-500 text-white rounded-full' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full'}">
+                ${i}
+            </button>
+        `;
+    }
+    pageNumbersContainer.innerHTML = pageHtml;
+}
+
+function changePerPage() {
+    const newPerPage = parseInt(document.getElementById('perPage')?.value ||
+                               document.getElementById('perPageMobile')?.value || 25);
+
+    if (document.getElementById('perPage')) document.getElementById('perPage').value = newPerPage;
+    if (document.getElementById('perPageMobile')) document.getElementById('perPageMobile').value = newPerPage;
+
+    perPage = newPerPage;
+    currentPage = 1;
+    displayTaxInvoices();
+    updatePagination();
+}
+
+function filterTaxInvoices() {
+    const searchTerm = (document.getElementById('searchFilter')?.value ||
+                       document.getElementById('searchFilterMobile')?.value || '').toLowerCase();
+    const statusFilter = (document.getElementById('statusFilter')?.value ||
+                        document.getElementById('statusFilterMobile')?.value || '');
+
+    if (document.getElementById('searchFilter')) document.getElementById('searchFilter').value = searchTerm;
+    if (document.getElementById('searchFilterMobile')) document.getElementById('searchFilterMobile').value = searchTerm;
+    if (document.getElementById('statusFilter')) document.getElementById('statusFilter').value = statusFilter;
+    if (document.getElementById('statusFilterMobile')) document.getElementById('statusFilterMobile').value = statusFilter;
+
+    filteredTaxInvoices = allTaxInvoices.filter(invoice => {
+        const matchesSearch = searchTerm === '' || invoice.searchText.includes(searchTerm);
+        const matchesStatus = statusFilter === '' || invoice.searchText.includes(statusFilter.toLowerCase());
+
+        return matchesSearch && matchesStatus;
+    });
+
+    currentPage = 1;
+    displayTaxInvoices();
+    updatePagination();
+}
+
+function resetFilters() {
+    if (document.getElementById('searchFilter')) document.getElementById('searchFilter').value = '';
+    if (document.getElementById('searchFilterMobile')) document.getElementById('searchFilterMobile').value = '';
+    if (document.getElementById('statusFilter')) document.getElementById('statusFilter').value = '';
+    if (document.getElementById('statusFilterMobile')) document.getElementById('statusFilterMobile').value = '';
+
+    filteredTaxInvoices = [...allTaxInvoices];
+    currentPage = 1;
+    displayTaxInvoices();
+    updatePagination();
+}
+
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        displayTaxInvoices();
+        updatePagination();
+    }
+}
+
+function nextPage() {
+    const totalPages = Math.ceil(filteredTaxInvoices.length / perPage);
+    if (currentPage < totalPages) {
+        currentPage++;
+        displayTaxInvoices();
+        updatePagination();
+    }
+}
+
+function firstPage() {
+    currentPage = 1;
+    displayTaxInvoices();
+    updatePagination();
+}
+
+function lastPage() {
+    const totalPages = Math.ceil(filteredTaxInvoices.length / perPage);
+    currentPage = totalPages;
+    displayTaxInvoices();
+    updatePagination();
+}
+
+function goToPage(page) {
+    currentPage = page;
+    displayTaxInvoices();
+    updatePagination();
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    initializePagination();
+});
+</script>
 
 <script>
 window.__deleteTaxInvoice = function(id, el) {

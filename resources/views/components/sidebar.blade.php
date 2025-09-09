@@ -1,8 +1,9 @@
-@php 
+@php
     use App\Helpers\PermissionHelper;
     $caseActive = request()->routeIs('case.index') || request()->routeIs('client.index') || request()->routeIs('partner.index');
     $accountingActive = request()->routeIs('pre-quotation.index') || request()->routeIs('quotation.index') || request()->routeIs('tax-invoice.index') || request()->routeIs('resit.index') || request()->routeIs('voucher.index') || request()->routeIs('bill.index');
-    $settingsActive = request()->routeIs('settings.global') || request()->routeIs('settings.role') || request()->routeIs('settings.user') || request()->routeIs('settings.category') || request()->routeIs('settings.log') || request()->routeIs('settings.case-management') || request()->routeIs('settings.ddos.*');
+    $gLedgerActive = request()->routeIs('general-ledger.index') || request()->routeIs('detail-transaction.index') || request()->routeIs('journal-report.index') || request()->routeIs('balance-sheet.index') || request()->routeIs('profit-loss.index') || request()->routeIs('trial-balance.index');
+    $settingsActive = request()->routeIs('settings.global') || request()->routeIs('settings.role') || request()->routeIs('settings.user') || request()->routeIs('settings.category') || request()->routeIs('settings.log');
 @endphp
 
 <!-- Logo Section -->
@@ -121,6 +122,46 @@
     </div>
     @endif
 
+    <!-- G. LEDGER Section -->
+    @if(PermissionHelper::hasPermission('view-accounting'))
+    <div class="mt-2"></div>
+    <div class="category-header relative {{ $gLedgerActive ? 'active' : '' }}" onclick="toggleSection('gledger-section')">
+        <div class="px-4 py-2 flex justify-between items-center cursor-pointer relative">
+            <div class="flex items-center">
+                <span class="material-icons text-base text-green-600 mr-3">account_balance_wallet</span>
+                <p class="text-xs uppercase tracking-wider text-gray-500 font-normal">G. Ledger</p>
+            </div>
+            <span class="material-icons text-xs text-gray-500 transform transition-transform duration-200" id="gledger-section-icon" style="transform: {{ $gLedgerActive ? 'rotate(180deg)' : 'rotate(0deg)' }};">expand_more</span>
+        </div>
+    </div>
+    <div id="gledger-section" class="hierarchical-menu" style="display: {{ $gLedgerActive ? 'block' : 'none' }};">
+        <a href="{{ route('general-ledger.index') }}" class="sidebar-submenu-item {{ request()->routeIs('general-ledger.index') ? 'active' : '' }}">
+            <span class="material-icons text-xs mr-3">list_alt</span>
+            <span class="text-xs">General Ledger Listing</span>
+        </a>
+        <a href="{{ route('detail-transaction.index') }}" class="sidebar-submenu-item {{ request()->routeIs('detail-transaction.index') ? 'active' : '' }}">
+            <span class="material-icons text-xs mr-3">receipt_long</span>
+            <span class="text-xs">Detail Transaction Reports</span>
+        </a>
+        <a href="{{ route('journal-report.index') }}" class="sidebar-submenu-item {{ request()->routeIs('journal-report.index') ? 'active' : '' }}">
+            <span class="material-icons text-xs mr-3">book</span>
+            <span class="text-xs">Journal Report</span>
+        </a>
+        <a href="{{ route('balance-sheet.index') }}" class="sidebar-submenu-item {{ request()->routeIs('balance-sheet.index') ? 'active' : '' }}">
+            <span class="material-icons text-xs mr-3">balance</span>
+            <span class="text-xs">Balance Sheet</span>
+        </a>
+        <a href="{{ route('profit-loss.index') }}" class="sidebar-submenu-item {{ request()->routeIs('profit-loss.index') ? 'active' : '' }}">
+            <span class="material-icons text-xs mr-3">trending_up</span>
+            <span class="text-xs">Profit and Loss Account</span>
+        </a>
+        <a href="{{ route('trial-balance.index') }}" class="sidebar-submenu-item {{ request()->routeIs('trial-balance.index') ? 'active' : '' }}">
+            <span class="material-icons text-xs mr-3">account_balance</span>
+            <span class="text-xs">Trial Balance</span>
+        </a>
+    </div>
+    @endif
+
     <!-- File Management -->
     @if(PermissionHelper::hasPermission('view-files'))
     <div class="mt-2"></div>
@@ -151,12 +192,7 @@
         </div>
     </div>
     <div id="settings-section" class="hierarchical-menu" style="display: {{ $settingsActive ? 'block' : 'none' }};">
-        @if(PermissionHelper::hasPermission('manage-system-logs'))
-        <a href="{{ route('settings.ddos.index') }}" class="sidebar-submenu-item {{ request()->routeIs('settings.ddos.*') ? 'active' : '' }}">
-            <span class="material-icons text-xs mr-3">security</span>
-            <span class="text-xs">DDoS Config</span>
-        </a>
-        @endif
+
         @if(PermissionHelper::hasPermission('manage-firm-settings'))
         <a href="{{ route('settings.global') }}" class="sidebar-submenu-item {{ request()->routeIs('settings.global') ? 'active' : '' }}">
             <span class="material-icons text-xs mr-3">tune</span>
@@ -175,12 +211,7 @@
             <span class="text-xs">User Management</span>
         </a>
         @endif
-        @if(PermissionHelper::hasPermission('manage-system-logs'))
-        <a href="{{ route('settings.case-management') }}" class="sidebar-submenu-item {{ request()->routeIs('settings.case-management') ? 'active' : '' }}">
-            <span class="material-icons text-xs mr-3">folder_open</span>
-            <span class="text-xs">Case Management</span>
-        </a>
-        @endif
+
         @if(PermissionHelper::hasPermission('manage-system-logs'))
         <a href="{{ route('settings.category') }}" class="sidebar-submenu-item {{ request()->routeIs('settings.category') ? 'active' : '' }}">
             <span class="material-icons text-xs mr-3">category</span>

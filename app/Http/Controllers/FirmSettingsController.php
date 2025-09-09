@@ -29,7 +29,19 @@ class FirmSettingsController extends Controller
 
         try {
             $settings = FirmSetting::getFirmSettings();
+            $oldSettings = $settings->toArray();
             $settings->update($request->all());
+
+            // Log settings change
+            activity()
+                ->performedOn($settings)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'old_settings' => $oldSettings,
+                    'new_settings' => $request->all()
+                ])
+                ->log("Firm settings updated");
 
             return response()->json([
                 'success' => true,

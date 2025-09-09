@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Receipt extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'receipt_no',
@@ -153,5 +155,13 @@ class Receipt extends Model
     {
         $nextId = (self::max('id') ?? 0) + 1;
         return 'RCP-' . str_pad((string)$nextId, 5, '0', STR_PAD_LEFT);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['receipt_no', 'customer_name', 'amount_paid', 'payment_method', 'receipt_date'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

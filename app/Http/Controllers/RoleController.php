@@ -61,6 +61,17 @@ class RoleController extends Controller
                 $role->syncPermissions($permissions);
             }
 
+            // Log role creation
+            activity()
+                ->performedOn($role)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'role_name' => $role->name,
+                    'permissions_count' => $request->has('permissions') ? count($request->permissions) : 0
+                ])
+                ->log("Role {$role->name} created");
+
             DB::commit();
 
             return redirect()->route('settings.role')
@@ -132,6 +143,17 @@ class RoleController extends Controller
         }
 
         try {
+            // Log role deletion before deleting
+            activity()
+                ->performedOn($role)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'role_name' => $role->name,
+                    'description' => $role->description
+                ])
+                ->log("Role {$role->name} deleted");
+
             $role->delete();
             return redirect()->route('settings.role')
                 ->with('success', 'Role deleted successfully.');

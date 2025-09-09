@@ -96,6 +96,18 @@ class FileManagementController extends Controller
                     'rack_location' => 'Rack A-01', // Default location
                 ]);
 
+                // Log file upload
+                activity()
+                    ->performedOn($caseFile)
+                    ->causedBy(auth()->user())
+                    ->withProperties([
+                        'ip' => request()->ip(),
+                        'case_ref' => $caseFile->case_ref,
+                        'file_name' => $caseFile->file_name,
+                        'file_size' => $caseFile->file_size
+                    ])
+                    ->log("File {$caseFile->file_name} uploaded for case {$caseFile->case_ref}");
+
                 // Generate a public view hash and save (without changing schema, reuse id-based hash)
                 $caseFile->public_hash = hash('sha256', $caseFile->id . '|' . $caseFile->file_path . '|' . config('app.key'));
                 // Note: if model doesn't have column, we won't persist; we'll compute on the fly in view()
@@ -173,7 +185,8 @@ class FileManagementController extends Controller
         }
 
         $file = CaseFile::findOrFail($id);
-        
+        $oldStatus = $file->status;
+
         $file->update([
             'status' => $request->status,
             'taken_by' => $request->status === 'OUT' ? $request->taken_by : null,
@@ -182,6 +195,19 @@ class FileManagementController extends Controller
             'rack_location' => $request->status === 'IN' ? $request->rack_location : null,
             'actual_return' => $request->status === 'IN' ? now() : null,
         ]);
+
+        // Log status change
+        activity()
+            ->performedOn($file)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'old_status' => $oldStatus,
+                'new_status' => $request->status,
+                'taken_by' => $request->taken_by,
+                'purpose' => $request->purpose
+            ])
+            ->log("File {$file->file_name} status changed from {$oldStatus} to {$request->status}");
 
         $statusText = $request->status === 'IN' ? 'returned' : 'taken out';
         return back()->with('success', "File has been {$statusText} successfully.");
@@ -193,6 +219,19 @@ class FileManagementController extends Controller
     public function destroy($id)
     {
         $file = CaseFile::findOrFail($id);
+
+        // Log file deletion before deleting
+        activity()
+            ->performedOn($file)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'case_ref' => $file->case_ref,
+                'file_name' => $file->file_name,
+                'file_size' => $file->file_size,
+                'status' => $file->status
+            ])
+            ->log("File {$file->file_name} deleted from case {$file->case_ref}");
 
         // Delete physical file
         if (Storage::disk('public')->exists($file->file_path)) {

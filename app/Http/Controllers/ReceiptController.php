@@ -6,6 +6,8 @@ use App\Models\Receipt;
 use App\Models\Quotation;
 use App\Models\TaxInvoice;
 use App\Models\CourtCase;
+use App\Models\FirmSetting;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -125,6 +127,18 @@ class ReceiptController extends Controller
                 }
             }
 
+            // Log receipt creation
+            activity()
+                ->performedOn($receipt)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'receipt_no' => $receipt->receipt_no,
+                    'amount_paid' => $receipt->amount_paid,
+                    'payment_method' => $receipt->payment_method
+                ])
+                ->log("Receipt {$receipt->receipt_no} created");
+
             DB::commit();
 
             return redirect()->route('receipt.show', $receipt->id)
@@ -140,6 +154,15 @@ class ReceiptController extends Controller
     {
         $receipt = Receipt::with(['case', 'quotation', 'taxInvoice'])->findOrFail($id);
         return view('receipt-show', compact('receipt'));
+    }
+
+    public function print($id)
+    {
+        $receipt = Receipt::with(['case', 'quotation', 'taxInvoice'])->findOrFail($id);
+        $firmSettings = FirmSetting::getFirmSettings();
+
+        $pdf = Pdf::loadView('receipt-print', compact('receipt', 'firmSettings'));
+        return $pdf->download('receipt-' . $receipt->receipt_no . '.pdf');
     }
 
     public function edit($id)
@@ -223,13 +246,26 @@ class ReceiptController extends Controller
     {
         try {
             $receipt = Receipt::findOrFail($id);
+
+            // Log receipt deletion before deleting
+            activity()
+                ->performedOn($receipt)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'receipt_no' => $receipt->receipt_no,
+                    'amount_paid' => $receipt->amount_paid,
+                    'payment_method' => $receipt->payment_method
+                ])
+                ->log("Receipt {$receipt->receipt_no} deleted");
+
             $receipt->delete();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Receipt deleted successfully'
             ]);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

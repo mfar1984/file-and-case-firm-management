@@ -6,6 +6,8 @@ use App\Models\TaxInvoice;
 use App\Models\TaxInvoiceItem;
 use App\Models\Quotation;
 use App\Models\CourtCase;
+use App\Models\FirmSetting;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -175,6 +177,18 @@ class TaxInvoiceController extends Controller
                 }
             }
 
+            // Log tax invoice creation
+            activity()
+                ->performedOn($taxInvoice)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'invoice_no' => $taxInvoice->invoice_no,
+                    'total_amount' => $taxInvoice->total,
+                    'customer_name' => $taxInvoice->customer_name
+                ])
+                ->log("Tax Invoice {$taxInvoice->invoice_no} created");
+
             DB::commit();
 
             return redirect()->route('tax-invoice.show', $taxInvoice->id)
@@ -190,6 +204,15 @@ class TaxInvoiceController extends Controller
     {
         $taxInvoice = TaxInvoice::with(['items', 'case', 'quotation'])->findOrFail($id);
         return view('tax-invoice-show', compact('taxInvoice'));
+    }
+
+    public function print($id)
+    {
+        $taxInvoice = TaxInvoice::with(['items', 'case', 'quotation'])->findOrFail($id);
+        $firmSettings = FirmSetting::getFirmSettings();
+
+        $pdf = Pdf::loadView('tax-invoice-print', compact('taxInvoice', 'firmSettings'));
+        return $pdf->download('tax-invoice-' . $taxInvoice->invoice_no . '.pdf');
     }
 
     public function edit($id)
@@ -305,9 +328,22 @@ class TaxInvoiceController extends Controller
             $taxInvoice = TaxInvoice::findOrFail($id);
             $quotationId = $taxInvoice->quotation_id;
             
+            // Log tax invoice deletion before deleting
+            activity()
+                ->performedOn($taxInvoice)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'invoice_no' => $taxInvoice->invoice_no,
+                    'total_amount' => $taxInvoice->total,
+                    'customer_name' => $taxInvoice->customer_name,
+                    'status' => $taxInvoice->status
+                ])
+                ->log("Tax Invoice {$taxInvoice->invoice_no} deleted");
+
             // Delete associated items first
             $taxInvoice->items()->delete();
-            
+
             // Delete the tax invoice
             $taxInvoice->delete();
             

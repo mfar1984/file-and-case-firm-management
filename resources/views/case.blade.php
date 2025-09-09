@@ -33,6 +33,42 @@
         
         <!-- Desktop Table View -->
         <div class="hidden md:block p-6">
+            <!-- Controls Above Table -->
+            <div class="flex justify-between items-center mb-2">
+                <!-- Left: Show Entries -->
+                <div class="flex items-center gap-2">
+                    <label for="perPage" class="text-xs text-gray-700">Show:</label>
+                    <select id="perPage" onchange="changePerPage()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span class="text-xs text-gray-700">entries</span>
+                </div>
+
+                <!-- Right: Search and Filters -->
+                <div class="flex gap-2 items-center">
+                    <input type="text" id="searchFilter" placeholder="Search cases..."
+                           onkeyup="filterCases()"
+                           class="border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-64">
+
+                    <select id="statusFilter" onchange="filterCases()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="">All Status</option>
+                        @foreach($caseStatuses as $status)
+                            <option value="{{ $status->name }}">{{ $status->name }}</option>
+                        @endforeach
+                    </select>
+
+                    <button onclick="filterCases()" class="px-3 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
+                        🔍 Search
+                    </button>
+
+                    <button onclick="resetFilters()" class="px-3 py-2 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors">
+                        🔄 Reset
+                    </button>
+                </div>
+            </div>
             <div class="overflow-visible border border-gray-200 rounded">
                 <table class="min-w-full border-collapse">
                     <thead>
@@ -49,7 +85,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @forelse($cases as $case)
-                        <tr class="hover:bg-gray-50" data-case-row-id="{{ $case->id }}">
+                        <tr class="hover:bg-gray-50" data-case-id="{{ $case->id }}">
                             <td class="py-1 px-4 text-[11px] font-medium">{{ $case->case_number }}</td>
                             <td class="py-1 px-4 text-[11px]">{{ $case->title }}</td>
                             <td class="py-1 px-4 text-[11px]">{{ $case->court_location ?? 'N/A' }}</td>
@@ -161,9 +197,86 @@
                 </table>
             </div>
         </div>
-        
+
+        <!-- Pagination Section -->
+        <div class="p-6">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                <!-- Left: Page Info -->
+                <div class="text-xs text-gray-600">
+                    <span id="pageInfo">Showing 1 to 25 of 100 records</span>
+                </div>
+
+                <!-- Right: Pagination -->
+                <div class="flex items-center gap-1">
+                    <button id="prevBtn" onclick="firstPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lt;&lt;
+                    </button>
+
+                    <button id="prevSingleBtn" onclick="previousPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lt;
+                    </button>
+
+                    <div id="pageNumbers" class="flex items-center gap-1 mx-2">
+                        <!-- Page numbers will be populated here -->
+                    </div>
+
+                    <button id="nextSingleBtn" onclick="nextPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &gt;
+                    </button>
+
+                    <button id="nextBtn" onclick="lastPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &gt;&gt;
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Mobile Card View -->
-        <div class="md:hidden p-4 space-y-4">
+        <div class="md:hidden p-4">
+            <!-- Mobile Controls -->
+            <div class="space-y-3 mb-4">
+                <!-- Show Entries -->
+                <div class="flex items-center gap-2">
+                    <label for="perPageMobile" class="text-xs text-gray-700">Show:</label>
+                    <select id="perPageMobile" onchange="changePerPage()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span class="text-xs text-gray-700">entries</span>
+                </div>
+
+                <!-- Search and Filters -->
+                <div class="space-y-2">
+                    <input type="text" id="searchFilterMobile" placeholder="Search cases..."
+                           onkeyup="filterCases()"
+                           class="w-full border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+
+                    <div class="flex gap-2">
+                        <select id="statusFilterMobile" onchange="filterCases()" class="custom-select flex-1 border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                            <option value="">All Status</option>
+                            @foreach($caseStatuses as $status)
+                                <option value="{{ $status->name }}">{{ $status->name }}</option>
+                            @endforeach
+                        </select>
+
+                        <button onclick="filterCases()" class="px-3 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
+                            🔍
+                        </button>
+
+                        <button onclick="resetFilters()" class="px-3 py-2 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors">
+                            🔄
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4" id="cases-mobile-container">
             @forelse($cases as $case)
             <div class="bg-gray-50 rounded-lg border border-gray-200 p-4" data-case-card-id="{{ $case->id }}" x-data="{ showStatusMenu: false }">
                 <div class="flex justify-between items-start mb-3">
@@ -251,11 +364,226 @@
                 <p class="text-xs text-gray-400">Create your first case to get started</p>
             </div>
             @endforelse
+            </div>
         </div>
     </div>
 </div>
 
+<style>
+.custom-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 8px center;
+    background-repeat: no-repeat;
+    background-size: 16px 16px;
+    padding-right: 32px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+</style>
+
 <script>
+// Pagination variables
+let currentPage = 1;
+let perPage = 25;
+let allCases = [];
+let filteredCases = [];
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all cases data from the page
+    const caseRows = document.querySelectorAll('tbody tr[data-case-id]');
+    allCases = Array.from(caseRows).map(row => ({
+        id: row.dataset.caseId,
+        element: row,
+        searchText: row.textContent.toLowerCase()
+    }));
+
+    // Get mobile cards
+    const mobileCards = document.querySelectorAll('[data-case-card-id]');
+    allCases.forEach((caseItem, index) => {
+        if (mobileCards[index]) {
+            caseItem.mobileElement = mobileCards[index];
+        }
+    });
+
+    filteredCases = [...allCases];
+    displayCases();
+    updatePagination();
+
+    // Handle status change buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('change-status-btn')) {
+            const caseId = e.target.dataset.caseId;
+            const statusId = e.target.dataset.statusId;
+            const statusName = e.target.dataset.statusName;
+
+            if (confirm('Are you sure you want to change the status to "' + statusName + '"?')) {
+                // Add your status change logic here
+                console.log('Changing case', caseId, 'to status', statusId);
+            }
+        }
+    });
+});
+
+// Display functions
+function displayCases() {
+    const startIndex = (currentPage - 1) * perPage;
+    const endIndex = startIndex + perPage;
+
+    // Hide all cases first
+    allCases.forEach(caseItem => {
+        if (caseItem.element) caseItem.element.style.display = 'none';
+        if (caseItem.mobileElement) caseItem.mobileElement.style.display = 'none';
+    });
+
+    // Show filtered cases for current page
+    const casesToShow = filteredCases.slice(startIndex, endIndex);
+    casesToShow.forEach(caseItem => {
+        if (caseItem.element) caseItem.element.style.display = '';
+        if (caseItem.mobileElement) caseItem.mobileElement.style.display = '';
+    });
+}
+
+function updatePagination() {
+    const totalItems = filteredCases.length;
+    const totalPages = Math.ceil(totalItems / perPage);
+    const startItem = totalItems === 0 ? 0 : (currentPage - 1) * perPage + 1;
+    const endItem = Math.min(currentPage * perPage, totalItems);
+
+    // Update page info
+    document.getElementById('pageInfo').textContent = `Showing ${startItem} to ${endItem} of ${totalItems} records`;
+
+    // Update pagination buttons
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevSingleBtn = document.getElementById('prevSingleBtn');
+    const nextSingleBtn = document.getElementById('nextSingleBtn');
+
+    prevBtn.disabled = currentPage === 1;
+    prevSingleBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+    nextSingleBtn.disabled = currentPage === totalPages || totalPages === 0;
+
+    // Update page numbers
+    updatePageNumbers(totalPages);
+}
+
+function updatePageNumbers(totalPages) {
+    const pageNumbersContainer = document.getElementById('pageNumbers');
+    pageNumbersContainer.innerHTML = '';
+
+    if (totalPages <= 1) return;
+
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    let pageHtml = '';
+    for (let i = startPage; i <= endPage; i++) {
+        const isActive = i === currentPage;
+        pageHtml += `
+            <button onclick="goToPage(${i})"
+                    class="w-8 h-8 flex items-center justify-center text-xs transition-colors ${isActive ? 'bg-blue-500 text-white rounded-full' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full'}">
+                ${i}
+            </button>
+        `;
+    }
+    pageNumbersContainer.innerHTML = pageHtml;
+}
+
+// Pagination functions
+function changePerPage() {
+    const newPerPage = parseInt(document.getElementById('perPage')?.value ||
+                               document.getElementById('perPageMobile')?.value || 25);
+
+    if (document.getElementById('perPage')) document.getElementById('perPage').value = newPerPage;
+    if (document.getElementById('perPageMobile')) document.getElementById('perPageMobile').value = newPerPage;
+
+    perPage = newPerPage;
+    currentPage = 1;
+    displayCases();
+    updatePagination();
+}
+
+// Filter Functions
+function filterCases() {
+    const searchTerm = (document.getElementById('searchFilter')?.value ||
+                       document.getElementById('searchFilterMobile')?.value || '').toLowerCase();
+    const statusFilter = (document.getElementById('statusFilter')?.value ||
+                        document.getElementById('statusFilterMobile')?.value || '');
+
+    // Sync values between desktop and mobile
+    if (document.getElementById('searchFilter')) document.getElementById('searchFilter').value = searchTerm;
+    if (document.getElementById('searchFilterMobile')) document.getElementById('searchFilterMobile').value = searchTerm;
+    if (document.getElementById('statusFilter')) document.getElementById('statusFilter').value = statusFilter;
+    if (document.getElementById('statusFilterMobile')) document.getElementById('statusFilterMobile').value = statusFilter;
+
+    filteredCases = allCases.filter(caseItem => {
+        const matchesSearch = searchTerm === '' || caseItem.searchText.includes(searchTerm);
+        const matchesStatus = statusFilter === '' || caseItem.searchText.includes(statusFilter.toLowerCase());
+
+        return matchesSearch && matchesStatus;
+    });
+
+    currentPage = 1;
+    displayCases();
+    updatePagination();
+}
+
+function resetFilters() {
+    if (document.getElementById('searchFilter')) document.getElementById('searchFilter').value = '';
+    if (document.getElementById('searchFilterMobile')) document.getElementById('searchFilterMobile').value = '';
+    if (document.getElementById('statusFilter')) document.getElementById('statusFilter').value = '';
+    if (document.getElementById('statusFilterMobile')) document.getElementById('statusFilterMobile').value = '';
+
+    filteredCases = [...allCases];
+    currentPage = 1;
+    displayCases();
+    updatePagination();
+}
+
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        displayCases();
+        updatePagination();
+    }
+}
+
+function nextPage() {
+    const totalPages = Math.ceil(filteredCases.length / perPage);
+    if (currentPage < totalPages) {
+        currentPage++;
+        displayCases();
+        updatePagination();
+    }
+}
+
+function firstPage() {
+    currentPage = 1;
+    displayCases();
+    updatePagination();
+}
+
+function lastPage() {
+    const totalPages = Math.ceil(filteredCases.length / perPage);
+    currentPage = totalPages;
+    displayCases();
+    updatePagination();
+}
+
+function goToPage(page) {
+    currentPage = page;
+    displayCases();
+    updatePagination();
+}
+
+// Handle status change buttons (already in DOMContentLoaded above)
 document.addEventListener('DOMContentLoaded', function() {
     // Handle status change buttons
     document.addEventListener('click', function(e) {

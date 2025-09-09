@@ -27,6 +27,43 @@
         
         <!-- Desktop Table View -->
         <div class="hidden md:block p-6">
+            <!-- Controls Above Table -->
+            <div class="flex justify-between items-center mb-2">
+                <!-- Left: Show Entries -->
+                <div class="flex items-center gap-2">
+                    <label for="perPage" class="text-xs text-gray-700">Show:</label>
+                    <select id="perPage" onchange="changePerPage()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span class="text-xs text-gray-700">entries</span>
+                </div>
+
+                <!-- Right: Search and Filters -->
+                <div class="flex gap-2 items-center">
+                    <input type="text" id="searchFilter" placeholder="Search pre-quotations..."
+                           onkeyup="filterPreQuotations()"
+                           class="border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-64">
+
+                    <select id="statusFilter" onchange="filterPreQuotations()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="">All Status</option>
+                        <option value="Draft">Draft</option>
+                        <option value="Sent">Sent</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+
+                    <button onclick="filterPreQuotations()" class="px-3 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
+                        🔍 Search
+                    </button>
+
+                    <button onclick="resetFilters()" class="px-3 py-2 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors">
+                        🔄 Reset
+                    </button>
+                </div>
+            </div>
             <div class="overflow-visible border border-gray-200 rounded">
                 <table class="min-w-full border-collapse">
                     <thead>
@@ -57,7 +94,10 @@
                                 </span>
                             </td>
                             <td class="py-1 px-4 text-center">
-                                <div class="flex items-center justify-center space-x-1">
+                                <div class="flex items-center justify-center space-x-1" x-data="{ open: false }">
+                                    <button @click="open = !open" class="p-0.5 text-purple-600 hover:text-purple-700" title="Change Status">
+                                        <span class="material-icons text-base">add</span>
+                                    </button>
                                     <a href="{{ route('pre-quotation.show', $pq->id) }}" class="text-blue-600 hover:text-blue-800" title="View">
                                         <span class="material-icons text-sm">visibility</span>
                                     </a>
@@ -71,6 +111,53 @@
                                             <span class="material-icons text-sm">delete</span>
                                         </button>
                                     </form>
+                                    <div x-show="open" @click.away="open = false" class="absolute z-50 mt-2 w-48 bg-white rounded shadow-xl border border-gray-200 p-3 text-[11px]">
+                                        <div class="mb-2 font-bold text-gray-800">Change Status</div>
+                                        <ul class="space-y-1">
+                                            <li>
+                                                <button class="w-full text-left px-2 py-1 hover:bg-gray-100 rounded change-prequotation-status-btn"
+                                                        data-prequotation-id="{{ $pq->id }}"
+                                                        data-status="pending">
+                                                    Pending
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button class="w-full text-left px-2 py-1 hover:bg-gray-100 rounded change-prequotation-status-btn"
+                                                        data-prequotation-id="{{ $pq->id }}"
+                                                        data-status="accepted">
+                                                    Accepted
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button class="w-full text-left px-2 py-1 hover:bg-gray-100 rounded change-prequotation-status-btn"
+                                                        data-prequotation-id="{{ $pq->id }}"
+                                                        data-status="rejected">
+                                                    Rejected
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button class="w-full text-left px-2 py-1 hover:bg-gray-100 rounded change-prequotation-status-btn"
+                                                        data-prequotation-id="{{ $pq->id }}"
+                                                        data-status="converted">
+                                                    Converted
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button class="w-full text-left px-2 py-1 hover:bg-gray-100 rounded change-prequotation-status-btn"
+                                                        data-prequotation-id="{{ $pq->id }}"
+                                                        data-status="expired">
+                                                    Expired
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button class="w-full text-left px-2 py-1 hover:bg-gray-100 rounded change-prequotation-status-btn"
+                                                        data-prequotation-id="{{ $pq->id }}"
+                                                        data-status="cancelled">
+                                                    Cancelled
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
@@ -90,10 +177,88 @@
             </div>
         </div>
 
+        <!-- Pagination Section -->
+        <div class="p-6">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                <!-- Left: Page Info -->
+                <div class="text-xs text-gray-600">
+                    <span id="pageInfo">Showing 1 to 25 of 100 records</span>
+                </div>
+
+                <!-- Right: Pagination -->
+                <div class="flex items-center gap-1">
+                    <button id="prevBtn" onclick="firstPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lt;&lt;
+                    </button>
+
+                    <button id="prevSingleBtn" onclick="previousPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lt;
+                    </button>
+
+                    <div id="pageNumbers" class="flex items-center gap-1 mx-2">
+                        <!-- Page numbers will be populated here -->
+                    </div>
+
+                    <button id="nextSingleBtn" onclick="nextPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &gt;
+                    </button>
+
+                    <button id="nextBtn" onclick="lastPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &gt;&gt;
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Mobile Card View -->
-        <div class="md:hidden p-4 space-y-4">
+        <div class="md:hidden p-4">
+            <!-- Mobile Controls -->
+            <div class="space-y-3 mb-4">
+                <!-- Show Entries -->
+                <div class="flex items-center gap-2">
+                    <label for="perPageMobile" class="text-xs text-gray-700">Show:</label>
+                    <select id="perPageMobile" onchange="changePerPage()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span class="text-xs text-gray-700">entries</span>
+                </div>
+
+                <!-- Search and Filters -->
+                <div class="space-y-2">
+                    <input type="text" id="searchFilterMobile" placeholder="Search pre-quotations..."
+                           onkeyup="filterPreQuotations()"
+                           class="w-full border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+
+                    <div class="flex gap-2">
+                        <select id="statusFilterMobile" onchange="filterPreQuotations()" class="custom-select flex-1 border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                            <option value="">All Status</option>
+                            <option value="Draft">Draft</option>
+                            <option value="Sent">Sent</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+
+                        <button onclick="filterPreQuotations()" class="px-3 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
+                            🔍
+                        </button>
+
+                        <button onclick="resetFilters()" class="px-3 py-2 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors">
+                            🔄
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4" id="prequotations-mobile-container">
             @forelse($preQuotations as $pq)
-            <div class="bg-gray-50 rounded border p-4">
+            <div class="bg-gray-50 rounded border p-4" x-data="{ showStatusMenu: false }">
                 <div class="flex justify-between items-start mb-2">
                     <div>
                         <h3 class="font-medium text-sm">{{ $pq->quotation_no }}</h3>
@@ -125,6 +290,10 @@
                 </div>
                 
                 <div class="flex space-x-2">
+                    <button @click="showStatusMenu = !showStatusMenu" class="flex-1 bg-white border border-gray-300 text-gray-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center hover:bg-gray-50">
+                        <span class="material-icons text-sm mr-1">add</span>
+                        Status
+                    </button>
                     <a href="{{ route('pre-quotation.show', $pq->id) }}" class="flex-1 bg-blue-600 text-white text-center py-2 rounded text-xs">
                         View
                     </a>
@@ -139,6 +308,43 @@
                         </button>
                     </form>
                 </div>
+
+                <!-- Mobile Status Dropdown -->
+                <div x-show="showStatusMenu" @click.away="showStatusMenu = false" class="mt-3 bg-white rounded-md shadow-lg border border-gray-200 p-3">
+                    <div class="mb-2 font-bold text-gray-800 text-xs">Change Status</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 rounded change-prequotation-status-btn"
+                                data-prequotation-id="{{ $pq->id }}"
+                                data-status="pending">
+                            Pending
+                        </button>
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 rounded change-prequotation-status-btn"
+                                data-prequotation-id="{{ $pq->id }}"
+                                data-status="accepted">
+                            Accepted
+                        </button>
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 rounded change-prequotation-status-btn"
+                                data-prequotation-id="{{ $pq->id }}"
+                                data-status="rejected">
+                            Rejected
+                        </button>
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 rounded change-prequotation-status-btn"
+                                data-prequotation-id="{{ $pq->id }}"
+                                data-status="converted">
+                            Converted
+                        </button>
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 rounded change-prequotation-status-btn"
+                                data-prequotation-id="{{ $pq->id }}"
+                                data-status="expired">
+                            Expired
+                        </button>
+                        <button class="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 rounded change-prequotation-status-btn"
+                                data-prequotation-id="{{ $pq->id }}"
+                                data-status="cancelled">
+                            Cancelled
+                        </button>
+                    </div>
+                </div>
             </div>
             @empty
             <div class="text-center py-8">
@@ -147,15 +353,267 @@
                 <a href="{{ route('pre-quotation.create') }}" class="text-blue-600 hover:text-blue-800 text-xs mt-2 block">Create your first pre-quotation</a>
             </div>
             @endforelse
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+.custom-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 8px center;
+    background-repeat: no-repeat;
+    background-size: 16px 16px;
+    padding-right: 32px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+</style>
+
+<script>
+// Pagination variables
+let currentPage = 1;
+let perPage = 25;
+let allPreQuotations = [];
+let filteredPreQuotations = [];
+
+// Initialize pagination
+function initializePagination() {
+    // Get all pre-quotation data from the page
+    const preQuotationRows = document.querySelectorAll('tbody tr');
+    allPreQuotations = Array.from(preQuotationRows).map((row, index) => ({
+        id: index,
+        element: row,
+        searchText: row.textContent.toLowerCase()
+    }));
+
+    filteredPreQuotations = [...allPreQuotations];
+    displayPreQuotations();
+    updatePagination();
+}
+
+// Display functions
+function displayPreQuotations() {
+    const startIndex = (currentPage - 1) * perPage;
+    const endIndex = startIndex + perPage;
+
+    // Hide all pre-quotations first
+    allPreQuotations.forEach(pq => {
+        if (pq.element) pq.element.style.display = 'none';
+    });
+
+    // Show filtered pre-quotations for current page
+    const pqsToShow = filteredPreQuotations.slice(startIndex, endIndex);
+    pqsToShow.forEach(pq => {
+        if (pq.element) pq.element.style.display = '';
+    });
+}
+
+function updatePagination() {
+    const totalItems = filteredPreQuotations.length;
+    const totalPages = Math.ceil(totalItems / perPage);
+    const startItem = totalItems === 0 ? 0 : (currentPage - 1) * perPage + 1;
+    const endItem = Math.min(currentPage * perPage, totalItems);
+
+    // Update page info
+    if (document.getElementById('pageInfo')) {
+        document.getElementById('pageInfo').textContent = `Showing ${startItem} to ${endItem} of ${totalItems} records`;
+    }
+
+    // Update pagination buttons
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevSingleBtn = document.getElementById('prevSingleBtn');
+    const nextSingleBtn = document.getElementById('nextSingleBtn');
+
+    if (prevBtn) prevBtn.disabled = currentPage === 1;
+    if (prevSingleBtn) prevSingleBtn.disabled = currentPage === 1;
+    if (nextBtn) nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+    if (nextSingleBtn) nextSingleBtn.disabled = currentPage === totalPages || totalPages === 0;
+
+    // Update page numbers
+    updatePageNumbers(totalPages);
+}
+
+function updatePageNumbers(totalPages) {
+    const pageNumbersContainer = document.getElementById('pageNumbers');
+    if (!pageNumbersContainer) return;
+
+    pageNumbersContainer.innerHTML = '';
+
+    if (totalPages <= 1) return;
+
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    let pageHtml = '';
+    for (let i = startPage; i <= endPage; i++) {
+        const isActive = i === currentPage;
+        pageHtml += `
+            <button onclick="goToPage(${i})"
+                    class="w-8 h-8 flex items-center justify-center text-xs transition-colors ${isActive ? 'bg-blue-500 text-white rounded-full' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full'}">
+                ${i}
+            </button>
+        `;
+    }
+    pageNumbersContainer.innerHTML = pageHtml;
+}
+
+// Pagination functions
+function changePerPage() {
+    const newPerPage = parseInt(document.getElementById('perPage')?.value ||
+                               document.getElementById('perPageMobile')?.value || 25);
+
+    if (document.getElementById('perPage')) document.getElementById('perPage').value = newPerPage;
+    if (document.getElementById('perPageMobile')) document.getElementById('perPageMobile').value = newPerPage;
+
+    perPage = newPerPage;
+    currentPage = 1;
+    displayPreQuotations();
+    updatePagination();
+}
+
+// Filter Functions
+function filterPreQuotations() {
+    const searchTerm = (document.getElementById('searchFilter')?.value ||
+                       document.getElementById('searchFilterMobile')?.value || '').toLowerCase();
+    const statusFilter = (document.getElementById('statusFilter')?.value ||
+                        document.getElementById('statusFilterMobile')?.value || '');
+
+    // Sync values between desktop and mobile
+    if (document.getElementById('searchFilter')) document.getElementById('searchFilter').value = searchTerm;
+    if (document.getElementById('searchFilterMobile')) document.getElementById('searchFilterMobile').value = searchTerm;
+    if (document.getElementById('statusFilter')) document.getElementById('statusFilter').value = statusFilter;
+    if (document.getElementById('statusFilterMobile')) document.getElementById('statusFilterMobile').value = statusFilter;
+
+    filteredPreQuotations = allPreQuotations.filter(pq => {
+        const matchesSearch = searchTerm === '' || pq.searchText.includes(searchTerm);
+        const matchesStatus = statusFilter === '' || pq.searchText.includes(statusFilter.toLowerCase());
+
+        return matchesSearch && matchesStatus;
+    });
+
+    currentPage = 1;
+    displayPreQuotations();
+    updatePagination();
+}
+
+function resetFilters() {
+    if (document.getElementById('searchFilter')) document.getElementById('searchFilter').value = '';
+    if (document.getElementById('searchFilterMobile')) document.getElementById('searchFilterMobile').value = '';
+    if (document.getElementById('statusFilter')) document.getElementById('statusFilter').value = '';
+    if (document.getElementById('statusFilterMobile')) document.getElementById('statusFilterMobile').value = '';
+
+    filteredPreQuotations = [...allPreQuotations];
+    currentPage = 1;
+    displayPreQuotations();
+    updatePagination();
+}
+
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        displayPreQuotations();
+        updatePagination();
+    }
+}
+
+function nextPage() {
+    const totalPages = Math.ceil(filteredPreQuotations.length / perPage);
+    if (currentPage < totalPages) {
+        currentPage++;
+        displayPreQuotations();
+        updatePagination();
+    }
+}
+
+function firstPage() {
+    currentPage = 1;
+    displayPreQuotations();
+    updatePagination();
+}
+
+function lastPage() {
+    const totalPages = Math.ceil(filteredPreQuotations.length / perPage);
+    currentPage = totalPages;
+    displayPreQuotations();
+    updatePagination();
+}
+
+function goToPage(page) {
+    currentPage = page;
+    displayPreQuotations();
+    updatePagination();
+}
+</script>
 
 @if(session('success'))
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         alert('{{ session('success') }}');
+        initializePagination();
+    });
+</script>
+@else
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        initializePagination();
     });
 </script>
 @endif
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle pre-quotation status change buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('change-prequotation-status-btn')) {
+            const preQuotationId = e.target.dataset.prequotationId;
+            const status = e.target.dataset.status;
+            const statusName = status.charAt(0).toUpperCase() + status.slice(1);
+
+            if (confirm('Are you sure you want to change the status to "' + statusName + '"?')) {
+                changePreQuotationStatus(preQuotationId, status);
+            }
+        }
+    });
+
+    function changePreQuotationStatus(preQuotationId, newStatus) {
+        // Create a form and submit it
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/pre-quotation/${preQuotationId}/status`;
+
+        // Add CSRF token
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = '_token';
+        csrfToken.value = '{{ csrf_token() }}';
+        form.appendChild(csrfToken);
+
+        // Add method override for PATCH
+        const methodInput = document.createElement('input');
+        methodInput.type = 'hidden';
+        methodInput.name = '_method';
+        methodInput.value = 'PATCH';
+        form.appendChild(methodInput);
+
+        // Add status input
+        const statusInput = document.createElement('input');
+        statusInput.type = 'hidden';
+        statusInput.name = 'status';
+        statusInput.value = newStatus;
+        form.appendChild(statusInput);
+
+        // Submit form
+        document.body.appendChild(form);
+        form.submit();
+    }
+});
+</script>
 @endsection

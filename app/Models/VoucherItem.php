@@ -13,10 +13,19 @@ class VoucherItem extends Model
         'voucher_id',
         'description',
         'category',
+        'qty',
+        'uom',
+        'unit_price',
+        'discount_percent',
+        'tax_percent',
         'amount',
     ];
 
     protected $casts = [
+        'qty' => 'decimal:2',
+        'unit_price' => 'decimal:2',
+        'discount_percent' => 'decimal:2',
+        'tax_percent' => 'decimal:2',
         'amount' => 'decimal:2',
     ];
 

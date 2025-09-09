@@ -335,7 +335,7 @@
                     
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Email Password</label>
-                        <input type="password" x-model="formData.email_password" placeholder="Enter email password" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="password" x-model="formData.email_password" placeholder="Enter email password" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" autocomplete="current-password">
                     </div>
                     
                     <div>
@@ -510,7 +510,7 @@
                     
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">API Key *</label>
-                        <input type="password" x-model="formData.api_key" placeholder="Enter your API key" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="password" x-model="formData.api_key" placeholder="Enter your API key" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" autocomplete="current-password">
                     </div>
                     
                     <div>
@@ -731,5 +731,391 @@
             </form>
         </div>
     </div>
+
+    <!-- Opening Balance Section -->
+    <div class="bg-white rounded shadow-md border border-gray-300">
+        <div class="p-4 md:p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <span class="material-icons mr-2 text-green-600">account_balance</span>
+                    <h2 class="text-lg font-semibold text-gray-800 text-[14px]">Opening Balance</h2>
+                </div>
+                <button @click="$dispatch('open-modal', 'add-opening-balance')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-xs font-medium flex items-center">
+                    <span class="material-icons text-xs mr-1">add</span>
+                    Add Balance
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Manage opening balances for bank accounts and cash accounts.</p>
+        </div>
+
+        <div class="p-4 md:p-6" x-data="{
+            openingBalances: [],
+            loading: false,
+            editingBalance: null,
+            loadOpeningBalances() {
+                this.loading = true;
+                fetch('/settings/opening-balance')
+                    .then(response => response.json())
+                    .then(data => {
+                        this.openingBalances = data;
+                    })
+                    .catch(error => {
+                        console.error('Error loading opening balances:', error);
+                        alert('Failed to load opening balances');
+                    })
+                    .finally(() => {
+                        this.loading = false;
+                    });
+            },
+            editOpeningBalance(balance) {
+                this.editingBalance = balance;
+                this.$dispatch('open-modal', 'edit-opening-balance');
+            },
+            deleteOpeningBalance(balanceId) {
+                if (!confirm('Are you sure you want to delete this opening balance?')) {
+                    return;
+                }
+
+                fetch(`/settings/opening-balance/${balanceId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Opening balance deleted successfully');
+                        this.loadOpeningBalances();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting opening balance:', error);
+                    alert('Failed to delete opening balance');
+                });
+            }
+        }" x-init="loadOpeningBalances()">
+
+            <!-- Opening Balance Table -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bank Code</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bank Name</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Currency</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Debit</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credit</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Debit (MYR)</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credit (MYR)</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <template x-for="balance in openingBalances" :key="balance.id">
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-2 text-xs text-gray-900" x-text="balance.bank_code"></td>
+                                <td class="px-4 py-2 text-xs text-gray-900" x-text="balance.bank_name"></td>
+                                <td class="px-4 py-2 text-xs text-gray-900" x-text="balance.currency"></td>
+                                <td class="px-4 py-2 text-xs text-gray-900" x-text="parseFloat(balance.debit).toFixed(2)"></td>
+                                <td class="px-4 py-2 text-xs text-gray-900" x-text="parseFloat(balance.credit).toFixed(2)"></td>
+                                <td class="px-4 py-2 text-xs text-gray-900" x-text="parseFloat(balance.debit_myr).toFixed(2)"></td>
+                                <td class="px-4 py-2 text-xs text-gray-900" x-text="parseFloat(balance.credit_myr).toFixed(2)"></td>
+                                <td class="px-4 py-2 text-xs">
+                                    <div class="flex space-x-2">
+                                        <button @click="editOpeningBalance(balance)" class="text-blue-600 hover:text-blue-800" title="Edit">
+                                            <span class="material-icons text-sm">edit</span>
+                                        </button>
+                                        <button @click="deleteOpeningBalance(balance.id)" class="text-red-600 hover:text-red-800" title="Delete">
+                                            <span class="material-icons text-sm">delete</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
+                        <tr x-show="openingBalances.length === 0">
+                            <td colspan="8" class="px-4 py-8 text-center text-xs text-gray-500">
+                                No opening balances found. Click "Add Balance" to create one.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+
+        </div>
+    </div>
 </div>
-@endsection 
+
+<!-- Add Opening Balance Modal -->
+<div x-data="{
+    open: false,
+    formData: {
+        bank_code: '',
+        bank_name: '',
+        currency: 'MYR',
+        debit: 0,
+        credit: 0,
+        exchange_rate: 1.0000
+    },
+    isSubmitting: false,
+    updateBankName() {
+        const bankCodes = {
+            '3010/010': 'Petty Cash',
+            '3010/020': 'Client Account',
+            '3010/030': 'Office Account'
+        };
+        this.formData.bank_name = bankCodes[this.formData.bank_code] || '';
+    },
+    submitAddOpeningBalance() {
+        this.isSubmitting = true;
+
+        fetch('/settings/opening-balance', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(this.formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Opening balance added successfully');
+                this.open = false;
+                // Reset form
+                this.formData = {
+                    bank_code: '',
+                    bank_name: '',
+                    currency: 'MYR',
+                    debit: 0,
+                    credit: 0,
+                    exchange_rate: 1.0000
+                };
+                // Reload the page to refresh opening balances
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error adding opening balance:', error);
+            alert('Failed to add opening balance');
+        })
+        .finally(() => {
+            this.isSubmitting = false;
+        });
+    }
+}" @open-modal.window="open = ($event.detail === 'add-opening-balance')" @close-modal.window="open = false" x-show="open" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" x-cloak>
+    <div class="relative top-20 mx-auto p-5 border w-11/12 sm:max-w-lg shadow-lg rounded-md bg-white">
+        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                    <div class="flex items-center gap-x-2 mb-6 pl-1">
+                        <span class="material-icons text-green-600 text-xl">account_balance</span>
+                        <h3 class="text-lg font-semibold text-gray-900">Add Opening Balance</h3>
+                    </div>
+                    <div class="border-b border-gray-200 mb-6"></div>
+
+                    <form class="space-y-4" @submit.prevent="submitAddOpeningBalance()">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Bank Code *</label>
+                            <select x-model="formData.bank_code" @change="updateBankName()" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                                <option value="">Select Bank Code</option>
+                                <option value="3010/010">3010/010 - Petty Cash</option>
+                                <option value="3010/020">3010/020 - Client Account</option>
+                                <option value="3010/030">3010/030 - Office Account</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Bank Name *</label>
+                            <input type="text" x-model="formData.bank_name" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500" required readonly>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Currency *</label>
+                            <select x-model="formData.currency" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                                <option value="MYR">MYR</option>
+                                <option value="USD">USD</option>
+                                <option value="SGD">SGD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="GBP">GBP</option>
+                            </select>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Debit</label>
+                                <input type="number" step="0.01" x-model="formData.debit" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500" min="0">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Credit</label>
+                                <input type="number" step="0.01" x-model="formData.credit" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500" min="0">
+                            </div>
+                        </div>
+
+                        <div x-show="formData.currency !== 'MYR'">
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Exchange Rate to MYR</label>
+                            <input type="number" step="0.0001" x-model="formData.exchange_rate" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500" min="0.0001">
+                        </div>
+
+
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+            <button @click="submitAddOpeningBalance()" type="button" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-xs font-medium" :disabled="isSubmitting">
+                <span x-show="!isSubmitting">Add Balance</span>
+                <span x-show="isSubmitting">Adding...</span>
+            </button>
+            <button @click="open = false" type="button" class="mt-3 bg-white text-gray-700 hover:bg-gray-50 px-3 py-1 rounded-md text-xs font-medium border border-gray-300 sm:mt-0 sm:ml-3">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Opening Balance Modal -->
+<div x-data="{ open: false }" x-show="open" @open-modal.window="if ($event.detail === 'edit-opening-balance') open = true" @close-modal.window="if ($event.detail === 'edit-opening-balance') open = false" @keydown.escape.window="open = false" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div x-show="open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+        </div>
+
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <div x-show="open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Edit Opening Balance</h3>
+
+                        <form class="space-y-4" x-data="{
+                            editFormData: {
+                                id: '',
+                                bank_code: '',
+                                bank_name: '',
+                                currency: 'MYR',
+                                debit: 0,
+                                credit: 0,
+                                exchange_rate: 1.0000
+                            },
+                            isSubmitting: false,
+                            initEditForm() {
+                                if (this.$parent.editingBalance) {
+                                    this.editFormData = {
+                                        id: this.$parent.editingBalance.id,
+                                        bank_code: this.$parent.editingBalance.bank_code,
+                                        bank_name: this.$parent.editingBalance.bank_name,
+                                        currency: this.$parent.editingBalance.currency,
+                                        debit: this.$parent.editingBalance.debit,
+                                        credit: this.$parent.editingBalance.credit,
+                                        exchange_rate: this.$parent.editingBalance.exchange_rate
+                                    };
+                                }
+                            },
+                            updateEditBankName() {
+                                const bankCodes = {
+                                    '3010/010': 'Petty Cash',
+                                    '3010/020': 'Client Account',
+                                    '3010/030': 'Office Account'
+                                };
+                                this.editFormData.bank_name = bankCodes[this.editFormData.bank_code] || '';
+                            },
+                            submitEditOpeningBalance() {
+                                this.isSubmitting = true;
+
+                                fetch(`/settings/opening-balance/${this.editFormData.id}`, {
+                                    method: 'PUT',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify(this.editFormData)
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        alert('Opening balance updated successfully');
+                                        this.open = false;
+                                        this.$parent.loadOpeningBalances();
+                                    } else {
+                                        alert('Error: ' + data.message);
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error updating opening balance:', error);
+                                    alert('Failed to update opening balance');
+                                })
+                                .finally(() => {
+                                    this.isSubmitting = false;
+                                });
+                            }
+                        }" x-init="initEditForm()" @submit.prevent="submitEditOpeningBalance()">
+
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Bank Code *</label>
+                                <select x-model="editFormData.bank_code" @change="updateEditBankName()" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                                    <option value="">Select Bank Code</option>
+                                    <option value="3010/010">3010/010 - Petty Cash</option>
+                                    <option value="3010/020">3010/020 - Client Account</option>
+                                    <option value="3010/030">3010/030 - Office Account</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Bank Name *</label>
+                                <input type="text" x-model="editFormData.bank_name" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500" required readonly>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Currency *</label>
+                                <select x-model="editFormData.currency" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                                    <option value="MYR">MYR</option>
+                                    <option value="USD">USD</option>
+                                    <option value="SGD">SGD</option>
+                                    <option value="EUR">EUR</option>
+                                    <option value="GBP">GBP</option>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Debit</label>
+                                    <input type="number" step="0.01" x-model="editFormData.debit" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500" min="0">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Credit</label>
+                                    <input type="number" step="0.01" x-model="editFormData.credit" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500" min="0">
+                                </div>
+                            </div>
+
+                            <div x-show="editFormData.currency !== 'MYR'">
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Exchange Rate to MYR</label>
+                                <input type="number" step="0.0001" x-model="editFormData.exchange_rate" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500" min="0.0001">
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button @click="submitEditOpeningBalance()" type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs font-medium" :disabled="isSubmitting">
+                    <span x-show="!isSubmitting">Update Balance</span>
+                    <span x-show="isSubmitting">Updating...</span>
+                </button>
+                <button @click="open = false" type="button" class="mt-3 bg-white text-gray-700 hover:bg-gray-50 px-3 py-1 rounded-md text-xs font-medium border border-gray-300 sm:mt-0 sm:ml-3">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@endsection

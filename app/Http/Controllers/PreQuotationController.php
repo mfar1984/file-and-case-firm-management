@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PreQuotation;
 use App\Models\PreQuotationItem;
+use App\Models\FirmSetting;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
@@ -119,6 +120,18 @@ class PreQuotationController extends Controller
             ]);
         }
 
+        // Log pre-quotation creation
+        activity()
+            ->performedOn($preQuotation)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'quotation_no' => $preQuotation->quotation_no,
+                'total_amount' => $preQuotation->total,
+                'items_count' => count($request->items)
+            ])
+            ->log("Pre-quotation {$preQuotation->quotation_no} created");
+
         return redirect()->route('pre-quotation.index')->with('success', 'Pre-quotation created successfully!');
     }
 
@@ -126,6 +139,15 @@ class PreQuotationController extends Controller
     {
         $preQuotation = PreQuotation::with(['items'])->findOrFail($id);
         return view('pre-quotation-show', compact('preQuotation'));
+    }
+
+    public function print($id)
+    {
+        $preQuotation = PreQuotation::with(['items'])->findOrFail($id);
+        $firmSettings = FirmSetting::getFirmSettings();
+
+        $pdf = Pdf::loadView('pre-quotation-print', compact('preQuotation', 'firmSettings'));
+        return $pdf->download('pre-quotation-' . $preQuotation->quotation_no . '.pdf');
     }
 
     public function edit($id)
@@ -226,9 +248,49 @@ class PreQuotationController extends Controller
         return redirect()->route('pre-quotation.show', $preQuotation->id)->with('success', 'Pre-quotation updated successfully!');
     }
 
+    public function updateStatus(Request $request, $id)
+    {
+        $preQuotation = PreQuotation::findOrFail($id);
+
+        $request->validate([
+            'status' => 'required|in:pending,accepted,rejected,converted,expired,cancelled'
+        ]);
+
+        $oldStatus = $preQuotation->status;
+        $preQuotation->update([
+            'status' => $request->status
+        ]);
+
+        // Log status change
+        activity()
+            ->performedOn($preQuotation)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'old_status' => $oldStatus,
+                'new_status' => $request->status
+            ])
+            ->log("Pre-quotation {$preQuotation->quotation_no} status changed from {$oldStatus} to {$request->status}");
+
+        return redirect()->back()->with('success', 'Pre-quotation status updated successfully.');
+    }
+
     public function destroy($id)
     {
         $preQuotation = PreQuotation::findOrFail($id);
+
+        // Log pre-quotation deletion before deleting
+        activity()
+            ->performedOn($preQuotation)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'quotation_no' => $preQuotation->quotation_no,
+                'total_amount' => $preQuotation->total,
+                'status' => $preQuotation->status
+            ])
+            ->log("Pre-quotation {$preQuotation->quotation_no} deleted");
+
         $preQuotation->delete();
 
         return redirect()->route('pre-quotation.index')->with('success', 'Pre-quotation deleted successfully!');

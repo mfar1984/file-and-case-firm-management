@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class CaseFile extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'case_ref',
@@ -229,5 +231,13 @@ class CaseFile extends Model
     public function fileType()
     {
         return $this->belongsTo(FileType::class, 'category_id');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['case_ref', 'file_name', 'status', 'category_id', 'file_size'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

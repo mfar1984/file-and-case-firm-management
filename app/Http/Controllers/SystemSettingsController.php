@@ -28,7 +28,19 @@ class SystemSettingsController extends Controller
 
         try {
             $settings = SystemSetting::getSystemSettings();
+            $oldSettings = $settings->toArray();
             $settings->update($request->all());
+
+            // Log settings change
+            activity()
+                ->performedOn($settings)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'old_settings' => $oldSettings,
+                    'new_settings' => $request->all()
+                ])
+                ->log("System settings updated");
 
             return response()->json([
                 'success' => true,

@@ -24,13 +24,17 @@
                 @csrf
                 
                 <!-- User Information Section -->
-                <div class="bg-gray-50 p-4 rounded-lg mb-6">
-                    <h3 class="text-sm font-semibold text-gray-700 mb-4">User Information</h3>
+                <div class="bg-gray-50 p-4 rounded-sm mb-6">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-1 flex items-center">
+                        <span class="material-icons text-blue-600 text-base mr-2">person</span>
+                        User Information
+                    </h3>
+                    <p class="text-xs text-gray-600 mb-4 ml-6">Enter the basic user account details</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Full Name *</label>
-                            <input type="text" name="name" required 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                            <input type="text" name="name" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                                    placeholder="e.g., Ahmad Firm, Siti Partner">
                             @error('name')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -38,8 +42,8 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Username *</label>
-                            <input type="text" name="username" required 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                            <input type="text" name="username" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                                    placeholder="e.g., ahmad_firm, siti_partner">
                             @error('username')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -47,8 +51,8 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Email Address *</label>
-                            <input type="email" name="email" required 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                            <input type="email" name="email" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                                    placeholder="e.g., ahmad@firm.com">
                             @error('email')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -56,8 +60,8 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Password *</label>
-                            <input type="password" name="password" required 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                            <input type="password" name="password" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                                    placeholder="Minimum 8 characters">
                             @error('password')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -65,17 +69,23 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Confirm Password *</label>
-                            <input type="password" name="password_confirmation" required 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                            <input type="password" name="password_confirmation" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                                    placeholder="Re-enter password">
                         </div>
                     </div>
                 </div>
 
+                <!-- SPACER -->
+                <div class="h-6 bg-transparent"></div>
+
                 <!-- Role Assignment Section -->
-                <div class="bg-gray-50 p-4 rounded-lg mb-6">
-                    <h3 class="text-sm font-semibold text-gray-700 mb-4">Role Assignment</h3>
-                    <p class="text-xs text-gray-600 mb-4">Select the roles this user should have:</p>
+                <div class="bg-gray-50 p-4 rounded-sm mb-6">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-1 flex items-center">
+                        <span class="material-icons text-green-600 text-base mr-2">admin_panel_settings</span>
+                        Role Assignment
+                    </h3>
+                    <p class="text-xs text-gray-600 mb-4 ml-6">Select the roles this user should have</p>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         @foreach($roles as $role)
@@ -98,9 +108,16 @@
                     @enderror
                 </div>
 
+                <!-- SPACER -->
+                <div class="h-6 bg-transparent"></div>
+
                 <!-- Account Settings Section -->
-                <div class="bg-gray-50 p-4 rounded-lg mb-6">
-                    <h3 class="text-sm font-semibold text-gray-700 mb-4">Account Settings</h3>
+                <div class="bg-gray-50 p-4 rounded-sm mb-6">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-1 flex items-center">
+                        <span class="material-icons text-orange-600 text-base mr-2">settings</span>
+                        Account Settings
+                    </h3>
+                    <p class="text-xs text-gray-600 mb-4 ml-6">Configure account preferences and notifications</p>
                     <div class="space-y-4">
                         <div class="flex items-center">
                             <input type="checkbox" name="email_verified" value="1" 
@@ -131,39 +148,44 @@
                     </div>
                 </div>
 
+                <!-- SPACER -->
+                <div class="h-6 bg-transparent"></div>
+
                 <!-- Additional Information Section -->
-                <div class="bg-gray-50 p-4 rounded-lg mb-6">
-                    <h3 class="text-sm font-semibold text-gray-700 mb-4">Additional Information</h3>
+                <div class="bg-gray-50 p-4 rounded-sm mb-6">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-1 flex items-center">
+                        <span class="material-icons text-purple-600 text-base mr-2">info</span>
+                        Additional Information
+                    </h3>
+                    <p class="text-xs text-gray-600 mb-4 ml-6">Enter optional contact and organizational details</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Phone Number</label>
-                            <input type="tel" name="phone" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                            <input type="tel" name="phone"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                                    placeholder="e.g., +60 12-345 6789">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Department</label>
-                            <input type="text" name="department" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                            <input type="text" name="department"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                                    placeholder="e.g., Legal, HR, Finance">
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-xs font-medium text-gray-700 mb-2">Notes</label>
-                            <textarea name="notes" rows="3" 
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                            <textarea name="notes" rows="3"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                                       placeholder="Additional notes about this user..."></textarea>
                         </div>
                     </div>
                 </div>
 
-                <!-- Form Actions -->
-                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-                    <a href="{{ route('settings.user') }}" 
-                       class="px-4 py-2 border border-gray-300 rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <!-- Action Buttons -->
+                <div class="flex flex-col md:flex-row justify-end space-y-2 md:space-y-0 md:space-x-3 pt-4">
+                    <a href="{{ route('settings.user') }}" class="w-full md:w-auto px-3 py-1.5 text-gray-600 border border-gray-300 rounded-sm text-xs font-medium hover:bg-gray-50 text-center">
                         Cancel
                     </a>
-                    <button type="submit" 
-                            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button type="submit" class="w-full md:w-auto px-3 py-1.5 bg-blue-600 text-white rounded-sm text-xs font-medium hover:bg-blue-700">
                         Create User
                     </button>
                 </div>

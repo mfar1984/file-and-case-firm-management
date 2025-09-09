@@ -149,14 +149,9 @@ input[type='number'] {
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         <select x-model="item.category" class="w-32 px-3 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-left">
-                                            <option value="Utilities">Utilities</option>
-                                            <option value="Rent">Rent</option>
-                                            <option value="Services">Services</option>
-                                            <option value="Supplies">Supplies</option>
-                                            <option value="Insurance">Insurance</option>
-                                            <option value="Subscriptions">Subscriptions</option>
-                                            <option value="Maintenance">Maintenance</option>
-                                            <option value="Other">Other</option>
+                                            @foreach($expenseCategories as $category)
+                                                <option value="{{ $category->name }}">{{ $category->name }}</option>
+                                            @endforeach
                                         </select>
                                     </td>
                                     <td class="px-4 py-3 text-center">
@@ -191,14 +186,9 @@ input[type='number'] {
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-1">Category</label>
                                     <select x-model="item.category" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                        <option value="Utilities">Utilities</option>
-                                        <option value="Rent">Rent</option>
-                                        <option value="Services">Services</option>
-                                        <option value="Supplies">Supplies</option>
-                                        <option value="Insurance">Insurance</option>
-                                        <option value="Subscriptions">Subscriptions</option>
-                                        <option value="Maintenance">Maintenance</option>
-                                        <option value="Other">Other</option>
+                                        @foreach($expenseCategories as $category)
+                                            <option value="{{ $category->name }}">{{ $category->name }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                                 <div>

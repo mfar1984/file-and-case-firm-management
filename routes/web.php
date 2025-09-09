@@ -23,7 +23,7 @@ use Inertia\Inertia;
 |
 */
 
-Route::view('/', 'auth.login')->middleware('ddos.protection');
+Route::view('/', 'auth.login');
 
 Route::get('/dashboard', function () {
     return redirect()->route('overview');
@@ -37,7 +37,13 @@ Route::middleware('auth')->group(function () {
 
 // Dummy routes for sidebar
 Route::view('/overview', 'overview')->name('overview');
-Route::view('/calendar', 'calendar')->name('calendar');
+
+// Calendar routes
+Route::get('/calendar', [App\Http\Controllers\CalendarController::class, 'index'])->name('calendar');
+Route::get('/calendar/events', [App\Http\Controllers\CalendarController::class, 'getEvents'])->name('calendar.events');
+Route::post('/calendar/events', [App\Http\Controllers\CalendarController::class, 'store'])->name('calendar.store');
+Route::put('/calendar/events/{event}', [App\Http\Controllers\CalendarController::class, 'update'])->name('calendar.update');
+Route::delete('/calendar/events/{event}', [App\Http\Controllers\CalendarController::class, 'destroy'])->name('calendar.destroy');
 Route::get('/case', [CaseController::class, 'index'])->name('case.index');
 Route::get('/case/create', [CaseController::class, 'create'])->name('case.create');
 Route::post('/case', [CaseController::class, 'store'])->name('case.store');
@@ -45,6 +51,7 @@ Route::put('/case/{id}', [CaseController::class, 'update'])->name('case.update')
 Route::post('/case/{id}/change-status', [CaseController::class, 'changeStatus'])->name('case.change-status');
 Route::post('/case/{id}/timeline', [CaseController::class, 'addTimelineEvent'])->name('case.timeline.store');
 Route::put('/case/{id}/timeline/{timelineId}', [CaseController::class, 'updateTimelineEvent'])->name('case.timeline.update');
+Route::delete('/case/{id}/timeline/{timelineId}', [CaseController::class, 'deleteTimelineEvent'])->name('case.timeline.destroy');
 Route::get('/case/{id}', [CaseController::class, 'show'])->name('case.show');
 Route::delete('/case/{id}', [CaseController::class, 'destroy'])->name('case.destroy');
 Route::get('/case/{id}/edit', [CaseController::class, 'edit'])->name('case.edit');
@@ -71,8 +78,10 @@ Route::get('/pre-quotation', [App\Http\Controllers\PreQuotationController::class
 Route::get('/pre-quotation/create', [App\Http\Controllers\PreQuotationController::class, 'create'])->name('pre-quotation.create');
 Route::post('/pre-quotation', [App\Http\Controllers\PreQuotationController::class, 'store'])->name('pre-quotation.store');
 Route::get('/pre-quotation/{id}', [App\Http\Controllers\PreQuotationController::class, 'show'])->name('pre-quotation.show');
+Route::get('/pre-quotation/{id}/print', [App\Http\Controllers\PreQuotationController::class, 'print'])->name('pre-quotation.print');
 Route::get('/pre-quotation/{id}/edit', [App\Http\Controllers\PreQuotationController::class, 'edit'])->name('pre-quotation.edit');
 Route::put('/pre-quotation/{id}', [App\Http\Controllers\PreQuotationController::class, 'update'])->name('pre-quotation.update');
+Route::patch('/pre-quotation/{id}/status', [App\Http\Controllers\PreQuotationController::class, 'updateStatus'])->name('pre-quotation.updateStatus');
 Route::delete('/pre-quotation/{id}', [App\Http\Controllers\PreQuotationController::class, 'destroy'])->name('pre-quotation.destroy');
 
 // Quotation routes
@@ -90,6 +99,7 @@ Route::get('/tax-invoice', [App\Http\Controllers\TaxInvoiceController::class, 'i
 Route::get('/tax-invoice/create', [App\Http\Controllers\TaxInvoiceController::class, 'create'])->name('tax-invoice.create');
 Route::post('/tax-invoice', [App\Http\Controllers\TaxInvoiceController::class, 'store'])->name('tax-invoice.store');
 Route::get('/tax-invoice/{id}', [App\Http\Controllers\TaxInvoiceController::class, 'show'])->name('tax-invoice.show');
+Route::get('/tax-invoice/{id}/print', [App\Http\Controllers\TaxInvoiceController::class, 'print'])->name('tax-invoice.print');
 Route::get('/tax-invoice/{id}/edit', [App\Http\Controllers\TaxInvoiceController::class, 'edit'])->name('tax-invoice.edit');
 Route::put('/tax-invoice/{id}', [App\Http\Controllers\TaxInvoiceController::class, 'update'])->name('tax-invoice.update');
 Route::delete('/tax-invoice/{id}', [App\Http\Controllers\TaxInvoiceController::class, 'destroy'])->name('tax-invoice.destroy');
@@ -102,16 +112,31 @@ Route::get('/receipt', [App\Http\Controllers\ReceiptController::class, 'index'])
 Route::get('/receipt/create', [App\Http\Controllers\ReceiptController::class, 'create'])->name('receipt.create');
 Route::post('/receipt', [App\Http\Controllers\ReceiptController::class, 'store'])->name('receipt.store');
 Route::get('/receipt/{id}', [App\Http\Controllers\ReceiptController::class, 'show'])->name('receipt.show');
+Route::get('/receipt/{id}/print', [App\Http\Controllers\ReceiptController::class, 'print'])->name('receipt.print');
 Route::get('/receipt/{id}/edit', [App\Http\Controllers\ReceiptController::class, 'edit'])->name('receipt.edit');
 Route::put('/receipt/{id}', [App\Http\Controllers\ReceiptController::class, 'update'])->name('receipt.update');
 Route::delete('/receipt/{id}', [App\Http\Controllers\ReceiptController::class, 'destroy'])->name('receipt.destroy');
-Route::view('/voucher', 'voucher')->name('voucher.index');
-Route::get('/voucher/create', function() {
-    return view('voucher-create');
-})->name('voucher.create');
+// Voucher Management Routes
+Route::get('/voucher', [App\Http\Controllers\VoucherController::class, 'index'])->name('voucher.index');
+Route::get('/voucher/create', [App\Http\Controllers\VoucherController::class, 'create'])->name('voucher.create');
 Route::post('/voucher', [App\Http\Controllers\VoucherController::class, 'store'])->name('voucher.store');
-Route::view('/bill', 'bill')->name('bill.index');
-Route::view('/bill/create', 'bill-create')->name('bill.create');
+Route::get('/voucher/{id}', [App\Http\Controllers\VoucherController::class, 'show'])->name('voucher.show');
+Route::get('/voucher/{id}/print', [App\Http\Controllers\VoucherController::class, 'print'])->name('voucher.print');
+Route::get('/voucher/{id}/edit', [App\Http\Controllers\VoucherController::class, 'edit'])->name('voucher.edit');
+Route::put('/voucher/{id}', [App\Http\Controllers\VoucherController::class, 'update'])->name('voucher.update');
+Route::patch('/voucher/{id}/status', [App\Http\Controllers\VoucherController::class, 'updateStatus'])->name('voucher.updateStatus');
+Route::delete('/voucher/{id}', [App\Http\Controllers\VoucherController::class, 'destroy'])->name('voucher.destroy');
+
+// Bill Management Routes
+Route::get('/bill', [App\Http\Controllers\BillController::class, 'index'])->name('bill.index');
+Route::get('/bill/create', [App\Http\Controllers\BillController::class, 'create'])->name('bill.create');
+Route::post('/bill', [App\Http\Controllers\BillController::class, 'store'])->name('bill.store');
+Route::get('/bill/{id}', [App\Http\Controllers\BillController::class, 'show'])->name('bill.show');
+Route::get('/bill/{id}/print', [App\Http\Controllers\BillController::class, 'print'])->name('bill.print');
+Route::get('/bill/{id}/edit', [App\Http\Controllers\BillController::class, 'edit'])->name('bill.edit');
+Route::put('/bill/{id}', [App\Http\Controllers\BillController::class, 'update'])->name('bill.update');
+Route::patch('/bill/{id}/status', [App\Http\Controllers\BillController::class, 'updateStatus'])->name('bill.updateStatus');
+Route::delete('/bill/{id}', [App\Http\Controllers\BillController::class, 'destroy'])->name('bill.destroy');
 
 // Payee Management Routes
 Route::get('/settings/payee', [App\Http\Controllers\PayeeController::class, 'index'])->name('payee.index');
@@ -122,10 +147,26 @@ Route::patch('/settings/payee/{id}/toggle-status', [App\Http\Controllers\PayeeCo
 
 Route::view('/settings/global', 'settings.global')->name('settings.global');
 
-// DDoS Protection Routes (Public - No Authentication Required)
-Route::get('/ddos/stats', [App\Http\Controllers\DdosConfigController::class, 'getStats'])->name('ddos.stats.public');
-Route::get('/ddos/logs', [App\Http\Controllers\DdosConfigController::class, 'getLogs'])->name('ddos.logs.public');
-Route::get('/ddos/monitoring', [App\Http\Controllers\DdosConfigController::class, 'getMonitoringData'])->name('ddos.monitoring.public');
+// Opening Balance Routes
+Route::get('/settings/opening-balance', [App\Http\Controllers\OpeningBalanceController::class, 'index'])->name('opening-balance.index');
+Route::post('/settings/opening-balance', [App\Http\Controllers\OpeningBalanceController::class, 'store'])->name('opening-balance.store');
+Route::put('/settings/opening-balance/{id}', [App\Http\Controllers\OpeningBalanceController::class, 'update'])->name('opening-balance.update');
+Route::delete('/settings/opening-balance/{id}', [App\Http\Controllers\OpeningBalanceController::class, 'destroy'])->name('opening-balance.destroy');
+
+// G. Ledger Routes
+Route::get('/general-ledger', [App\Http\Controllers\GeneralLedgerController::class, 'index'])->name('general-ledger.index');
+Route::get('/general-ledger/print', [App\Http\Controllers\GeneralLedgerController::class, 'print'])->name('general-ledger.print');
+Route::get('/detail-transaction', [App\Http\Controllers\DetailTransactionController::class, 'index'])->name('detail-transaction.index');
+Route::get('/detail-transaction/print', [App\Http\Controllers\DetailTransactionController::class, 'print'])->name('detail-transaction.print');
+Route::get('/journal-report', [App\Http\Controllers\JournalReportController::class, 'index'])->name('journal-report.index');
+Route::get('/journal-report/print', [App\Http\Controllers\JournalReportController::class, 'print'])->name('journal-report.print');
+Route::get('/balance-sheet', [App\Http\Controllers\BalanceSheetController::class, 'index'])->name('balance-sheet.index');
+Route::get('/profit-loss', [App\Http\Controllers\ProfitLossController::class, 'index'])->name('profit-loss.index');
+Route::get('/profit-loss/print', [App\Http\Controllers\ProfitLossController::class, 'print'])->name('profit-loss.print');
+Route::get('/trial-balance', [App\Http\Controllers\TrialBalanceController::class, 'index'])->name('trial-balance.index');
+Route::get('/trial-balance/print', [App\Http\Controllers\TrialBalanceController::class, 'print'])->name('trial-balance.print');
+
+
 
 // Settings Routes
 Route::middleware(['auth'])->group(function () {
@@ -200,9 +241,21 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/category/specialization', [App\Http\Controllers\CategoryController::class, 'storeSpecialization'])->name('settings.specialization.store');
     Route::put('/settings/category/specialization/{id}', [App\Http\Controllers\CategoryController::class, 'updateSpecialization'])->name('settings.specialization.update');
     Route::delete('/settings/category/specialization/{id}', [App\Http\Controllers\CategoryController::class, 'destroySpecialization'])->name('settings.specialization.destroy');
+
+    // Event Statuses
+    Route::post('/settings/category/event-status', [App\Http\Controllers\CategoryController::class, 'storeEventStatus'])->name('settings.category.event-status.store');
+    Route::put('/settings/category/event-status/{id}', [App\Http\Controllers\CategoryController::class, 'updateEventStatus'])->name('settings.category.event-status.update');
+    Route::delete('/settings/category/event-status/{id}', [App\Http\Controllers\CategoryController::class, 'destroyEventStatus'])->name('settings.category.event-status.destroy');
+
+    // Expense Categories
+    Route::post('/settings/category/expense-category', [App\Http\Controllers\CategoryController::class, 'storeExpenseCategory'])->name('settings.category.expense-category.store');
+    Route::put('/settings/category/expense-category/{expenseCategory}', [App\Http\Controllers\CategoryController::class, 'updateExpenseCategory'])->name('settings.category.expense-category.update');
+    Route::delete('/settings/category/expense-category/{expenseCategory}', [App\Http\Controllers\CategoryController::class, 'destroyExpenseCategory'])->name('settings.category.expense-category.destroy');
 });
-Route::view('/settings/log', 'settings.log')->name('settings.log');
-Route::view('/settings/case-management', 'settings.case-management')->name('settings.case-management');
+Route::get('/settings/log', [App\Http\Controllers\ActivityLogController::class, 'index'])->name('settings.log');
+Route::get('/settings/log/data', [App\Http\Controllers\ActivityLogController::class, 'getLogs'])->name('settings.log.data');
+Route::delete('/settings/log/clear', [App\Http\Controllers\ActivityLogController::class, 'clearLogs'])->name('settings.log.clear');
+
 
 // File Management Routes
 Route::middleware(['auth'])->group(function () {
@@ -228,20 +281,6 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/settings/agency/{agency}', [App\Http\Controllers\AgencyController::class, 'destroy'])->name('settings.agency.destroy');
 });
 
-// DDoS Configuration Routes
-Route::middleware(['auth'])->group(function () {
-    Route::get('/settings/ddos', [App\Http\Controllers\DdosConfigController::class, 'index'])->name('settings.ddos.index');
-    Route::post('/settings/ddos', [App\Http\Controllers\DdosConfigController::class, 'store'])->name('settings.ddos.store');
-    Route::get('/settings/ddos/stats', [App\Http\Controllers\DdosConfigController::class, 'getStats'])->name('settings.ddos.stats');
-    Route::get('/settings/ddos/logs', [App\Http\Controllers\DdosConfigController::class, 'getLogs'])->name('settings.ddos.logs');
-    Route::delete('/settings/ddos/logs', [App\Http\Controllers\DdosConfigController::class, 'clearLogs'])->name('settings.ddos.logs.clear');
-    Route::get('/settings/system/logs', [App\Http\Controllers\DdosConfigController::class, 'getSystemLogs'])->name('settings.system.logs');
-    Route::delete('/settings/system/logs', [App\Http\Controllers\DdosConfigController::class, 'clearSystemLogs'])->name('settings.system.logs.clear');
-    Route::get('/settings/monitoring/data', [App\Http\Controllers\DdosConfigController::class, 'getMonitoringData'])->name('settings.monitoring.data');
-    Route::post('/settings/ddos/whitelist', [App\Http\Controllers\DdosConfigController::class, 'addWhitelist'])->name('settings.ddos.whitelist.add');
-    Route::delete('/settings/ddos/whitelist/{ip}', [App\Http\Controllers\DdosConfigController::class, 'removeWhitelist'])->name('settings.ddos.whitelist.remove');
-    Route::post('/settings/ddos/blacklist', [App\Http\Controllers\DdosConfigController::class, 'addBlacklist'])->name('settings.ddos.blacklist.add');
-    Route::delete('/settings/ddos/blacklist/{ip}', [App\Http\Controllers\DdosConfigController::class, 'removeBlacklist'])->name('settings.ddos.blacklist.remove');
-});
+
 
 require __DIR__.'/auth.php';

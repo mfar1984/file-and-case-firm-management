@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\CaseType;
 use App\Models\CaseStatus;
+use App\Models\EventStatus;
+use App\Models\ExpenseCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -14,10 +16,12 @@ class CategoryController extends Controller
     {
         $caseTypes = CaseType::orderBy('code')->get();
         $caseStatuses = CaseStatus::orderBy('name')->get();
+        $eventStatuses = EventStatus::active()->ordered()->get();
         $fileTypes = \App\Models\FileType::orderBy('code')->get();
         $specializations = \App\Models\Specialization::orderBy('specialist_name')->get();
-        
-        return view('settings.category', compact('caseTypes', 'caseStatuses', 'fileTypes', 'specializations'));
+        $expenseCategories = ExpenseCategory::ordered()->get();
+
+        return view('settings.category', compact('caseTypes', 'caseStatuses', 'eventStatuses', 'fileTypes', 'specializations', 'expenseCategories'));
     }
 
     // Case Type Methods
@@ -259,6 +263,17 @@ class CategoryController extends Controller
             'status' => $request->status,
         ]);
 
+        // Log file type creation
+        activity()
+            ->performedOn($fileType)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'code' => $fileType->code,
+                'description' => $fileType->description
+            ])
+            ->log("File type {$fileType->code} created");
+
         return response()->json(['success' => true, 'message' => 'File type created successfully', 'data' => $fileType]);
     }
 
@@ -318,5 +333,234 @@ class CategoryController extends Controller
         $specialization = \App\Models\Specialization::findOrFail($id);
         $specialization->delete();
         return response()->json(['success' => true, 'message' => 'Specialization deleted successfully']);
+    }
+
+    // Event Status Methods
+    public function storeEventStatus(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:50|unique:event_statuses,name',
+            'description' => 'nullable|string|max:255',
+            'background_color' => 'required|string|max:50',
+            'icon' => 'required|string|max:50',
+            'status' => 'required|in:active,inactive',
+            'sort_order' => 'nullable|integer|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $eventStatus = EventStatus::create([
+                'name' => strtolower(str_replace(' ', '_', $request->name)),
+                'description' => $request->description,
+                'background_color' => $request->background_color,
+                'icon' => $request->icon,
+                'status' => $request->status,
+                'sort_order' => $request->sort_order ?? 0,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Event status created successfully',
+                'data' => $eventStatus
+            ]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create event status: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateEventStatus(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:50|unique:event_statuses,name,' . $id,
+            'description' => 'nullable|string|max:255',
+            'background_color' => 'required|string|max:50',
+            'icon' => 'required|string|max:50',
+            'status' => 'required|in:active,inactive',
+            'sort_order' => 'nullable|integer|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $eventStatus = EventStatus::findOrFail($id);
+            $eventStatus->update([
+                'name' => strtolower(str_replace(' ', '_', $request->name)),
+                'description' => $request->description,
+                'background_color' => $request->background_color,
+                'icon' => $request->icon,
+                'status' => $request->status,
+                'sort_order' => $request->sort_order ?? 0,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Event status updated successfully',
+                'data' => $eventStatus
+            ]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update event status: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function destroyEventStatus($id)
+    {
+        try {
+            $eventStatus = EventStatus::findOrFail($id);
+
+            // Check if event status is being used
+            $timelineCount = \App\Models\CaseTimeline::where('status', $eventStatus->name)->count();
+            if ($timelineCount > 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot delete event status. It is being used by ' . $timelineCount . ' timeline events.'
+                ], 422);
+            }
+
+            $eventStatus->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Event status deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete event status: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Expense Category Methods
+    public function storeExpenseCategory(Request $request)
+    {
+        $validator = Validator::make($request->all(), ExpenseCategory::validationRules());
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $expenseCategory = ExpenseCategory::create([
+                'name' => $request->name,
+                'description' => $request->description,
+                'status' => $request->status,
+                'sort_order' => $request->sort_order ?? 0,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Expense category created successfully',
+                'data' => $expenseCategory
+            ]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create expense category: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateExpenseCategory(Request $request, ExpenseCategory $expenseCategory)
+    {
+        $validator = Validator::make($request->all(), ExpenseCategory::updateValidationRules($expenseCategory->id));
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $expenseCategory->update([
+                'name' => $request->name,
+                'description' => $request->description,
+                'status' => $request->status,
+                'sort_order' => $request->sort_order ?? $expenseCategory->sort_order,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Expense category updated successfully',
+                'data' => $expenseCategory->fresh()
+            ]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update expense category: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function destroyExpenseCategory(ExpenseCategory $expenseCategory)
+    {
+        try {
+            // Check if category is being used in bills or voucher items
+            $billsCount = \App\Models\Bill::where('category', $expenseCategory->name)->count();
+            $voucherItemsCount = \App\Models\VoucherItem::where('category', $expenseCategory->name)->count();
+
+            if ($billsCount > 0 || $voucherItemsCount > 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot delete expense category. It is being used in ' . ($billsCount + $voucherItemsCount) . ' transaction(s).'
+                ], 422);
+            }
+
+            $expenseCategory->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Expense category deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete expense category: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

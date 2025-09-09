@@ -20,7 +20,7 @@
         </div>
         
         <div class="p-4 md:p-6">
-            <form method="POST" action="{{ isset($case) ? route('case.update', $case->id) : route('case.store') }}" enctype="multipart/form-data" class="space-y-6" x-data="{
+            <form method="POST" action="{{ isset($case) ? route('case.update', $case->id) : route('case.store') }}" enctype="multipart/form-data" class="space-y-0" x-data="{
                 plaintiffs: @js(isset($case) ? $case->parties->where('party_type','plaintiff')->map(function($p){
                     return [
                         'name' => $p->name,
@@ -280,6 +280,7 @@
                 @if(isset($case))
                     @method('PUT')
                 @endif
+
                 <!-- Case Information Section -->
                 <div class="bg-gray-50 p-4 rounded-sm mb-6">
                     <h3 class="text-sm font-semibold text-gray-700 mb-1 flex items-center">
@@ -545,8 +546,11 @@
                     </div>
                 </div>
 
+                <!-- SPACER -->
+                <div class="h-6 bg-transparent"></div>
+
                 <!-- Client Information Section -->
-                <div class="bg-gray-50 p-4 rounded-sm">
+                <div class="bg-gray-50 p-4 rounded-sm mb-6">
                     <h3 class="text-sm font-semibold text-gray-700 mb-1 flex items-center">
                         <span class="material-icons text-green-600 text-base mr-2">people</span>
                         Client Information
@@ -783,6 +787,60 @@
                                     </div>
                                 </div>
                             </template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SPACER -->
+                <div class="h-6 bg-transparent"></div>
+
+                <!-- Warrant to Act Section -->
+                <div class="bg-gray-50 p-4 rounded-sm mb-6">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-1 flex items-center">
+                        <span class="material-icons text-blue-600 text-base mr-2">gavel</span>
+                        Warrant to Act Configuration
+                    </h3>
+                    <p class="text-xs text-gray-600 ml-6 mb-4">Configure automatic Warrant to Act generation</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Generate Warrant to Act -->
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-2">Generate Warrant to Act</label>
+                            <select name="generate_wta" id="generate-wta" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="1" selected>Yes, Generate Automatically</option>
+                                <option value="0">No, Skip Generation</option>
+                            </select>
+                        </div>
+
+                        <!-- Select Party for WTA -->
+                        <div id="wta-party-selection">
+                            <label class="block text-xs font-medium text-gray-700 mb-2">Select Party for Warrant to Act</label>
+                            <select name="wta_party_type" id="wta-party-type" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="applicant" selected>First Applicant/Plaintiff</option>
+                                <option value="respondent">First Respondent/Defendant</option>
+                                <option value="custom">Select Specific Party</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Custom Party Selection (Hidden by default) -->
+                    <div id="custom-party-selection" class="mt-4" style="display: none;">
+                        <label class="block text-xs font-medium text-gray-700 mb-2">Select Specific Party</label>
+                        <select name="wta_specific_party" id="wta-specific-party" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select a party...</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Add parties above first, then select specific party here</p>
+                    </div>
+
+                    <!-- WTA Preview Info -->
+                    <div id="wta-preview" class="mt-4 p-3 bg-white rounded border border-blue-200">
+                        <div class="flex items-center mb-2">
+                            <span class="material-icons text-blue-600 text-sm mr-2">info</span>
+                            <span class="text-xs font-medium text-gray-700">Warrant to Act Preview</span>
+                        </div>
+                        <div id="wta-preview-content" class="text-xs text-gray-600">
+                            <p><strong>Party:</strong> <span id="preview-party">First Applicant/Plaintiff</span></p>
+                            <p><strong>Status:</strong> <span id="preview-status" class="text-green-600">Will be generated automatically</span></p>
                         </div>
                     </div>
                 </div>
@@ -1210,6 +1268,121 @@
                 claimAmountInput.value = savedClaimAmount;
             }
         }
+
+        // Warrant to Act Configuration
+        const generateWtaSelect = document.getElementById('generate-wta');
+        const wtaPartyTypeSelect = document.getElementById('wta-party-type');
+        const customPartySelection = document.getElementById('custom-party-selection');
+        const wtaSpecificPartySelect = document.getElementById('wta-specific-party');
+        const previewParty = document.getElementById('preview-party');
+        const previewStatus = document.getElementById('preview-status');
+
+        function updateWtaPreview() {
+            const generateWta = generateWtaSelect.value === '1';
+            const partyType = wtaPartyTypeSelect.value;
+
+            if (!generateWta) {
+                previewStatus.textContent = 'Generation disabled';
+                previewStatus.className = 'text-red-600';
+                previewParty.textContent = 'None';
+                return;
+            }
+
+            previewStatus.textContent = 'Will be generated automatically';
+            previewStatus.className = 'text-green-600';
+
+            switch (partyType) {
+                case 'applicant':
+                    previewParty.textContent = 'First Applicant/Plaintiff';
+                    break;
+                case 'respondent':
+                    previewParty.textContent = 'First Respondent/Defendant';
+                    break;
+                case 'custom':
+                    const selectedParty = wtaSpecificPartySelect.options[wtaSpecificPartySelect.selectedIndex];
+                    previewParty.textContent = selectedParty.value ? selectedParty.text : 'Select specific party';
+                    break;
+            }
+        }
+
+        function updateCustomPartyOptions() {
+            // Clear existing options
+            wtaSpecificPartySelect.innerHTML = '<option value="">Select a party...</option>';
+
+            // Get all parties from the form
+            const applicantRows = document.querySelectorAll('#applicants-table tbody tr');
+            const respondentRows = document.querySelectorAll('#respondents-table tbody tr');
+
+            // Add applicants
+            applicantRows.forEach((row, index) => {
+                const nameInput = row.querySelector('input[name*="[name]"]');
+                if (nameInput && nameInput.value.trim()) {
+                    const option = document.createElement('option');
+                    option.value = `applicant_${index}`;
+                    option.textContent = `Applicant: ${nameInput.value.trim()}`;
+                    wtaSpecificPartySelect.appendChild(option);
+                }
+            });
+
+            // Add respondents
+            respondentRows.forEach((row, index) => {
+                const nameInput = row.querySelector('input[name*="[name]"]');
+                if (nameInput && nameInput.value.trim()) {
+                    const option = document.createElement('option');
+                    option.value = `respondent_${index}`;
+                    option.textContent = `Respondent: ${nameInput.value.trim()}`;
+                    wtaSpecificPartySelect.appendChild(option);
+                }
+            });
+        }
+
+        // Event listeners for WTA configuration
+        if (generateWtaSelect) {
+            generateWtaSelect.addEventListener('change', updateWtaPreview);
+        }
+
+        if (wtaPartyTypeSelect) {
+            wtaPartyTypeSelect.addEventListener('change', function() {
+                const isCustom = this.value === 'custom';
+                if (customPartySelection) {
+                    customPartySelection.style.display = isCustom ? 'block' : 'none';
+                }
+
+                if (isCustom) {
+                    updateCustomPartyOptions();
+                }
+
+                updateWtaPreview();
+            });
+        }
+
+        if (wtaSpecificPartySelect) {
+            wtaSpecificPartySelect.addEventListener('change', updateWtaPreview);
+        }
+
+        // Update custom party options when parties are added/removed
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList' && wtaPartyTypeSelect && wtaPartyTypeSelect.value === 'custom') {
+                    updateCustomPartyOptions();
+                    updateWtaPreview();
+                }
+            });
+        });
+
+        // Observe changes in parties tables
+        const applicantsTable = document.getElementById('applicants-table');
+        const respondentsTable = document.getElementById('respondents-table');
+
+        if (applicantsTable) {
+            observer.observe(applicantsTable, { childList: true, subtree: true });
+        }
+        if (respondentsTable) {
+            observer.observe(respondentsTable, { childList: true, subtree: true });
+        }
+
+        // Initial preview update
+        updateWtaPreview();
     });
 
     // Case form submission function

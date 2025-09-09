@@ -29,7 +29,7 @@
                     </div>
                     <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Manage user roles and their permissions.</p>
                 </div>
-                
+
                 <!-- Add Role Button -->
                 <a href="{{ route('settings.role.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
                     <span class="material-icons text-xs mr-1">add</span>
@@ -37,9 +37,44 @@
                 </a>
             </div>
         </div>
-        
+
         <!-- Desktop Table View -->
         <div class="hidden md:block p-6">
+            <!-- Controls Above Table -->
+            <div class="flex justify-between items-center mb-2">
+                <!-- Left: Show Entries -->
+                <div class="flex items-center gap-2">
+                    <label for="perPage" class="text-xs text-gray-700">Show:</label>
+                    <select id="perPage" onchange="changePerPage()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span class="text-xs text-gray-700">entries</span>
+                </div>
+
+                <!-- Right: Search and Filters -->
+                <div class="flex gap-2 items-center">
+                    <input type="text" id="searchFilter" placeholder="Search roles..."
+                           onkeyup="filterRoles()"
+                           class="border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-64">
+
+                    <select id="statusFilter" onchange="filterRoles()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="">All Status</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+
+                    <button onclick="filterRoles()" class="px-3 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
+                        🔍 Search
+                    </button>
+
+                    <button onclick="resetFilters()" class="px-3 py-2 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors">
+                        🔄 Reset
+                    </button>
+                </div>
+            </div>
             <div class="overflow-visible border border-gray-200 rounded">
                 <table class="min-w-full border-collapse">
                     <thead>
@@ -92,6 +127,43 @@
                         @endforeach
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- Pagination Section -->
+        <div class="p-6">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                <!-- Left: Page Info -->
+                <div class="text-xs text-gray-600">
+                    <span id="pageInfo">Showing 1 to 25 of 100 records</span>
+                </div>
+
+                <!-- Right: Pagination -->
+                <div class="flex items-center gap-1">
+                    <button id="prevBtn" onclick="firstPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lt;&lt;
+                    </button>
+
+                    <button id="prevSingleBtn" onclick="previousPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lt;
+                    </button>
+
+                    <div id="pageNumbers" class="flex items-center gap-1 mx-2">
+                        <!-- Page numbers will be populated here -->
+                    </div>
+
+                    <button id="nextSingleBtn" onclick="nextPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &gt;
+                    </button>
+
+                    <button id="nextBtn" onclick="lastPage()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &gt;&gt;
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -150,23 +222,200 @@
 
 
 
+<style>
+.custom-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 8px center;
+    background-repeat: no-repeat;
+    background-size: 16px 16px;
+    padding-right: 32px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+</style>
+
+<script>
+// Pagination variables
+let currentPage = 1;
+let perPage = 25;
+let allRoles = [];
+let filteredRoles = [];
+
+// Initialize pagination
+function initializePagination() {
+    const roleRows = document.querySelectorAll('tbody tr');
+    allRoles = Array.from(roleRows).map((row, index) => ({
+        id: index,
+        element: row,
+        searchText: row.textContent.toLowerCase()
+    }));
+
+    filteredRoles = [...allRoles];
+    displayRoles();
+    updatePagination();
+}
+
+function displayRoles() {
+    const startIndex = (currentPage - 1) * perPage;
+    const endIndex = startIndex + perPage;
+
+    allRoles.forEach(role => {
+        if (role.element) role.element.style.display = 'none';
+    });
+
+    const rolesToShow = filteredRoles.slice(startIndex, endIndex);
+    rolesToShow.forEach(role => {
+        if (role.element) role.element.style.display = '';
+    });
+}
+
+function updatePagination() {
+    const totalItems = filteredRoles.length;
+    const totalPages = Math.ceil(totalItems / perPage);
+    const startItem = totalItems === 0 ? 0 : (currentPage - 1) * perPage + 1;
+    const endItem = Math.min(currentPage * perPage, totalItems);
+
+    if (document.getElementById('pageInfo')) {
+        document.getElementById('pageInfo').textContent = `Showing ${startItem} to ${endItem} of ${totalItems} records`;
+    }
+
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevSingleBtn = document.getElementById('prevSingleBtn');
+    const nextSingleBtn = document.getElementById('nextSingleBtn');
+
+    if (prevBtn) prevBtn.disabled = currentPage === 1;
+    if (prevSingleBtn) prevSingleBtn.disabled = currentPage === 1;
+    if (nextBtn) nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+    if (nextSingleBtn) nextSingleBtn.disabled = currentPage === totalPages || totalPages === 0;
+
+    updatePageNumbers(totalPages);
+}
+
+function updatePageNumbers(totalPages) {
+    const pageNumbersContainer = document.getElementById('pageNumbers');
+    if (!pageNumbersContainer) return;
+
+    pageNumbersContainer.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    let pageHtml = '';
+    for (let i = startPage; i <= endPage; i++) {
+        const isActive = i === currentPage;
+        pageHtml += `
+            <button onclick="goToPage(${i})"
+                    class="w-8 h-8 flex items-center justify-center text-xs transition-colors ${isActive ? 'bg-blue-500 text-white rounded-full' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full'}">
+                ${i}
+            </button>
+        `;
+    }
+    pageNumbersContainer.innerHTML = pageHtml;
+}
+
+function changePerPage() {
+    const newPerPage = parseInt(document.getElementById('perPage')?.value || 25);
+
+    if (document.getElementById('perPage')) document.getElementById('perPage').value = newPerPage;
+
+    perPage = newPerPage;
+    currentPage = 1;
+    displayRoles();
+    updatePagination();
+}
+
+function filterRoles() {
+    const searchTerm = (document.getElementById('searchFilter')?.value || '').toLowerCase();
+    const statusFilter = (document.getElementById('statusFilter')?.value || '');
+
+    filteredRoles = allRoles.filter(role => {
+        const matchesSearch = searchTerm === '' || role.searchText.includes(searchTerm);
+        const matchesStatus = statusFilter === '' || role.searchText.includes(statusFilter.toLowerCase());
+
+        return matchesSearch && matchesStatus;
+    });
+
+    currentPage = 1;
+    displayRoles();
+    updatePagination();
+}
+
+function resetFilters() {
+    if (document.getElementById('searchFilter')) document.getElementById('searchFilter').value = '';
+    if (document.getElementById('statusFilter')) document.getElementById('statusFilter').value = '';
+
+    filteredRoles = [...allRoles];
+    currentPage = 1;
+    displayRoles();
+    updatePagination();
+}
+
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        displayRoles();
+        updatePagination();
+    }
+}
+
+function nextPage() {
+    const totalPages = Math.ceil(filteredRoles.length / perPage);
+    if (currentPage < totalPages) {
+        currentPage++;
+        displayRoles();
+        updatePagination();
+    }
+}
+
+function firstPage() {
+    currentPage = 1;
+    displayRoles();
+    updatePagination();
+}
+
+function lastPage() {
+    const totalPages = Math.ceil(filteredRoles.length / perPage);
+    currentPage = totalPages;
+    displayRoles();
+    updatePagination();
+}
+
+function goToPage(page) {
+    currentPage = page;
+    displayRoles();
+    updatePagination();
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    initializePagination();
+});
+</script>
 <script>
 function deleteRole(roleId) {
     if (confirm('Are you sure you want to delete this role?')) {
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = `/settings/role/${roleId}`;
-        
+
         const csrfToken = document.createElement('input');
         csrfToken.type = 'hidden';
         csrfToken.name = '_token';
         csrfToken.value = '{{ csrf_token() }}';
-        
+
         const methodField = document.createElement('input');
         methodField.type = 'hidden';
         methodField.name = '_method';
         methodField.value = 'DELETE';
-        
+
         form.appendChild(csrfToken);
         form.appendChild(methodField);
         document.body.appendChild(form);
@@ -174,4 +423,4 @@ function deleteRole(roleId) {
     }
 }
 </script>
-@endsection 
+@endsection

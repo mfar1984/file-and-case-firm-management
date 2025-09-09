@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class TaxInvoice extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'invoice_no',
@@ -94,5 +96,13 @@ class TaxInvoice extends Model
             'cancelled' => 'Cancelled',
             default => ucfirst($this->status ?? 'draft'),
         };
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['invoice_no', 'customer_name', 'status', 'total', 'due_date'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

@@ -36,6 +36,16 @@ class CaseTimeline extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function calendarEvent()
+    {
+        return $this->hasOne(CalendarEvent::class, 'timeline_event_id');
+    }
+
+    public function eventStatus()
+    {
+        return $this->belongsTo(EventStatus::class, 'status', 'name');
+    }
+
     // Scopes
     public function scopeCompleted($query)
     {
@@ -60,9 +70,18 @@ class CaseTimeline extends Model
     // Helper methods
     public function getStatusColor()
     {
+        // Try to get from EventStatus first
+        $eventStatus = \App\Models\EventStatus::where('name', $this->status)->first();
+        if ($eventStatus) {
+            return $eventStatus->background_color;
+        }
+
+        // Fallback to hardcoded values for backward compatibility
         return match($this->status) {
             'completed' => 'bg-green-500',
             'active' => 'bg-blue-500',
+            'in_progress' => 'bg-blue-500',
+            'processing' => 'bg-yellow-500',
             'cancelled' => 'bg-red-500',
             'pending' => 'bg-yellow-500', // Keep for existing data, but not selectable
             default => 'bg-gray-500'
@@ -71,9 +90,18 @@ class CaseTimeline extends Model
 
     public function getStatusIcon()
     {
+        // Try to get from EventStatus first
+        $eventStatus = \App\Models\EventStatus::where('name', $this->status)->first();
+        if ($eventStatus) {
+            return $eventStatus->icon;
+        }
+
+        // Fallback to hardcoded values for backward compatibility
         return match($this->status) {
             'completed' => 'check',
             'active' => 'radio_button_checked',
+            'in_progress' => 'trending_up',
+            'processing' => 'schedule',
             'cancelled' => 'cancel',
             'pending' => 'schedule', // Keep for existing data, but not selectable
             default => 'circle'
@@ -87,7 +115,7 @@ class CaseTimeline extends Model
 
     public function isActive()
     {
-        return $this->status === 'active';
+        return in_array($this->status, ['active', 'in_progress', 'processing']);
     }
 
     // Removed isPending() as 'pending' is no longer a primary selectable status

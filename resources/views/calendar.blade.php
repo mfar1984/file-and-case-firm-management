@@ -28,21 +28,21 @@
                         </button>
                         <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
                             <div class="py-1">
-                                <label class="flex items-center px-3 py-2 text-xs hover:bg-gray-100">
-                                    <input type="checkbox" class="mr-2" checked> All Events
-                                </label>
-                                <label class="flex items-center px-3 py-2 text-xs hover:bg-gray-100">
-                                    <input type="checkbox" class="mr-2" checked> Court Hearings
-                                </label>
-                                <label class="flex items-center px-3 py-2 text-xs hover:bg-gray-100">
-                                    <input type="checkbox" class="mr-2" checked> Client Meetings
-                                </label>
-                                <label class="flex items-center px-3 py-2 text-xs hover:bg-gray-100">
-                                    <input type="checkbox" class="mr-2" checked> Deadlines
-                                </label>
-                                <label class="flex items-center px-3 py-2 text-xs hover:bg-gray-100">
-                                    <input type="checkbox" class="mr-2" checked> Follow-ups
-                                </label>
+                                <a href="{{ route('calendar') }}" class="flex items-center px-3 py-2 text-xs hover:bg-gray-100">
+                                    <span class="material-icons text-xs mr-2">visibility</span> All Events
+                                </a>
+                                <a href="{{ route('calendar', ['category' => 'court_hearing']) }}" class="flex items-center px-3 py-2 text-xs hover:bg-gray-100">
+                                    <span class="material-icons text-xs mr-2 text-red-600">gavel</span> Court Hearings
+                                </a>
+                                <a href="{{ route('calendar', ['category' => 'consultation']) }}" class="flex items-center px-3 py-2 text-xs hover:bg-gray-100">
+                                    <span class="material-icons text-xs mr-2 text-blue-600">people</span> Consultations
+                                </a>
+                                <a href="{{ route('calendar', ['category' => 'document_filing']) }}" class="flex items-center px-3 py-2 text-xs hover:bg-gray-100">
+                                    <span class="material-icons text-xs mr-2 text-yellow-600">description</span> Document Filing
+                                </a>
+                                <a href="{{ route('calendar', ['category' => 'follow_up']) }}" class="flex items-center px-3 py-2 text-xs hover:bg-gray-100">
+                                    <span class="material-icons text-xs mr-2 text-green-600">phone</span> Follow-ups
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -63,37 +63,37 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-red-600 text-xs font-medium">Court Hearings</p>
-                            <p class="text-red-800 text-lg font-semibold">5</p>
+                            <p class="text-red-800 text-lg font-semibold">{{ $stats['court_hearings'] ?? 0 }}</p>
                         </div>
                         <span class="material-icons text-red-600">gavel</span>
                     </div>
                 </div>
-                
+
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-blue-600 text-xs font-medium">Client Meetings</p>
-                            <p class="text-blue-800 text-lg font-semibold">3</p>
+                            <p class="text-blue-800 text-lg font-semibold">{{ $stats['client_meetings'] ?? 0 }}</p>
                         </div>
                         <span class="material-icons text-blue-600">people</span>
                     </div>
                 </div>
-                
+
                 <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-yellow-600 text-xs font-medium">Deadlines</p>
-                            <p class="text-yellow-800 text-lg font-semibold">8</p>
+                            <p class="text-yellow-800 text-lg font-semibold">{{ $stats['deadlines'] ?? 0 }}</p>
                         </div>
                         <span class="material-icons text-yellow-600">schedule</span>
                     </div>
                 </div>
-                
+
                 <div class="bg-green-50 border border-green-200 rounded-lg p-3">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-green-600 text-xs font-medium">Follow-ups</p>
-                            <p class="text-green-800 text-lg font-semibold">2</p>
+                            <p class="text-green-800 text-lg font-semibold">{{ $stats['follow_ups'] ?? 0 }}</p>
                         </div>
                         <span class="material-icons text-green-600">phone</span>
                     </div>
@@ -109,32 +109,59 @@
             <div class="mt-6">
                 <h3 class="text-sm font-semibold text-gray-800 mb-3">Upcoming Events</h3>
                 <div class="space-y-2">
-                    <div class="flex items-center p-3 bg-red-50 border border-red-200 rounded-lg">
-                        <span class="material-icons text-red-600 mr-3 text-xs">gavel</span>
-                        <div class="flex-1">
-                            <p class="text-xs font-medium text-gray-800">Case #2024-010 - Court Hearing</p>
-                            <p class="text-[10px] text-gray-500">Tomorrow, 10:00 AM - High Court</p>
+                    @forelse($upcomingEvents as $event)
+                        @php
+                            $categoryColors = [
+                                'court_hearing' => ['bg' => 'bg-red-50', 'border' => 'border-red-200', 'text' => 'text-red-600', 'icon' => 'gavel'],
+                                'consultation' => ['bg' => 'bg-blue-50', 'border' => 'border-blue-200', 'text' => 'text-blue-600', 'icon' => 'people'],
+                                'client_meeting' => ['bg' => 'bg-blue-50', 'border' => 'border-blue-200', 'text' => 'text-blue-600', 'icon' => 'people'],
+                                'document_filing' => ['bg' => 'bg-yellow-50', 'border' => 'border-yellow-200', 'text' => 'text-yellow-600', 'icon' => 'description'],
+                                'deadline' => ['bg' => 'bg-yellow-50', 'border' => 'border-yellow-200', 'text' => 'text-yellow-600', 'icon' => 'schedule'],
+                                'follow_up' => ['bg' => 'bg-green-50', 'border' => 'border-green-200', 'text' => 'text-green-600', 'icon' => 'phone'],
+                                'payment' => ['bg' => 'bg-purple-50', 'border' => 'border-purple-200', 'text' => 'text-purple-600', 'icon' => 'payment'],
+                                'settlement' => ['bg' => 'bg-emerald-50', 'border' => 'border-emerald-200', 'text' => 'text-emerald-600', 'icon' => 'handshake'],
+                                'other' => ['bg' => 'bg-gray-50', 'border' => 'border-gray-200', 'text' => 'text-gray-600', 'icon' => 'event']
+                            ];
+                            $colors = $categoryColors[$event->category] ?? $categoryColors['other'];
+                            $urgency = $event->start_date->isToday() ? 'Today' : ($event->start_date->isTomorrow() ? 'Tomorrow' : $event->start_date->diffForHumans());
+                        @endphp
+
+                        <div class="flex items-center p-3 {{ $colors['bg'] }} border {{ $colors['border'] }} rounded-lg">
+                            <span class="material-icons {{ $colors['text'] }} mr-3 text-xs">{{ $colors['icon'] }}</span>
+                            <div class="flex-1">
+                                <p class="text-xs font-medium text-gray-800">
+                                    @if($event->case)
+                                        {{ $event->case->case_number }} -
+                                    @endif
+                                    {{ $event->title }}
+                                </p>
+                                <p class="text-[10px] text-gray-500">
+                                    {{ $event->start_date->format('l, g:i A') }}
+                                    @if($event->location)
+                                        - {{ $event->location }}
+                                    @endif
+                                </p>
+                            </div>
+                            <span class="text-[10px] {{ $colors['text'] }} font-medium">
+                                @if($event->start_date->isToday())
+                                    Today
+                                @elseif($event->start_date->isTomorrow())
+                                    Tomorrow
+                                @elseif($event->start_date->diffInDays() <= 3)
+                                    {{ $event->start_date->diffForHumans() }}
+                                @else
+                                    {{ $event->start_date->format('M j') }}
+                                @endif
+                            </span>
                         </div>
-                        <span class="text-[10px] text-red-600 font-medium">Urgent</span>
-                    </div>
-                    
-                    <div class="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                        <span class="material-icons text-blue-600 mr-3 text-xs">people</span>
-                        <div class="flex-1">
-                            <p class="text-xs font-medium text-gray-800">Client Meeting - John Doe</p>
-                            <p class="text-[10px] text-gray-500">Friday, 2:30 PM - Conference Room</p>
+                    @empty
+                        <div class="flex items-center justify-center p-6 bg-gray-50 border border-gray-200 rounded-lg">
+                            <div class="text-center">
+                                <span class="material-icons text-gray-400 text-2xl mb-2">event_available</span>
+                                <p class="text-xs text-gray-500">No upcoming events in the next 7 days</p>
+                            </div>
                         </div>
-                        <span class="text-[10px] text-blue-600 font-medium">Confirmed</span>
-                    </div>
-                    
-                    <div class="flex items-center p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <span class="material-icons text-yellow-600 mr-3 text-xs">schedule</span>
-                        <div class="flex-1">
-                            <p class="text-xs font-medium text-gray-800">Document Filing Deadline</p>
-                            <p class="text-[10px] text-gray-500">Next Monday, 5:00 PM</p>
-                        </div>
-                        <span class="text-[10px] text-yellow-600 font-medium">Due Soon</span>
-                    </div>
+                    @endforelse
                 </div>
             </div>
         </div>
@@ -314,154 +341,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 listDaySideFormat: { year: 'numeric', month: 'long', day: 'numeric' }
             }
         },
-        events: [
-            {
-                title: 'Court Hearing - Case #2024-010',
-                start: '2025-07-15T10:00:00',
-                end: '2025-07-15T12:00:00',
-                backgroundColor: '#ef4444',
-                borderColor: '#dc2626',
-                textColor: '#ffffff',
-                extendedProps: {
-                    type: 'court',
-                    case: '2024-010',
-                    location: 'High Court'
-                }
+        events: {
+            url: '{{ route("calendar.events") }}',
+            method: 'GET',
+            extraParams: {
+                category: '{{ request("category", "all") }}'
             },
-            {
-                title: 'Client Meeting - John Doe',
-                start: '2025-07-18T14:30:00',
-                end: '2025-07-18T15:30:00',
-                backgroundColor: '#3b82f6',
-                borderColor: '#2563eb',
-                textColor: '#ffffff',
-                extendedProps: {
-                    type: 'meeting',
-                    client: 'John Doe',
-                    location: 'Conference Room'
-                }
+            success: function(events) {
+                console.log('Calendar events loaded:', events);
             },
-            {
-                title: 'Document Filing Deadline',
-                start: '2025-07-22T17:00:00',
-                backgroundColor: '#f59e0b',
-                borderColor: '#d97706',
-                textColor: '#ffffff',
-                extendedProps: {
-                    type: 'deadline',
-                    case: '2024-009'
-                }
-            },
-            {
-                title: 'Follow-up Call - Jane Smith',
-                start: '2025-07-25T11:00:00',
-                end: '2025-07-25T11:30:00',
-                backgroundColor: '#10b981',
-                borderColor: '#059669',
-                textColor: '#ffffff',
-                extendedProps: {
-                    type: 'followup',
-                    client: 'Jane Smith'
-                }
-            },
-            {
-                title: 'Case Filing - New Case',
-                start: '2025-07-28T09:00:00',
-                backgroundColor: '#8b5cf6',
-                borderColor: '#7c3aed',
-                textColor: '#ffffff',
-                extendedProps: {
-                    type: 'filing',
-                    case: '2024-011'
-                }
-            },
-            {
-                title: 'Court Hearing - Case #2024-012',
-                start: '2025-08-05T09:00:00',
-                end: '2025-08-05T11:00:00',
-                backgroundColor: '#ef4444',
-                borderColor: '#dc2626',
-                textColor: '#ffffff',
-                extendedProps: {
-                    type: 'court',
-                    case: '2024-012',
-                    location: 'Sessions Court'
-                }
-            },
-            {
-                title: 'Client Meeting - Ahmad Ali',
-                start: '2025-08-08T15:00:00',
-                end: '2025-08-08T16:00:00',
-                backgroundColor: '#3b82f6',
-                borderColor: '#2563eb',
-                textColor: '#ffffff',
-                extendedProps: {
-                    type: 'meeting',
-                    client: 'Ahmad Ali',
-                    location: 'Meeting Room A'
-                }
-            },
-            {
-                title: 'Document Review Deadline',
-                start: '2025-08-12T16:00:00',
-                backgroundColor: '#f59e0b',
-                borderColor: '#d97706',
-                textColor: '#ffffff',
-                extendedProps: {
-                    type: 'deadline',
-                    case: '2024-008'
-                }
-            },
-            {
-                title: 'Follow-up Call - Sarah Lim',
-                start: '2025-08-15T10:30:00',
-                end: '2025-08-15T11:00:00',
-                backgroundColor: '#10b981',
-                borderColor: '#059669',
-                textColor: '#ffffff',
-                extendedProps: {
-                    type: 'followup',
-                    client: 'Sarah Lim'
-                }
-            },
-            {
-                title: 'Case Filing - Property Dispute',
-                start: '2025-08-20T08:30:00',
-                backgroundColor: '#8b5cf6',
-                borderColor: '#7c3aed',
-                textColor: '#ffffff',
-                extendedProps: {
-                    type: 'filing',
-                    case: '2024-013'
-                }
-            },
-            {
-                title: 'Court Mention - Case #2024-014',
-                start: '2025-08-25T14:00:00',
-                end: '2025-08-25T15:00:00',
-                backgroundColor: '#ef4444',
-                borderColor: '#dc2626',
-                textColor: '#ffffff',
-                extendedProps: {
-                    type: 'court',
-                    case: '2024-014',
-                    location: 'Magistrate Court'
-                }
-            },
-            {
-                title: 'Client Consultation - Maria Tan',
-                start: '2025-08-28T13:00:00',
-                end: '2025-08-28T14:30:00',
-                backgroundColor: '#3b82f6',
-                borderColor: '#2563eb',
-                textColor: '#ffffff',
-                extendedProps: {
-                    type: 'meeting',
-                    client: 'Maria Tan',
-                    location: 'Consultation Room'
-                }
+            failure: function(error) {
+                console.error('Failed to load calendar events:', error);
+                alert('There was an error while fetching events!');
             }
-        ],
+        },
         eventClick: function(info) {
             // Handle event click
             console.log('Event clicked:', info.event.title);

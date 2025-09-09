@@ -30,9 +30,10 @@ class DatabaseSeeder extends Seeder
             ExpenseCategorySeeder::class,
             PayeeSeeder::class,
             CaseFileSeeder::class,
-            DdosSettingSeeder::class,
             CaseTimelineSeeder::class,
             QuotationSeeder::class,
+            VoucherSeeder::class,
+            BillSeeder::class,
         ]);
     }
 }

@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class CourtCase extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $table = 'cases';
 
@@ -100,5 +102,18 @@ class CourtCase extends Model
     public function timeline()
     {
         return $this->hasMany(CaseTimeline::class, 'case_id')->orderBy('event_date', 'asc');
+    }
+
+    public function calendarEvents()
+    {
+        return $this->hasMany(CalendarEvent::class, 'case_id')->orderBy('start_date', 'asc');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['case_number', 'title', 'case_type_id', 'case_status_id', 'court_location', 'claim_amount'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

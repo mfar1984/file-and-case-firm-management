@@ -46,6 +46,18 @@ class PartnerController extends Controller
 
             $partner = Partner::create($data);
 
+            // Log partner creation
+            activity()
+                ->performedOn($partner)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'firm_name' => $partner->firm_name,
+                    'incharge_name' => $partner->incharge_name,
+                    'email' => $partner->email
+                ])
+                ->log("Partner {$partner->firm_name} created");
+
             $message = 'Partner created successfully.';
             if (!empty($data['incharge_email'])) {
                 if (\App\Services\EmailConfigurationService::isEmailConfigured()) {
@@ -126,6 +138,19 @@ class PartnerController extends Controller
     public function destroy($id)
     {
         $partner = Partner::findOrFail($id);
+
+        // Log partner deletion before deleting
+        activity()
+            ->performedOn($partner)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'firm_name' => $partner->firm_name,
+                'incharge_name' => $partner->incharge_name,
+                'email' => $partner->email
+            ])
+            ->log("Partner {$partner->firm_name} deleted");
+
         $partner->delete();
         return redirect()->route('partner.index')->with('success', 'Partner deleted successfully');
     }
