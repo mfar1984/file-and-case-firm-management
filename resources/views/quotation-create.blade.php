@@ -32,6 +32,9 @@ input[type='number'] {
             @if(request('case_number'))
                 <input type="hidden" name="case_number" value="{{ request('case_number') }}">
             @endif
+            @if(request('from_quotation'))
+                <input type="hidden" name="from_quotation" value="{{ request('from_quotation') }}">
+            @endif
             <!-- Customer and Quotation Details -->
             <div class="grid grid-cols-1 gap-6 mb-8">
                 <!-- Customer Information -->
@@ -119,6 +122,8 @@ input[type='number'] {
     items: @js(isset($qFrom) && $qFrom
         ? $qFrom->items->map(function($i){
             return [
+                'type' => $i->item_type ?? 'item',
+                'title_text' => $i->title_text ?? '',
                 'description' => $i->description,
                 'qty' => (float)$i->qty,
                 'uom' => $i->uom,
@@ -127,38 +132,46 @@ input[type='number'] {
                 'tax' => (float)($i->tax_percent ?? 0),
             ];
         })->values()
-        : [[ 'description' => '', 'qty' => 1, 'uom' => 'lot', 'price' => 0, 'disc' => 0, 'tax' => 6 ]]
+        : [[ 'type' => 'item', 'title_text' => '', 'description' => '', 'qty' => 1, 'uom' => 'lot', 'price' => 0, 'disc' => 0, 'tax' => 6 ]]
     ),
     amount(item) {
+        if (item.type === 'title') return 0;
         let subtotal = item.qty * item.price;
         let afterDisc = subtotal - (item.disc || 0);
         return afterDisc; // Return amount before tax
     },
     itemTax(item) {
+        if (item.type === 'title') return 0;
         let afterDisc = this.amount(item);
         return afterDisc * (item.tax / 100);
     },
     subtotal() {
-        return this.items.reduce((sum, item) => sum + this.amount(item), 0);
+        return this.items.filter(item => item.type !== 'title').reduce((sum, item) => sum + this.amount(item), 0);
     },
     totalTax() {
-        return this.items.reduce((sum, item) => sum + this.itemTax(item), 0);
+        return this.items.filter(item => item.type !== 'title').reduce((sum, item) => sum + this.itemTax(item), 0);
     },
     grandTotal() {
         return this.subtotal() + this.totalTax();
     },
     addRow() {
-        this.items.push({ description: '', qty: 1, uom: 'lot', price: 0, disc: 0, tax: 6 });
+        this.items.push({ type: 'item', title_text: '', description: '', qty: 1, uom: 'lot', price: 0, disc: 0, tax: 6 });
     },
     insertRow() {
-        this.items.unshift({ description: '', qty: 1, uom: 'lot', price: 0, disc: 0, tax: 6 });
+        this.items.unshift({ type: 'item', title_text: '', description: '', qty: 1, uom: 'lot', price: 0, disc: 0, tax: 6 });
+    },
+    addTitle() {
+        this.items.push({ type: 'title', title_text: '', description: '', qty: 0, uom: 'lot', price: 0, disc: 0, tax: 0 });
+    },
+    insertTitle() {
+        this.items.unshift({ type: 'title', title_text: '', description: '', qty: 0, uom: 'lot', price: 0, disc: 0, tax: 0 });
     },
     removeRow(idx) {
         this.items.splice(idx, 1);
     }
 }">
-                <!-- Add/Insert Buttons Above Table -->
-                <div class="flex flex-row items-end space-x-8 my-3">
+                <!-- Add/Insert/Title Buttons Above Table -->
+                <div class="flex flex-row items-end space-x-6 my-3">
                     <div class="flex flex-col items-center">
                         <button type="button" @click="addRow()" class="w-8 h-8 md:w-5 md:h-5 flex items-center justify-center bg-green-600 text-white rounded-full text-base mb-1 focus:outline-none" title="Add Row">
                             +
@@ -170,6 +183,18 @@ input[type='number'] {
                             +
                         </button>
                         <span class="text-purple-600 text-xs font-medium">Insert</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <button type="button" @click="addTitle()" class="w-8 h-8 md:w-5 md:h-5 flex items-center justify-center bg-blue-500 text-white rounded-full text-base mb-1 focus:outline-none" title="Add Title">
+                            T
+                        </button>
+                        <span class="text-blue-500 text-xs font-medium">Add</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <button type="button" @click="insertTitle()" class="w-8 h-8 md:w-5 md:h-5 flex items-center justify-center bg-blue-600 text-white rounded-full text-base mb-1 focus:outline-none" title="Insert Title">
+                            T
+                        </button>
+                        <span class="text-blue-600 text-xs font-medium">Insert</span>
                     </div>
                 </div>
                 
@@ -190,39 +215,65 @@ input[type='number'] {
                         </thead>
                         <tbody class="bg-white">
                             <template x-for="(item, idx) in items" :key="idx">
-                                <tr>
-                                    <td class="px-4 py-3 align-middle">
-                                        <textarea x-model="item.description" class="w-full px-3 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y align-middle" placeholder="Description" rows="1"></textarea>
-                                    </td>
-                                    <td class="px-1 mx-1 py-3 text-center">
-                                        <input type="number" min="1" x-model.number="item.qty" class="w-12 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="Qty">
-                                    </td>
-                                    <td class="px-1 mx-1 py-3 text-center">
-                                        <select x-model="item.uom" class="w-16 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-left">
-                                            <option value="lot">lot</option>
-                                            <option value="unit">unit</option>
-                                            <option value="hour">hour</option>
-                                            <option value="day">day</option>
-                                            <option value="week">week</option>
-                                            <option value="month">month</option>
-                                        </select>
-                                    </td>
-                                    <td class="px-1 mx-1 py-3 w-20 text-center">
-                                        <input type="number" min="0" step="0.01" x-model.number="item.price" class="w-20 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="0.00">
-                                    </td>
-                                    <td class="px-1 mx-1 py-3 text-center">
-                                        <input type="number" min="0" step="0.01" x-model.number="item.disc" class="w-16 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="0.00">
-                                    </td>
-                                    <td class="px-1 mx-1 py-3 text-center">
-                                        <select x-model.number="item.tax" class="w-16 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-left">
-                                            <option value="0">0%</option>
-                                            <option value="6">6%</option>
-                                            <option value="10">10%</option>
-                                        </select>
-                                    </td>
-                                    <td class="px-4 py-3 w-20 text-center">
-                                        <span class="text-xs text-gray-900 w-20 inline-block text-center" x-text="amount(item).toFixed(2)"></span>
-                                    </td>
+                                <tr :class="item.type === 'title' ? 'bg-orange-50' : ''">
+                                    <!-- Title Row Template -->
+                                    <template x-if="item.type === 'title'">
+                                        <td colspan="7" class="px-4 py-3 align-middle">
+                                            <div class="flex items-center">
+                                                <input type="text" x-model="item.title_text" class="flex-1 px-3 py-1 border border-orange-300 rounded text-xs font-medium focus:outline-none focus:ring-1 focus:ring-orange-500 bg-white" placeholder="Enter title text">
+                                            </div>
+                                        </td>
+                                    </template>
+
+                                    <!-- Regular Item Row Template -->
+                                    <template x-if="item.type !== 'title'">
+                                        <td class="px-4 py-3 align-middle">
+                                            <textarea x-model="item.description" class="w-full px-3 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y align-middle" placeholder="Description" rows="1"></textarea>
+                                        </td>
+                                    </template>
+                                    <template x-if="item.type !== 'title'">
+                                        <td class="px-1 mx-1 py-3 text-center">
+                                            <input type="number" min="1" x-model.number="item.qty" class="w-12 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="Qty">
+                                        </td>
+                                    </template>
+                                    <template x-if="item.type !== 'title'">
+                                        <td class="px-1 mx-1 py-3 text-center">
+                                            <select x-model="item.uom" class="w-16 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-left">
+                                                <option value="lot">lot</option>
+                                                <option value="unit">unit</option>
+                                                <option value="hour">hour</option>
+                                                <option value="day">day</option>
+                                                <option value="week">week</option>
+                                                <option value="month">month</option>
+                                            </select>
+                                        </td>
+                                    </template>
+                                    <template x-if="item.type !== 'title'">
+                                        <td class="px-1 mx-1 py-3 w-20 text-center">
+                                            <input type="number" min="0" step="0.01" x-model.number="item.price" class="w-20 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="0.00">
+                                        </td>
+                                    </template>
+                                    <template x-if="item.type !== 'title'">
+                                        <td class="px-1 mx-1 py-3 text-center">
+                                            <input type="number" min="0" step="0.01" x-model.number="item.disc" class="w-16 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="0.00">
+                                        </td>
+                                    </template>
+                                    <template x-if="item.type !== 'title'">
+                                        <td class="px-1 mx-1 py-3 text-center">
+                                            <select x-model.number="item.tax" class="w-16 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-left">
+                                                <option value="0">0%</option>
+                                                <option value="6">6%</option>
+                                                <option value="10">10%</option>
+                                            </select>
+                                        </td>
+                                    </template>
+                                    <template x-if="item.type !== 'title'">
+                                        <td class="px-4 py-3 w-20 text-center">
+                                            <span class="text-xs text-gray-900 w-20 inline-block text-center" x-text="amount(item).toFixed(2)"></span>
+                                        </td>
+                                    </template>
+
+                                    <!-- Action Column (for both title and regular items) -->
                                     <td class="px-4 py-3 text-center">
                                         <div class="flex justify-center">
                                             <button type="button" @click="removeRow(idx)" class="text-red-600 hover:text-red-800 text-base font-light" title="Delete Row">❌</button>
@@ -237,60 +288,79 @@ input[type='number'] {
                 <!-- Mobile Card View for Items -->
                 <div class="md:hidden space-y-4">
                     <template x-for="(item, idx) in items" :key="idx">
-                        <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                        <div :class="item.type === 'title' ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'" class="border rounded-lg p-4 space-y-3">
                             <div class="flex items-center justify-between">
-                                <span class="text-sm font-medium text-gray-800">Item <span x-text="idx + 1"></span></span>
+                                <span class="text-sm font-medium" :class="item.type === 'title' ? 'text-blue-800' : 'text-gray-800'">
+                                    <span x-show="item.type === 'title'" class="text-xs font-semibold text-blue-700">TITLE</span>
+                                    <span x-show="item.type !== 'title'">Item <span x-text="idx + 1"></span></span>
+                                </span>
                                 <button type="button" @click="removeRow(idx)" class="text-red-600 hover:text-red-800 text-lg" title="Delete Row">❌</button>
                             </div>
-                            
-                            <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
-                                <textarea x-model="item.description" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y" placeholder="Description" rows="2"></textarea>
-                            </div>
-                            
-                            <div class="grid grid-cols-2 gap-3">
+
+                            <!-- Title Input for Mobile -->
+                            <template x-if="item.type === 'title'">
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Quantity</label>
-                                    <input type="number" min="1" x-model.number="item.qty" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="Qty">
+                                    <label class="block text-xs font-medium text-blue-700 mb-1">Title Text</label>
+                                    <input type="text" x-model="item.title_text" class="w-full px-3 py-2 border border-blue-300 rounded text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white" placeholder="Enter title text">
                                 </div>
+                            </template>
+
+                            <!-- Regular Item Fields for Mobile -->
+                            <template x-if="item.type !== 'title'">
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">UOM</label>
-                                    <select x-model="item.uom" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                        <option value="lot">lot</option>
-                                        <option value="unit">unit</option>
-                                        <option value="hour">hour</option>
-                                        <option value="day">day</option>
-                                        <option value="week">week</option>
-                                        <option value="month">month</option>
-                                    </select>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                                    <textarea x-model="item.description" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y" placeholder="Description" rows="2"></textarea>
                                 </div>
-                            </div>
-                            
-                            <div class="grid grid-cols-3 gap-3">
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price</label>
-                                    <input type="number" min="0" step="0.01" x-model.number="item.price" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="0.00">
+                            </template>
+
+                            <!-- Regular Item Fields for Mobile (continued) -->
+                            <template x-if="item.type !== 'title'">
+                                <div class="space-y-3">
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Quantity</label>
+                                            <input type="number" min="1" x-model.number="item.qty" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="Qty">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">UOM</label>
+                                            <select x-model="item.uom" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                                <option value="lot">lot</option>
+                                                <option value="unit">unit</option>
+                                                <option value="hour">hour</option>
+                                                <option value="day">day</option>
+                                                <option value="week">week</option>
+                                                <option value="month">month</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-3 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price</label>
+                                            <input type="number" min="0" step="0.01" x-model.number="item.price" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="0.00">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Discount</label>
+                                            <input type="number" min="0" step="0.01" x-model.number="item.disc" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="0.00">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Tax %</label>
+                                            <select x-model.number="item.tax" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                                <option value="0">0%</option>
+                                                <option value="6">6%</option>
+                                                <option value="10">10%</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="pt-2 border-t border-gray-100">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-xs font-medium text-gray-600">Amount:</span>
+                                            <span class="text-sm font-semibold text-gray-900" x-text="'RM ' + amount(item).toFixed(2)"></span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Discount</label>
-                                    <input type="number" min="0" step="0.01" x-model.number="item.disc" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="0.00">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Tax %</label>
-                                    <select x-model.number="item.tax" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                        <option value="0">0%</option>
-                                        <option value="6">6%</option>
-                                        <option value="10">10%</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="pt-2 border-t border-gray-100">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-xs font-medium text-gray-600">Amount:</span>
-                                    <span class="text-sm font-semibold text-gray-900" x-text="'RM ' + amount(item).toFixed(2)"></span>
-                                </div>
-                            </div>
+                            </template>
                         </div>
                     </template>
                 </div>
@@ -393,6 +463,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
 window.__prepareQuotationItems = function(form){
     try{
+        // Validate required fields first
+        const caseSelect = document.getElementById('case_select');
+        const quotationDate = document.getElementById('quotation_date');
+
+        if (!caseSelect.value) {
+            alert('Please select a Case ID');
+            caseSelect.focus();
+            return false;
+        }
+
+        if (!quotationDate.value) {
+            alert('Please select a quotation date');
+            quotationDate.focus();
+            return false;
+        }
+
         const comp = document.getElementById('qItems');
         const data = window.Alpine ? Alpine.$data(comp) : null;
         let container = document.getElementById('hidden-items-container');
@@ -402,31 +488,86 @@ window.__prepareQuotationItems = function(form){
             form.appendChild(container);
         }
         container.innerHTML = '';
+
         if(data && Array.isArray(data.items)){
-            data.items.forEach((it, idx) => {
-                const fields = {
-                    description: it.description || '',
-                    qty: it.qty || 0,
-                    uom: it.uom || 'lot',
-                    unit_price: it.price || 0,
-                    discount_amount: it.disc || 0,
-                    tax_percent: it.tax || 0,
-                    amount: (Number(it.qty||0) * Number(it.price||0)) - (Number(it.disc||0))
-                };
+            // Filter out empty items and validate
+            const validItems = data.items.filter(it => {
+                if (it.type === 'title') {
+                    return it.title_text && it.title_text.trim() !== '';
+                } else {
+                    return it.description && it.description.trim() !== '';
+                }
+            });
+
+            if (validItems.length === 0) {
+                alert('Please add at least one item or title');
+                return false;
+            }
+
+            validItems.forEach((it, idx) => {
+                let fields = {};
+
+                if (it.type === 'title') {
+                    // Title item fields
+                    fields = {
+                        type: 'title',
+                        title_text: it.title_text || '',
+                        description: '',
+                        qty: 0,
+                        uom: 'lot',
+                        unit_price: 0,
+                        discount_amount: 0,
+                        tax_percent: 0,
+                        amount: 0
+                    };
+                } else {
+                    // Regular item fields - validate required fields
+                    const qty = Number(it.qty) || 0;
+                    const price = Number(it.price) || 0;
+
+                    if (qty <= 0) {
+                        alert(`Item ${idx + 1}: Quantity must be greater than 0`);
+                        return false;
+                    }
+
+                    fields = {
+                        type: 'item',
+                        title_text: '',
+                        description: it.description || '',
+                        qty: qty,
+                        uom: it.uom || 'lot',
+                        unit_price: price,
+                        discount_amount: Number(it.disc) || 0,
+                        tax_percent: Number(it.tax) || 0,
+                        amount: (qty * price) - (Number(it.disc) || 0)
+                    };
+                }
+
                 Object.keys(fields).forEach(k => {
                     const input = document.createElement('input');
                     input.type = 'hidden';
                     input.name = `items[${idx}][${k}]`;
-                    input.value = fields[k];
+                    input.value = fields[k] || '';
                     container.appendChild(input);
                 });
             });
+        } else {
+            alert('Please add at least one item');
+            return false;
         }
-        const caseSelect = document.getElementById('case_select');
+
+        // Update case_id from select
         const hiddenCaseId = document.getElementById('hidden_case_id');
-        if(caseSelect && hiddenCaseId){ hiddenCaseId.value = caseSelect.value || hiddenCaseId.value; }
-    }catch(e){ console.error(e); }
-    return true;
+        if(caseSelect && hiddenCaseId){
+            hiddenCaseId.value = caseSelect.value || hiddenCaseId.value;
+        }
+
+        return true;
+    }catch(e){
+        console.error('Form submission error:', e);
+        alert('Error preparing form data. Please try again.');
+        return false;
+    }
 }
 </script>
 @endsection 

@@ -5,8 +5,8 @@
 @endsection
 
 @section('content')
-<div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto" x-data="{ 
-    showTypeModal: false, 
+<div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto" x-data="{
+    showTypeModal: false,
     showStatusModal: false,
     showEditTypeModal: false,
     showEditStatusModal: false,
@@ -30,12 +30,12 @@
         editPayeeForm: { id: '', name: '', category: '', address: '', contact_person: '', phone: '', email: '', status: '1' },
     expenseCategoryForm: { name: '', description: '', status: 'active', sort_order: 0 },
     editExpenseCategoryForm: { id: '', name: '', description: '', status: 'active', sort_order: 0 },
-    
+
     openEditTypeModal(id, code, description, status) {
         this.editTypeForm = { id: id, code: code, description: description, status: status };
         this.showEditTypeModal = true;
     },
-    
+
     openEditStatusModal(id, name, description, color, status) {
         this.editStatusForm = { id: id, name: name, description: description, color: color, status: status };
         this.showEditStatusModal = true;
@@ -599,7 +599,7 @@
                     </div>
                     <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Manage different types of legal cases and their codes.</p>
                 </div>
-                
+
                 <!-- Add Type Button -->
                 <button @click="showTypeModal = true" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
                     <span class="material-icons text-xs mr-1">add</span>
@@ -607,7 +607,8 @@
                 </button>
             </div>
         </div>
-        
+
+        @if($caseTypes->count() > 0)
         <!-- Desktop Table View -->
         <div class="hidden md:block p-6">
             <!-- Controls Above Table -->
@@ -824,10 +825,27 @@
                 </div>
             </div>
         </div>
+        @else
+        <div class="hidden md:block p-6">
+            <div class="text-center py-8">
+                <span class="material-icons text-gray-400 text-4xl mb-2">category</span>
+                <p class="text-sm text-gray-500">No case types available</p>
+                <p class="text-xs text-gray-400">Add case types to manage different legal case categories</p>
+            </div>
+        </div>
+
+        <div class="md:hidden p-4">
+            <div class="text-center py-8">
+                <span class="material-icons text-gray-400 text-4xl mb-2">category</span>
+                <p class="text-sm text-gray-500">No case types available</p>
+                <p class="text-xs text-gray-400">Add case types to manage different legal case categories</p>
+            </div>
+        </div>
+        @endif
     </div>
 
     <!-- Expense Categories Section -->
-    <div class="bg-white rounded shadow-md border border-gray-300 mt-6">
+    <div class="bg-white rounded shadow-md border border-gray-300 mt-6 mb-6">
         <div class="p-4 md:p-6 border-b border-gray-200">
             <div class="flex flex-col md:flex-row md:justify-between md:items-start">
                 <div class="mb-4 md:mb-0">
@@ -837,57 +855,239 @@
                     </div>
                     <p class="text-xs text-gray-500 mt-1 ml-8">Manage expense categories for bills and vouchers</p>
                 </div>
-                <button @click="showExpenseCategoryModal = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-xs font-medium flex items-center">
+                <button @click="showExpenseCategoryModal = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
                     <span class="material-icons text-xs mr-1">add</span>
                     Add Expense Category
                 </button>
             </div>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sort Order</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @foreach($expenseCategories as $category)
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3 whitespace-nowrap text-xs text-gray-900 font-medium">
-                            {{ $category->name }}
-                        </td>
-                        <td class="px-4 py-3 text-xs text-gray-600">
-                            {{ $category->description ?? '-' }}
-                        </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-xs text-gray-600">
-                            {{ $category->sort_order }}
-                        </td>
-                        <td class="px-4 py-3 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $category->status_color }}">
-                                {{ $category->status_display }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-right text-xs font-medium">
-                            <button @click="openEditExpenseCategoryModal({{ $category->id }}, '{{ $category->name }}', '{{ $category->description }}', '{{ $category->status }}', {{ $category->sort_order }})"
-                                    class="text-blue-600 hover:text-blue-900 mr-3">
-                                <span class="material-icons text-sm">edit</span>
-                            </button>
-                            <button @click="deleteExpenseCategory({{ $category->id }})"
-                                    class="text-red-600 hover:text-red-900">
-                                <span class="material-icons text-sm">delete</span>
-                            </button>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+        @if($expenseCategories->count() > 0)
+        <!-- Desktop Table View -->
+        <div class="hidden md:block p-6">
+            <!-- Controls Above Table -->
+            <div class="flex justify-between items-center mb-2">
+                <!-- Left: Show Entries -->
+                <div class="flex items-center gap-2">
+                    <label for="perPageExpenseCategory" class="text-xs text-gray-700">Show:</label>
+                    <select id="perPageExpenseCategory" onchange="changePerPageExpenseCategory()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span class="text-xs text-gray-700">entries</span>
+                </div>
+
+                <!-- Right: Search and Filters -->
+                <div class="flex gap-2 items-center">
+                    <input type="text" id="searchFilterExpenseCategory" placeholder="Search expense categories..."
+                           onkeyup="filterExpenseCategory()"
+                           class="border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-64">
+
+                    <select id="statusFilterExpenseCategory" onchange="filterExpenseCategory()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="">All Status</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+
+                    <button onclick="filterExpenseCategory()" class="px-3 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
+                        🔍 Search
+                    </button>
+
+                    <button onclick="resetFiltersExpenseCategory()" class="px-3 py-2 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors">
+                        🔄 Reset
+                    </button>
+                </div>
+            </div>
+            <div class="overflow-visible border border-gray-200 rounded">
+                <table class="min-w-full border-collapse">
+                    <thead>
+                        <tr class="bg-primary-light text-white uppercase text-xs">
+                            <th class="py-3 px-4 text-left rounded-tl">Name</th>
+                            <th class="py-3 px-4 text-left">Description</th>
+                            <th class="py-3 px-4 text-left">Sort Order</th>
+                            <th class="py-3 px-4 text-left">Status</th>
+                            <th class="py-3 px-4 text-center rounded-tr">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach($expenseCategories as $category)
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-1 px-4 text-[11px] font-medium">{{ $category->name }}</td>
+                            <td class="py-1 px-4 text-[11px]">{{ $category->description ?? '-' }}</td>
+                            <td class="py-1 px-4 text-[11px]">{{ $category->sort_order }}</td>
+                            <td class="py-1 px-4 text-[11px]">
+                                <span class="inline-block {{ $category->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} px-1.5 py-0.5 rounded-full text-[10px]">{{ ucfirst($category->status) }}</span>
+                            </td>
+                            <td class="py-1 px-4">
+                                <div class="flex justify-center space-x-1 items-center">
+                                    <button @click="openEditExpenseCategoryModal({{ $category->id }}, '{{ $category->name }}', '{{ $category->description }}', '{{ $category->status }}', {{ $category->sort_order }})" class="p-0.5 text-yellow-600 hover:text-yellow-700" title="Edit">
+                                        <span class="material-icons text-base">edit</span>
+                                    </button>
+                                    <button @click="deleteExpenseCategory({{ $category->id }})" class="p-0.5 text-red-600 hover:text-red-700" title="Delete">
+                                        <span class="material-icons text-base">delete</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination Section for Expense Categories -->
+        <div class="p-6">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                <!-- Left: Page Info -->
+                <div class="text-xs text-gray-600">
+                    <span id="pageInfoExpenseCategory">Showing 1 to 10 of 100 records</span>
+                </div>
+
+                <!-- Right: Pagination -->
+                <div class="flex items-center gap-1">
+                    <button id="prevBtnExpenseCategory" onclick="firstPageExpenseCategory()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lt;&lt;
+                    </button>
+
+                    <button id="prevSingleBtnExpenseCategory" onclick="previousPageExpenseCategory()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lt;
+                    </button>
+
+                    <div id="pageNumbersExpenseCategory" class="flex items-center gap-1 mx-2">
+                        <!-- Page numbers will be populated here -->
+                    </div>
+
+                    <button id="nextSingleBtnExpenseCategory" onclick="nextPageExpenseCategory()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &gt;
+                    </button>
+
+                    <button id="nextBtnExpenseCategory" onclick="lastPageExpenseCategory()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &gt;&gt;
+                    </button>
+                </div>
+            </div>
+        </div>
+        @else
+        <div class="hidden md:block p-6">
+            <div class="text-center py-8">
+                <span class="material-icons text-gray-400 text-4xl mb-2">category</span>
+                <p class="text-sm text-gray-500">No expense categories available</p>
+                <p class="text-xs text-gray-400">Add expense categories to manage bills and vouchers</p>
+            </div>
+        </div>
+
+        <div class="md:hidden p-4">
+            <div class="text-center py-8">
+                <span class="material-icons text-gray-400 text-4xl mb-2">category</span>
+                <p class="text-sm text-gray-500">No expense categories available</p>
+                <p class="text-xs text-gray-400">Add expense categories to manage bills and vouchers</p>
+            </div>
+        </div>
+        @endif
+    </div>
+    <!-- Add Expense Category Modal -->
+    <div x-show="showExpenseCategoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" x-cloak>
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Add Expense Category</h3>
+                    <button @click="showExpenseCategoryModal = false" class="text-gray-400 hover:text-gray-600">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
+                <form id="expenseCategoryForm" @submit.prevent="submitExpenseCategoryForm()">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Name *</label>
+                        <input type="text" name="name" x-model="expenseCategoryForm.name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea name="description" x-model="expenseCategoryForm.description" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Sort Order</label>
+                        <input type="number" name="sort_order" x-model="expenseCategoryForm.sort_order" min="0" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Status *</label>
+                        <select name="status" x-model="expenseCategoryForm.status" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" @click="showExpenseCategoryModal = false" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700">
+                            Create
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
+
+    <!-- Edit Expense Category Modal -->
+    <div x-show="showEditExpenseCategoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" x-cloak>
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Edit Expense Category</h3>
+                    <button @click="showEditExpenseCategoryModal = false" class="text-gray-400 hover:text-gray-600">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
+                <form id="editExpenseCategoryForm" @submit.prevent="submitEditExpenseCategoryForm()">
+                    <input type="hidden" id="editExpenseCategoryId" name="id" x-model="editExpenseCategoryForm.id">
+                    <input type="hidden" name="_method" value="PUT">
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Name *</label>
+                        <input type="text" name="name" x-model="editExpenseCategoryForm.name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea name="description" x-model="editExpenseCategoryForm.description" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Sort Order</label>
+                        <input type="number" name="sort_order" x-model="editExpenseCategoryForm.sort_order" min="0" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Status *</label>
+                        <select name="status" x-model="editExpenseCategoryForm.status" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" @click="showEditExpenseCategoryModal = false" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700">
+                            Update
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Category Status Section -->
     <div class="bg-white rounded shadow-md border border-gray-300">
@@ -900,7 +1100,7 @@
                     </div>
                     <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Manage case status categories and their definitions.</p>
                 </div>
-                
+
                 <!-- Add Status Button -->
                 <button @click="showStatusModal = true" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
                     <span class="material-icons text-xs mr-1">add</span>
@@ -908,7 +1108,8 @@
                 </button>
             </div>
         </div>
-        
+
+        @if($caseStatuses->count() > 0)
         <!-- Desktop Table View -->
         <div class="hidden md:block p-6">
             <!-- Controls Above Table -->
@@ -1162,6 +1363,23 @@
                 </div>
             </div>
         </div>
+        @else
+        <div class="hidden md:block p-6">
+            <div class="text-center py-8">
+                <span class="material-icons text-gray-400 text-4xl mb-2">flag</span>
+                <p class="text-sm text-gray-500">No case statuses available</p>
+                <p class="text-xs text-gray-400">Add case statuses to manage case progress tracking</p>
+            </div>
+        </div>
+
+        <div class="md:hidden p-4">
+            <div class="text-center py-8">
+                <span class="material-icons text-gray-400 text-4xl mb-2">flag</span>
+                <p class="text-sm text-gray-500">No case statuses available</p>
+                <p class="text-xs text-gray-400">Add case statuses to manage case progress tracking</p>
+            </div>
+        </div>
+        @endif
     </div>
 
     <!-- File Type Section -->
@@ -1182,6 +1400,7 @@
             </div>
         </div>
 
+        @if($fileTypes->count() > 0)
         <!-- Desktop Table View -->
         <div class="hidden md:block p-6">
             <!-- Controls Above Table -->
@@ -1315,6 +1534,23 @@
             </div>
             @endforeach
         </div>
+        @else
+        <div class="hidden md:block p-6">
+            <div class="text-center py-8">
+                <span class="material-icons text-gray-400 text-4xl mb-2">insert_drive_file</span>
+                <p class="text-sm text-gray-500">No file types available</p>
+                <p class="text-xs text-gray-400">Add file types to manage document categories</p>
+            </div>
+        </div>
+
+        <div class="md:hidden p-4">
+            <div class="text-center py-8">
+                <span class="material-icons text-gray-400 text-4xl mb-2">insert_drive_file</span>
+                <p class="text-sm text-gray-500">No file types available</p>
+                <p class="text-xs text-gray-400">Add file types to manage document categories</p>
+            </div>
+        </div>
+        @endif
     </div>
 
     <!-- Add Type Modal -->
@@ -1328,19 +1564,19 @@
                     </button>
                 </div>
             </div>
-            
+
             <form @submit.prevent="submitTypeForm()" class="p-6">
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Code *</label>
                         <input type="text" x-model="typeForm.code" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., CR, CA, PB" required>
                     </div>
-                    
+
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Description *</label>
                         <input type="text" x-model="typeForm.description" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Criminal, Civil Action" required>
                     </div>
-                    
+
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Status</label>
                         <select x-model="typeForm.status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -1349,7 +1585,7 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="flex justify-end space-x-3 mt-6">
                     <button type="button" @click="showTypeModal = false" class="px-4 py-2 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors">
                         Cancel
@@ -1373,19 +1609,19 @@
                     </button>
                 </div>
             </div>
-            
+
             <form @submit.prevent="submitEditTypeForm()" class="p-6">
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Code *</label>
                         <input type="text" x-model="editTypeForm.code" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., CR, CA, PB" required>
                     </div>
-                    
+
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Description *</label>
                         <input type="text" x-model="editTypeForm.description" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Criminal, Civil Action" required>
                     </div>
-                    
+
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Status</label>
                         <select x-model="editTypeForm.status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -1394,7 +1630,7 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="flex justify-end space-x-3 mt-6">
                     <button type="button" @click="showEditTypeModal = false" class="px-4 py-2 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors">
                         Cancel
@@ -1418,19 +1654,19 @@
                     </button>
                 </div>
             </div>
-            
+
             <form @submit.prevent="submitStatusForm()" class="p-6">
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Status Name *</label>
                         <input type="text" x-model="statusForm.name" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Consultation, Quotation" required>
                     </div>
-                    
+
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Description *</label>
                         <textarea x-model="statusForm.description" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Brief description of this status" required></textarea>
                     </div>
-                    
+
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Color</label>
                         <select x-model="statusForm.color" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -1443,7 +1679,7 @@
                             <option value="orange">Orange</option>
                         </select>
                     </div>
-                    
+
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Status</label>
                         <select x-model="statusForm.status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -1452,7 +1688,7 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="flex justify-end space-x-3 mt-6">
                     <button type="button" @click="showStatusModal = false" class="px-4 py-2 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors">
                         Cancel
@@ -1476,19 +1712,19 @@
                     </button>
                 </div>
             </div>
-            
+
             <form @submit.prevent="submitEditStatusForm()" class="p-6">
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Status Name *</label>
                         <input type="text" x-model="editStatusForm.name" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Consultation, Quotation" required>
                     </div>
-                    
+
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Description *</label>
                         <textarea x-model="editStatusForm.description" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Brief description of this status" required></textarea>
                     </div>
-                    
+
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Color</label>
                         <select x-model="editStatusForm.color" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -1501,7 +1737,7 @@
                             <option value="orange">Orange</option>
                         </select>
                     </div>
-                    
+
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Status</label>
                         <select x-model="editStatusForm.status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -1510,7 +1746,7 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="flex justify-end space-x-3 mt-6">
                     <button type="button" @click="showEditStatusModal = false" class="px-4 py-2 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors">
                         Cancel
@@ -1614,7 +1850,8 @@
                 </button>
             </div>
         </div>
-        
+
+        @if($specializations->count() > 0)
         <!-- Desktop Table View -->
         <div class="hidden md:block p-6">
             <!-- Controls Above Table -->
@@ -1748,6 +1985,23 @@
             </div>
             @endforeach
         </div>
+        @else
+        <div class="hidden md:block p-6">
+            <div class="text-center py-8">
+                <span class="material-icons text-gray-400 text-4xl mb-2">psychology</span>
+                <p class="text-sm text-gray-500">No specializations available</p>
+                <p class="text-xs text-gray-400">Add specializations to manage legal expertise areas</p>
+            </div>
+        </div>
+
+        <div class="md:hidden p-4">
+            <div class="text-center py-8">
+                <span class="material-icons text-gray-400 text-4xl mb-2">psychology</span>
+                <p class="text-sm text-gray-500">No specializations available</p>
+                <p class="text-xs text-gray-400">Add specializations to manage legal expertise areas</p>
+            </div>
+        </div>
+        @endif
     </div>
 
     <!-- Event Status Section -->
@@ -1770,25 +2024,61 @@
             </div>
         </div>
 
+        @if($eventStatuses->count() > 0)
         <!-- Desktop Table View -->
-        <div class="hidden md:block overflow-x-auto">
-            <div class="min-w-full">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Name</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preview</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sort Order</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+        <div class="hidden md:block p-6">
+            <!-- Controls Above Table -->
+            <div class="flex justify-between items-center mb-2">
+                <!-- Left: Show Entries -->
+                <div class="flex items-center gap-2">
+                    <label for="perPageEventStatus" class="text-xs text-gray-700">Show:</label>
+                    <select id="perPageEventStatus" onchange="changePerPageEventStatus()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span class="text-xs text-gray-700">entries</span>
+                </div>
+
+                <!-- Right: Search and Filters -->
+                <div class="flex gap-2 items-center">
+                    <input type="text" id="searchFilterEventStatus" placeholder="Search event status..."
+                           onkeyup="filterEventStatus()"
+                           class="border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-64">
+
+                    <select id="statusFilterEventStatus" onchange="filterEventStatus()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="">All Status</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+
+                    <button onclick="filterEventStatus()" class="px-3 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
+                        🔍 Search
+                    </button>
+
+                    <button onclick="resetFiltersEventStatus()" class="px-3 py-2 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors">
+                        🔄 Reset
+                    </button>
+                </div>
+            </div>
+            <div class="overflow-visible border border-gray-200 rounded">
+                <table class="min-w-full border-collapse">
+                    <thead>
+                        <tr class="bg-primary-light text-white uppercase text-xs">
+                            <th class="py-3 px-4 text-left rounded-tl">Status Name</th>
+                            <th class="py-3 px-4 text-left">Description</th>
+                            <th class="py-3 px-4 text-left">Preview</th>
+                            <th class="py-3 px-4 text-left">Sort Order</th>
+                            <th class="py-3 px-4 text-left">Status</th>
+                            <th class="py-3 px-4 text-center rounded-tr">Action</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="divide-y divide-gray-100">
                         @foreach($eventStatuses as $eventStatus)
                         <tr class="hover:bg-gray-50">
-                            <td class="py-1 px-4 text-[11px] font-medium text-gray-900">{{ $eventStatus->display_name }}</td>
-                            <td class="py-1 px-4 text-[11px] text-gray-600">{{ $eventStatus->description ?? 'No description' }}</td>
+                            <td class="py-1 px-4 text-[11px] font-medium">{{ $eventStatus->display_name }}</td>
+                            <td class="py-1 px-4 text-[11px]">{{ $eventStatus->description ?? 'No description' }}</td>
                             <td class="py-1 px-4">
                                 <div class="flex items-center space-x-2">
                                     <div class="w-4 h-4 {{ $eventStatus->background_color }} rounded-full border-2 border-white shadow-sm flex items-center justify-center">
@@ -1815,6 +2105,43 @@
                         @endforeach
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- Pagination Section for Event Status -->
+        <div class="p-6">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                <!-- Left: Page Info -->
+                <div class="text-xs text-gray-600">
+                    <span id="pageInfoEventStatus">Showing 1 to 10 of 100 records</span>
+                </div>
+
+                <!-- Right: Pagination -->
+                <div class="flex items-center gap-1">
+                    <button id="prevBtnEventStatus" onclick="firstPageEventStatus()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lt;&lt;
+                    </button>
+
+                    <button id="prevSingleBtnEventStatus" onclick="previousPageEventStatus()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lt;
+                    </button>
+
+                    <div id="pageNumbersEventStatus" class="flex items-center gap-1 mx-2">
+                        <!-- Page numbers will be populated here -->
+                    </div>
+
+                    <button id="nextSingleBtnEventStatus" onclick="nextPageEventStatus()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &gt;
+                    </button>
+
+                    <button id="nextBtnEventStatus" onclick="lastPageEventStatus()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &gt;&gt;
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -1848,6 +2175,23 @@
             </div>
             @endforeach
         </div>
+        @else
+        <div class="hidden md:block p-6">
+            <div class="text-center py-8">
+                <span class="material-icons text-gray-400 text-4xl mb-2">event_note</span>
+                <p class="text-sm text-gray-500">No event statuses available</p>
+                <p class="text-xs text-gray-400">Add event statuses to manage timeline events</p>
+            </div>
+        </div>
+
+        <div class="md:hidden p-4">
+            <div class="text-center py-8">
+                <span class="material-icons text-gray-400 text-4xl mb-2">event_note</span>
+                <p class="text-sm text-gray-500">No event statuses available</p>
+                <p class="text-xs text-gray-400">Add event statuses to manage timeline events</p>
+            </div>
+        </div>
+        @endif
     </div>
 
     <!-- Payee List Section -->
@@ -1867,11 +2211,11 @@
                 </button>
             </div>
         </div>
-        
+
         @php
             $payees = \App\Models\Payee::orderBy('name')->get();
         @endphp
-        
+
         @if($payees->count() > 0)
         <!-- Desktop Table View -->
         <div class="hidden md:block p-6">
@@ -2035,7 +2379,7 @@
                 <p class="text-xs text-gray-400">Add payees to manage payment vouchers</p>
             </div>
         </div>
-        
+
         <div class="md:hidden p-4">
             <div class="text-center py-8">
                 <span class="material-icons text-gray-400 text-4xl mb-2">payment</span>
@@ -2055,51 +2399,133 @@
         editAgencyForm: { id: '', name: '', status: 'active' },
         bulkText: '',
         agencies: [],
-        
+        allAgencies: [],
+        filteredAgencies: [],
+        currentPage: 1,
+        perPage: 10,
+        searchQuery: '',
+        statusFilter: '',
+        isLoading: true,
+
         fetchAgencies() {
+            this.isLoading = true;
             fetch('{{ route('settings.agency.index') }}')
                 .then(r => r.json())
                 .then(d => {
                     if (d.success) {
-                        this.agencies = d.data;
+                        this.allAgencies = d.data;
+                        this.applyFilters();
+                    } else {
+                        console.error('API returned error:', d);
                     }
                 })
                 .catch(error => {
                     console.error('Error fetching agencies:', error);
+                })
+                .finally(() => {
+                    this.isLoading = false;
                 });
         },
-        
+
+        applyFilters() {
+            this.filteredAgencies = this.allAgencies.filter(agency => {
+                const matchesSearch = !this.searchQuery ||
+                    agency.name.toLowerCase().includes(this.searchQuery.toLowerCase());
+                const matchesStatus = !this.statusFilter ||
+                    agency.status.toLowerCase() === this.statusFilter.toLowerCase();
+                return matchesSearch && matchesStatus;
+            });
+            this.currentPage = 1;
+            this.updatePaginatedAgencies();
+        },
+
+        updatePaginatedAgencies() {
+            const startIndex = (this.currentPage - 1) * this.perPage;
+            const endIndex = startIndex + this.perPage;
+            this.agencies = this.filteredAgencies.slice(startIndex, endIndex);
+        },
+
+        get totalPages() {
+            return Math.ceil(this.filteredAgencies.length / this.perPage);
+        },
+
+        get pageInfo() {
+            const total = this.filteredAgencies.length;
+            if (total === 0) return 'Showing 0 to 0 of 0 records';
+            const start = (this.currentPage - 1) * this.perPage + 1;
+            const end = Math.min(this.currentPage * this.perPage, total);
+            return `Showing ${start} to ${end} of ${total} records`;
+        },
+
+        goToPage(page) {
+            if (page >= 1 && page <= this.totalPages) {
+                this.currentPage = page;
+                this.updatePaginatedAgencies();
+            }
+        },
+
+        previousPage() {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+                this.updatePaginatedAgencies();
+            }
+        },
+
+        nextPage() {
+            if (this.currentPage < this.totalPages) {
+                this.currentPage++;
+                this.updatePaginatedAgencies();
+            }
+        },
+
+        changePerPage(newPerPage) {
+            this.perPage = parseInt(newPerPage);
+            this.currentPage = 1;
+            this.updatePaginatedAgencies();
+        },
+
+        filterAgencies() {
+            this.searchQuery = document.getElementById('searchFilterAgency').value;
+            this.statusFilter = document.getElementById('statusFilterAgency').value;
+            this.applyFilters();
+        },
+
+        resetFilters() {
+            this.searchQuery = '';
+            this.statusFilter = '';
+            document.getElementById('searchFilterAgency').value = '';
+            document.getElementById('statusFilterAgency').value = '';
+            this.applyFilters();
+        },
+
         openEditAgency(a) {
             this.editAgencyForm = { id: a.id, name: a.name, status: a.status };
             this.showEditAgencyModal = true;
         },
-        
+
         submitAgency() {
-            console.log('submitAgency called');
-            console.log('agencyForm:', this.agencyForm);
-            
+
+
             if (!this.agencyForm.name.trim()) {
                 alert('Please enter agency name');
                 return;
             }
-            
+
             const fd = new FormData();
             fd.append('name', this.agencyForm.name);
             fd.append('status', this.agencyForm.status);
             fd.append('_token', '{{ csrf_token() }}');
-            
-            console.log('Sending request to:', '{{ route('settings.agency.store') }}');
-            
+
+
+
             fetch('{{ route('settings.agency.store') }}', {
                 method: 'POST',
                 body: fd
             })
             .then(response => {
-                console.log('Response status:', response.status);
                 return response.json();
             })
             .then(data => {
-                console.log('Response data:', data);
                 if (data.success) {
                     this.showAgencyModal = false;
                     this.agencyForm = {name: '', status: 'active'};
@@ -2114,19 +2540,19 @@
                 alert('An error occurred while saving the agency.');
             });
         },
-        
+
         submitEditAgency() {
             if (!this.editAgencyForm.name.trim()) {
                 alert('Please enter agency name');
                 return;
             }
-            
+
             const fd = new FormData();
             fd.append('name', this.editAgencyForm.name);
             fd.append('status', this.editAgencyForm.status);
             fd.append('_token', '{{ csrf_token() }}');
             fd.append('_method', 'PUT');
-            
+
             fetch('{{ url('/settings/agency') }}/' + this.editAgencyForm.id, {
                 method: 'POST',
                 body: fd
@@ -2146,14 +2572,14 @@
                 alert('An error occurred while updating the agency.');
             });
         },
-        
+
         deleteAgency(id) {
             if (!confirm('Delete this agency?')) return;
-            
+
             const fd = new FormData();
             fd.append('_token', '{{ csrf_token() }}');
             fd.append('_method', 'DELETE');
-            
+
             fetch('{{ url('/settings/agency') }}/' + id, {
                 method: 'POST',
                 body: fd
@@ -2172,19 +2598,19 @@
                 alert('An error occurred while deleting the agency.');
             });
         },
-        
+
         submitBulk() {
             const names = this.bulkText.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 50);
-            
+
             if (names.length === 0) {
                 alert('Enter up to 50 lines.');
                 return;
             }
-            
+
             const fd = new FormData();
             names.forEach(n => fd.append('names[]', n));
             fd.append('_token', '{{ csrf_token() }}');
-            
+
             fetch('{{ route('settings.agency.bulk') }}', {
                 method: 'POST',
                 body: fd
@@ -2224,11 +2650,18 @@
 
         <div class="p-6">
             <!-- Controls Above Table -->
-            <div class="flex justify-between items-center mb-2">
+            <!-- Loading State -->
+            <div x-show="isLoading" class="text-center py-8">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <p class="text-sm text-gray-500 mt-2">Loading agencies...</p>
+            </div>
+
+            <!-- Controls Above Table -->
+            <div x-show="!isLoading && allAgencies.length > 0" class="flex justify-between items-center mb-2">
                 <!-- Left: Show Entries -->
                 <div class="flex items-center gap-2">
                     <label for="perPageAgency" class="text-xs text-gray-700">Show:</label>
-                    <select id="perPageAgency" onchange="changePerPageAgency()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                    <select @change="changePerPage($event.target.value)" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                         <option value="10" selected>10</option>
                         <option value="25">25</option>
                         <option value="50">50</option>
@@ -2240,25 +2673,25 @@
                 <!-- Right: Search and Filters -->
                 <div class="flex gap-2 items-center">
                     <input type="text" id="searchFilterAgency" placeholder="Search agencies..."
-                           onkeyup="filterAgency()"
+                           @input="filterAgencies()"
                            class="border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-64">
 
-                    <select id="statusFilterAgency" onchange="filterAgency()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                    <select id="statusFilterAgency" @change="filterAgencies()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                         <option value="">All Status</option>
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
                     </select>
 
-                    <button onclick="filterAgency()" class="px-3 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
+                    <button @click="filterAgencies()" class="px-3 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
                         🔍 Search
                     </button>
 
-                    <button onclick="resetFiltersAgency()" class="px-3 py-2 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors">
+                    <button @click="resetFilters()" class="px-3 py-2 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors">
                         🔄 Reset
                     </button>
                 </div>
             </div>
-            <div class="overflow-visible border border-gray-200 rounded">
+            <div x-show="!isLoading && agencies.length > 0" class="overflow-visible border border-gray-200 rounded">
                 <table class="min-w-full border-collapse">
                     <thead>
                         <tr class="bg-primary-light text-white uppercase text-xs">
@@ -2283,38 +2716,50 @@
                     </tbody>
                 </table>
             </div>
+
+            <div x-show="!isLoading && allAgencies.length === 0" class="text-center py-8">
+                <span class="material-icons text-gray-400 text-4xl mb-2">business</span>
+                <p class="text-sm text-gray-500">No agencies available</p>
+                <p class="text-xs text-gray-400">Add agencies to manage government departments</p>
+            </div>
         </div>
 
         <!-- Pagination Section for Agencies -->
-        <div class="p-6">
+        <div class="p-6" x-show="!isLoading && filteredAgencies.length > 0">
             <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                 <!-- Left: Page Info -->
                 <div class="text-xs text-gray-600">
-                    <span id="pageInfoAgency">Showing 1 to 10 of 100 records</span>
+                    <span x-text="pageInfo"></span>
                 </div>
 
                 <!-- Right: Pagination -->
-                <div class="flex items-center gap-1">
-                    <button id="prevBtnAgency" onclick="firstPageAgency()"
+                <div class="flex items-center gap-1" x-show="totalPages > 1">
+                    <button @click="goToPage(1)" :disabled="currentPage === 1"
                             class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                         &lt;&lt;
                     </button>
 
-                    <button id="prevSingleBtnAgency" onclick="previousPageAgency()"
+                    <button @click="previousPage()" :disabled="currentPage === 1"
                             class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                         &lt;
                     </button>
 
-                    <div id="pageNumbersAgency" class="flex items-center gap-1 mx-2">
-                        <!-- Page numbers will be populated here -->
+                    <div class="flex items-center gap-1 mx-2">
+                        <template x-for="page in Array.from({length: totalPages}, (_, i) => i + 1).filter(p => p === 1 || p === totalPages || (p >= currentPage - 2 && p <= currentPage + 2))" :key="page">
+                            <button @click="goToPage(page)"
+                                    :class="page === currentPage ? 'bg-blue-500 text-white' : 'text-gray-600 hover:text-blue-600'"
+                                    class="px-2 py-1 text-xs rounded transition-colors">
+                                <span x-text="page"></span>
+                            </button>
+                        </template>
                     </div>
 
-                    <button id="nextSingleBtnAgency" onclick="nextPageAgency()"
+                    <button @click="nextPage()" :disabled="currentPage === totalPages"
                             class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                         &gt;
                     </button>
 
-                    <button id="nextBtnAgency" onclick="lastPageAgency()"
+                    <button @click="goToPage(totalPages)" :disabled="currentPage === totalPages"
                             class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                         &gt;&gt;
                     </button>
@@ -2399,19 +2844,19 @@ AADK - Agensi Anti Dadah Kebangsaan Daerah Jelebu"></textarea>
                     </button>
                 </div>
             </div>
-            
+
             <form @submit.prevent="submitSpecializationForm()" class="p-6">
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Specialist Name *</label>
                         <input type="text" x-model="specializationForm.specialist_name" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Criminal Law, Family Law" required>
                     </div>
-                    
+
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Description</label>
                         <textarea x-model="specializationForm.description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Brief description of the specialization"></textarea>
                     </div>
-                    
+
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Status</label>
                         <select x-model="specializationForm.status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -2420,7 +2865,7 @@ AADK - Agensi Anti Dadah Kebangsaan Daerah Jelebu"></textarea>
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="flex justify-end space-x-3 mt-6">
                     <button type="button" @click="showSpecializationModal = false" class="px-4 py-2 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors">
                         Cancel
@@ -2444,19 +2889,19 @@ AADK - Agensi Anti Dadah Kebangsaan Daerah Jelebu"></textarea>
                     </button>
                 </div>
             </div>
-            
+
             <form @submit.prevent="submitEditSpecializationForm()" class="p-6">
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Specialist Name *</label>
                         <input type="text" x-model="editSpecializationForm.specialist_name" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Criminal Law, Family Law" required>
                     </div>
-                    
+
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Description</label>
                         <textarea x-model="editSpecializationForm.description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Brief description of the specialization"></textarea>
                     </div>
-                    
+
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Status</label>
                         <select x-model="editSpecializationForm.status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -2465,7 +2910,7 @@ AADK - Agensi Anti Dadah Kebangsaan Daerah Jelebu"></textarea>
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="flex justify-end space-x-3 mt-6">
                     <button type="button" @click="showEditSpecializationModal = false" class="px-4 py-2 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors">
                         Cancel
@@ -2649,14 +3094,14 @@ AADK - Agensi Anti Dadah Kebangsaan Daerah Jelebu"></textarea>
                     <span class="material-icons">close</span>
                 </button>
             </div>
-            
+
             <form @submit.prevent="submitPayeeForm()" class="p-6">
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Payee Name *</label>
                         <input type="text" x-model="payeeForm.name" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., TNB Berhad" required>
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Category *</label>
                         <select x-model="payeeForm.category" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
@@ -2666,27 +3111,27 @@ AADK - Agensi Anti Dadah Kebangsaan Daerah Jelebu"></textarea>
                             @endforeach
                         </select>
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Address</label>
                         <textarea x-model="payeeForm.address" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Full address"></textarea>
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Contact Person</label>
                         <input type="text" x-model="payeeForm.contact_person" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Contact person name">
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Phone</label>
                         <input type="text" x-model="payeeForm.phone" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Phone number">
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Email</label>
                         <input type="email" x-model="payeeForm.email" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Email address">
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Status</label>
                         <select x-model="payeeForm.status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -2695,7 +3140,7 @@ AADK - Agensi Anti Dadah Kebangsaan Daerah Jelebu"></textarea>
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="flex justify-end space-x-3 mt-6">
                     <button type="button" @click="showPayeeModal = false" class="px-4 py-2 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors">
                         Cancel
@@ -2717,14 +3162,14 @@ AADK - Agensi Anti Dadah Kebangsaan Daerah Jelebu"></textarea>
                     <span class="material-icons">close</span>
                 </button>
             </div>
-            
+
             <form @submit.prevent="submitEditPayeeForm()" class="p-6">
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Payee Name *</label>
                         <input type="text" x-model="editPayeeForm.name" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., TNB Berhad" required>
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Category *</label>
                         <select x-model="editPayeeForm.category" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
@@ -2734,27 +3179,27 @@ AADK - Agensi Anti Dadah Kebangsaan Daerah Jelebu"></textarea>
                             @endforeach
                         </select>
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Address</label>
                         <textarea x-model="editPayeeForm.address" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Full address"></textarea>
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Contact Person</label>
                         <input type="text" x-model="editPayeeForm.contact_person" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Contact person name">
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Phone</label>
                         <input type="text" x-model="editPayeeForm.phone" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Phone number">
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Email</label>
                         <input type="email" x-model="editPayeeForm.email" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Email address">
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Status</label>
                         <select x-model="editPayeeForm.status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:ring-2 focus:ring-blue-500">
@@ -2763,7 +3208,7 @@ AADK - Agensi Anti Dadah Kebangsaan Daerah Jelebu"></textarea>
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="flex justify-end space-x-3 mt-6">
                     <button type="button" @click="showEditPayeeModal = false" class="px-4 py-2 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors">
                         Cancel
@@ -3360,12 +3805,11 @@ document.addEventListener('DOMContentLoaded', function() {
     initializePaginationStatus();
     initializePaginationFileType();
     initializePaginationSpecialization();
+    initializePaginationEventStatus();
+    initializePaginationExpenseCategory();
     initializePaginationPayee();
 
-    // Agency needs special handling due to Alpine.js
-    setTimeout(() => {
-        initializePaginationAgency();
-    }, 1000);
+    // Agency pagination is handled by Alpine.js - no separate initialization needed
 });
 
 // Category Status Pagination
@@ -3375,12 +3819,28 @@ let allStatus = [];
 let filteredStatus = [];
 
 function initializePaginationStatus() {
-    const statusTables = document.querySelectorAll('.bg-white.rounded.shadow-md.border.border-gray-300 table tbody');
-    if (statusTables.length < 2) return;
+    // Find Category Status section by looking for the h1 text
+    const allH1s = document.querySelectorAll('h1');
+    let statusTable = null;
 
-    const statusRows = statusTables[1].querySelectorAll('tr');
+    for (let h1 of allH1s) {
+        if (h1.textContent.includes('Category Status')) {
+            statusTable = h1.closest('.bg-white').querySelector('table tbody');
+            break;
+        }
+    }
+
+    // Fallback: use table index method if section not found
+    if (!statusTable) {
+        const statusTables = document.querySelectorAll('.bg-white.rounded.shadow-md.border.border-gray-300 table tbody');
+        if (statusTables.length < 2) return;
+        statusTable = statusTables[1];
+    }
+
+    if (!statusTable) return;
+
+    const statusRows = statusTable.querySelectorAll('tr');
     allStatus = Array.from(statusRows).map((row, index) => ({
-        id: index,
         element: row,
         searchText: row.textContent.toLowerCase()
     }));
@@ -3532,12 +3992,28 @@ let allFileTypes = [];
 let filteredFileTypes = [];
 
 function initializePaginationFileType() {
-    const fileTypeTables = document.querySelectorAll('.bg-white.rounded.shadow-md.border.border-gray-300 table tbody');
-    if (fileTypeTables.length < 3) return;
+    // Find File Type section by looking for the h1 text
+    const allH1s = document.querySelectorAll('h1');
+    let fileTypeTable = null;
 
-    const fileTypeRows = fileTypeTables[2].querySelectorAll('tr');
+    for (let h1 of allH1s) {
+        if (h1.textContent.includes('File Type')) {
+            fileTypeTable = h1.closest('.bg-white').querySelector('table tbody');
+            break;
+        }
+    }
+
+    // Fallback: use table index method if section not found
+    if (!fileTypeTable) {
+        const fileTypeTables = document.querySelectorAll('.bg-white.rounded.shadow-md.border.border-gray-300 table tbody');
+        if (fileTypeTables.length < 3) return;
+        fileTypeTable = fileTypeTables[2];
+    }
+
+    if (!fileTypeTable) return;
+
+    const fileTypeRows = fileTypeTable.querySelectorAll('tr');
     allFileTypes = Array.from(fileTypeRows).map((row, index) => ({
-        id: index,
         element: row,
         searchText: row.textContent.toLowerCase()
     }));
@@ -3682,6 +4158,345 @@ function goToPageFileType(page) {
     updatePaginationFileType();
 }
 
+// Expense Category Pagination
+let currentPageExpenseCategory = 1;
+let perPageExpenseCategory = 10;
+let allExpenseCategories = [];
+let filteredExpenseCategories = [];
+
+function initializePaginationExpenseCategory() {
+    // Find Expense Categories section by looking for the h2 text
+    const allH2s = document.querySelectorAll('h2');
+    let expenseCategoryTable = null;
+
+    for (let h2 of allH2s) {
+        if (h2.textContent.includes('Expense Categories')) {
+            expenseCategoryTable = h2.closest('.bg-white').querySelector('table tbody');
+            break;
+        }
+    }
+
+    // Fallback: use table index method if section not found
+    if (!expenseCategoryTable) {
+        const expenseCategoryTables = document.querySelectorAll('.bg-white.rounded.shadow-md.border.border-gray-300 table tbody');
+        if (expenseCategoryTables.length < 6) return;
+        expenseCategoryTable = expenseCategoryTables[5];
+    }
+
+    if (!expenseCategoryTable) return;
+
+    const expenseCategoryRows = expenseCategoryTable.querySelectorAll('tr');
+    allExpenseCategories = Array.from(expenseCategoryRows).map((row, index) => ({
+        element: row,
+        searchText: row.textContent.toLowerCase()
+    }));
+
+    filteredExpenseCategories = [...allExpenseCategories];
+    displayExpenseCategory();
+    updatePaginationExpenseCategory();
+}
+
+function displayExpenseCategory() {
+    const startIndex = (currentPageExpenseCategory - 1) * perPageExpenseCategory;
+    const endIndex = startIndex + perPageExpenseCategory;
+
+    allExpenseCategories.forEach(category => {
+        if (category.element) category.element.style.display = 'none';
+    });
+
+    const categoriesToShow = filteredExpenseCategories.slice(startIndex, endIndex);
+    categoriesToShow.forEach(category => {
+        if (category.element) category.element.style.display = '';
+    });
+}
+
+function updatePaginationExpenseCategory() {
+    const totalItems = filteredExpenseCategories.length;
+    const totalPages = Math.ceil(totalItems / perPageExpenseCategory);
+    const startItem = totalItems === 0 ? 0 : (currentPageExpenseCategory - 1) * perPageExpenseCategory + 1;
+    const endItem = Math.min(currentPageExpenseCategory * perPageExpenseCategory, totalItems);
+
+    const pageInfo = document.getElementById('pageInfoExpenseCategory');
+    if (pageInfo) pageInfo.textContent = `Showing ${startItem} to ${endItem} of ${totalItems} records`;
+
+    const prevBtn = document.getElementById('prevBtnExpenseCategory');
+    const prevSingleBtn = document.getElementById('prevSingleBtnExpenseCategory');
+    const nextBtn = document.getElementById('nextBtnExpenseCategory');
+    const nextSingleBtn = document.getElementById('nextSingleBtnExpenseCategory');
+
+    if (prevBtn) prevBtn.disabled = currentPageExpenseCategory === 1;
+    if (prevSingleBtn) prevSingleBtn.disabled = currentPageExpenseCategory === 1;
+    if (nextBtn) nextBtn.disabled = currentPageExpenseCategory === totalPages || totalPages === 0;
+    if (nextSingleBtn) nextSingleBtn.disabled = currentPageExpenseCategory === totalPages || totalPages === 0;
+
+    updatePageNumbersExpenseCategory(totalPages);
+}
+
+function updatePageNumbersExpenseCategory(totalPages) {
+    const pageNumbersContainer = document.getElementById('pageNumbersExpenseCategory');
+    if (!pageNumbersContainer) return;
+
+    pageNumbersContainer.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    let startPage = Math.max(1, currentPageExpenseCategory - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+
+    if (endPage - startPage < 4) {
+        startPage = Math.max(1, endPage - 4);
+    }
+
+    let pageHtml = '';
+    for (let i = startPage; i <= endPage; i++) {
+        pageHtml += `
+            <button onclick="goToPageExpenseCategory(${i})"
+                    class="px-2 py-1 text-xs ${i === currentPageExpenseCategory ? 'bg-blue-500 text-white' : 'text-gray-600 hover:text-blue-600'} transition-colors">
+                ${i}
+            </button>
+        `;
+    }
+    pageNumbersContainer.innerHTML = pageHtml;
+}
+
+function changePerPageExpenseCategory() {
+    const newPerPage = parseInt(document.getElementById('perPageExpenseCategory')?.value || 10);
+    perPageExpenseCategory = newPerPage;
+    currentPageExpenseCategory = 1;
+    displayExpenseCategory();
+    updatePaginationExpenseCategory();
+}
+
+function filterExpenseCategory() {
+    const searchTerm = (document.getElementById('searchFilterExpenseCategory')?.value || '').toLowerCase();
+    const statusFilter = (document.getElementById('statusFilterExpenseCategory')?.value || '');
+
+    filteredExpenseCategories = allExpenseCategories.filter(category => {
+        const matchesSearch = searchTerm === '' || category.searchText.includes(searchTerm);
+        const matchesStatus = statusFilter === '' || category.searchText.includes(statusFilter.toLowerCase());
+
+        return matchesSearch && matchesStatus;
+    });
+
+    currentPageExpenseCategory = 1;
+    displayExpenseCategory();
+    updatePaginationExpenseCategory();
+}
+
+function resetFiltersExpenseCategory() {
+    if (document.getElementById('searchFilterExpenseCategory')) document.getElementById('searchFilterExpenseCategory').value = '';
+    if (document.getElementById('statusFilterExpenseCategory')) document.getElementById('statusFilterExpenseCategory').value = '';
+
+    filteredExpenseCategories = [...allExpenseCategories];
+    currentPageExpenseCategory = 1;
+    displayExpenseCategory();
+    updatePaginationExpenseCategory();
+}
+
+function previousPageExpenseCategory() {
+    if (currentPageExpenseCategory > 1) {
+        currentPageExpenseCategory--;
+        displayExpenseCategory();
+        updatePaginationExpenseCategory();
+    }
+}
+
+function nextPageExpenseCategory() {
+    const totalPages = Math.ceil(filteredExpenseCategories.length / perPageExpenseCategory);
+    if (currentPageExpenseCategory < totalPages) {
+        currentPageExpenseCategory++;
+        displayExpenseCategory();
+        updatePaginationExpenseCategory();
+    }
+}
+
+function firstPageExpenseCategory() {
+    currentPageExpenseCategory = 1;
+    displayExpenseCategory();
+    updatePaginationExpenseCategory();
+}
+
+function lastPageExpenseCategory() {
+    const totalPages = Math.ceil(filteredExpenseCategories.length / perPageExpenseCategory);
+    currentPageExpenseCategory = totalPages;
+    displayExpenseCategory();
+    updatePaginationExpenseCategory();
+}
+
+function goToPageExpenseCategory(page) {
+    currentPageExpenseCategory = page;
+    displayExpenseCategory();
+    updatePaginationExpenseCategory();
+}
+
+// Event Status Pagination
+let currentPageEventStatus = 1;
+let perPageEventStatus = 10;
+let allEventStatuses = [];
+let filteredEventStatuses = [];
+
+function initializePaginationEventStatus() {
+    // Find Event Status section by looking for the h1 text
+    const allH1s = document.querySelectorAll('h1');
+    let eventStatusTable = null;
+
+    for (let h1 of allH1s) {
+        if (h1.textContent.includes('Event Status')) {
+            eventStatusTable = h1.closest('.bg-white').querySelector('table tbody');
+            break;
+        }
+    }
+
+    // Fallback: use table index method if section not found
+    if (!eventStatusTable) {
+        const eventStatusTables = document.querySelectorAll('.bg-white.rounded.shadow-md.border.border-gray-300 table tbody');
+        if (eventStatusTables.length < 5) return;
+        eventStatusTable = eventStatusTables[4];
+    }
+
+    if (!eventStatusTable) return;
+
+    const eventStatusRows = eventStatusTable.querySelectorAll('tr');
+    allEventStatuses = Array.from(eventStatusRows).map((row, index) => ({
+        element: row,
+        searchText: row.textContent.toLowerCase()
+    }));
+
+    filteredEventStatuses = [...allEventStatuses];
+    displayEventStatus();
+    updatePaginationEventStatus();
+}
+
+function displayEventStatus() {
+    const startIndex = (currentPageEventStatus - 1) * perPageEventStatus;
+    const endIndex = startIndex + perPageEventStatus;
+
+    allEventStatuses.forEach(status => {
+        if (status.element) status.element.style.display = 'none';
+    });
+
+    const statusesToShow = filteredEventStatuses.slice(startIndex, endIndex);
+    statusesToShow.forEach(status => {
+        if (status.element) status.element.style.display = '';
+    });
+}
+
+function updatePaginationEventStatus() {
+    const totalItems = filteredEventStatuses.length;
+    const totalPages = Math.ceil(totalItems / perPageEventStatus);
+    const startItem = totalItems === 0 ? 0 : (currentPageEventStatus - 1) * perPageEventStatus + 1;
+    const endItem = Math.min(currentPageEventStatus * perPageEventStatus, totalItems);
+
+    const pageInfo = document.getElementById('pageInfoEventStatus');
+    if (pageInfo) pageInfo.textContent = `Showing ${startItem} to ${endItem} of ${totalItems} records`;
+
+    const prevBtn = document.getElementById('prevBtnEventStatus');
+    const prevSingleBtn = document.getElementById('prevSingleBtnEventStatus');
+    const nextBtn = document.getElementById('nextBtnEventStatus');
+    const nextSingleBtn = document.getElementById('nextSingleBtnEventStatus');
+
+    if (prevBtn) prevBtn.disabled = currentPageEventStatus === 1;
+    if (prevSingleBtn) prevSingleBtn.disabled = currentPageEventStatus === 1;
+    if (nextBtn) nextBtn.disabled = currentPageEventStatus === totalPages || totalPages === 0;
+    if (nextSingleBtn) nextSingleBtn.disabled = currentPageEventStatus === totalPages || totalPages === 0;
+
+    updatePageNumbersEventStatus(totalPages);
+}
+
+function updatePageNumbersEventStatus(totalPages) {
+    const pageNumbersContainer = document.getElementById('pageNumbersEventStatus');
+    if (!pageNumbersContainer) return;
+
+    pageNumbersContainer.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    let startPage = Math.max(1, currentPageEventStatus - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+
+    if (endPage - startPage < 4) {
+        startPage = Math.max(1, endPage - 4);
+    }
+
+    let pageHtml = '';
+    for (let i = startPage; i <= endPage; i++) {
+        pageHtml += `
+            <button onclick="goToPageEventStatus(${i})"
+                    class="px-2 py-1 text-xs ${i === currentPageEventStatus ? 'bg-blue-500 text-white' : 'text-gray-600 hover:text-blue-600'} transition-colors">
+                ${i}
+            </button>
+        `;
+    }
+    pageNumbersContainer.innerHTML = pageHtml;
+}
+
+function changePerPageEventStatus() {
+    const newPerPage = parseInt(document.getElementById('perPageEventStatus')?.value || 10);
+    perPageEventStatus = newPerPage;
+    currentPageEventStatus = 1;
+    displayEventStatus();
+    updatePaginationEventStatus();
+}
+
+function filterEventStatus() {
+    const searchTerm = (document.getElementById('searchFilterEventStatus')?.value || '').toLowerCase();
+    const statusFilter = (document.getElementById('statusFilterEventStatus')?.value || '');
+
+    filteredEventStatuses = allEventStatuses.filter(status => {
+        const matchesSearch = searchTerm === '' || status.searchText.includes(searchTerm);
+        const matchesStatus = statusFilter === '' || status.searchText.includes(statusFilter.toLowerCase());
+        return matchesSearch && matchesStatus;
+    });
+
+    currentPageEventStatus = 1;
+    displayEventStatus();
+    updatePaginationEventStatus();
+}
+
+function resetFiltersEventStatus() {
+    if (document.getElementById('searchFilterEventStatus')) document.getElementById('searchFilterEventStatus').value = '';
+    if (document.getElementById('statusFilterEventStatus')) document.getElementById('statusFilterEventStatus').value = '';
+
+    filteredEventStatuses = [...allEventStatuses];
+    currentPageEventStatus = 1;
+    displayEventStatus();
+    updatePaginationEventStatus();
+}
+
+function previousPageEventStatus() {
+    if (currentPageEventStatus > 1) {
+        currentPageEventStatus--;
+        displayEventStatus();
+        updatePaginationEventStatus();
+    }
+}
+
+function nextPageEventStatus() {
+    const totalPages = Math.ceil(filteredEventStatuses.length / perPageEventStatus);
+    if (currentPageEventStatus < totalPages) {
+        currentPageEventStatus++;
+        displayEventStatus();
+        updatePaginationEventStatus();
+    }
+}
+
+function firstPageEventStatus() {
+    currentPageEventStatus = 1;
+    displayEventStatus();
+    updatePaginationEventStatus();
+}
+
+function lastPageEventStatus() {
+    const totalPages = Math.ceil(filteredEventStatuses.length / perPageEventStatus);
+    currentPageEventStatus = totalPages;
+    displayEventStatus();
+    updatePaginationEventStatus();
+}
+
+function goToPageEventStatus(page) {
+    currentPageEventStatus = page;
+    displayEventStatus();
+    updatePaginationEventStatus();
+}
+
 // Specialization Pagination
 let currentPageSpecialization = 1;
 let perPageSpecialization = 10;
@@ -3689,12 +4504,28 @@ let allSpecializations = [];
 let filteredSpecializations = [];
 
 function initializePaginationSpecialization() {
-    const specializationTables = document.querySelectorAll('.bg-white.rounded.shadow-md.border.border-gray-300 table tbody');
-    if (specializationTables.length < 4) return;
+    // Find Specialization section by looking for the h1 text
+    const allH1s = document.querySelectorAll('h1');
+    let specializationTable = null;
 
-    const specializationRows = specializationTables[3].querySelectorAll('tr');
+    for (let h1 of allH1s) {
+        if (h1.textContent.includes('Specialization')) {
+            specializationTable = h1.closest('.bg-white').querySelector('table tbody');
+            break;
+        }
+    }
+
+    // Fallback: use table index method if section not found
+    if (!specializationTable) {
+        const specializationTables = document.querySelectorAll('.bg-white.rounded.shadow-md.border.border-gray-300 table tbody');
+        if (specializationTables.length < 4) return;
+        specializationTable = specializationTables[3];
+    }
+
+    if (!specializationTable) return;
+
+    const specializationRows = specializationTable.querySelectorAll('tr');
     allSpecializations = Array.from(specializationRows).map((row, index) => ({
-        id: index,
         element: row,
         searchText: row.textContent.toLowerCase()
     }));
@@ -3847,9 +4678,9 @@ let filteredPayees = [];
 
 function initializePaginationPayee() {
     const payeeTables = document.querySelectorAll('.bg-white.rounded.shadow-md.border.border-gray-300 table tbody');
-    if (payeeTables.length < 5) return;
+    if (payeeTables.length < 7) return;
 
-    const payeeRows = payeeTables[4].querySelectorAll('tr');
+    const payeeRows = payeeTables[6].querySelectorAll('tr'); // Payee List is index 6
     allPayees = Array.from(payeeRows).map((row, index) => ({
         id: index,
         element: row,
@@ -3996,50 +4827,35 @@ function goToPagePayee(page) {
     updatePaginationPayee();
 }
 
-// Agency Pagination
-let currentPageAgency = 1;
-let perPageAgency = 10;
-let allAgencies = [];
-let filteredAgencies = [];
+// Agency Pagination - Now handled by Alpine.js
+// let currentPageAgency = 1;
+// let perPageAgency = 10;
+// let allAgencies = [];
+// let filteredAgencies = [];
 
+// Agency pagination now handled by Alpine.js
+/*
 function initializePaginationAgency() {
-    // Initialize with empty data first to show pagination controls
-    allAgencies = [];
-    filteredAgencies = [];
+    // Agency section is the last table (index 6 - after Types, Status, FileType, Specialization, EventStatus, ExpenseCategory, Payee)
+    const allTables = document.querySelectorAll('.bg-white.rounded.shadow-md.border.border-gray-300 table tbody');
+    if (allTables.length < 8) return; // Need at least 8 tables
+
+    const agencyTbody = allTables[7]; // Agency is the 8th table (index 7)
+    const agencyRows = agencyTbody.querySelectorAll('tr');
+
+    allAgencies = Array.from(agencyRows).map((row, index) => ({
+        element: row,
+        searchText: row.textContent.toLowerCase()
+    }));
+
+    filteredAgencies = [...allAgencies];
+    displayAgency();
     updatePaginationAgency();
 
-    // Agency section is the last table, wait for data to be loaded
-    const checkForAgencies = () => {
-        const allTables = document.querySelectorAll('.bg-white.rounded.shadow-md.border.border-gray-300 table tbody');
-        if (allTables.length >= 6) {
-            const agencyTbody = allTables[5]; // Agency is the 6th table (index 5)
-            const agencyRows = agencyTbody.querySelectorAll('tr');
-
-            if (agencyRows.length > 0 && agencyRows[0].textContent.trim() !== '') {
-                allAgencies = Array.from(agencyRows).map((row, index) => ({
-                    id: index,
-                    element: row,
-                    searchText: row.textContent.toLowerCase()
-                }));
-
-                filteredAgencies = [...allAgencies];
-                displayAgency();
-                updatePaginationAgency();
-                console.log('Agency pagination initialized with', allAgencies.length, 'items');
-            } else {
-                // No rows yet or empty rows, try again
-                setTimeout(checkForAgencies, 500);
-            }
-        } else {
-            // Tables not loaded yet, try again
-            setTimeout(checkForAgencies, 500);
-        }
-    };
-
-    // Start checking after a short delay
-    setTimeout(checkForAgencies, 1000);
 }
+*/
 
+/*
 function displayAgency() {
     const startIndex = (currentPageAgency - 1) * perPageAgency;
     const endIndex = startIndex + perPageAgency;
@@ -4076,7 +4892,9 @@ function updatePaginationAgency() {
 
     updatePageNumbersAgency(totalPages);
 }
+*/
 
+/*
 function updatePageNumbersAgency(totalPages) {
     const pageNumbersContainer = document.getElementById('pageNumbersAgency');
     if (!pageNumbersContainer) return;
@@ -4174,104 +4992,9 @@ function goToPageAgency(page) {
     displayAgency();
     updatePaginationAgency();
 }
+*/
 </script>
 
-<!-- Add Expense Category Modal -->
-<div x-show="showExpenseCategoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" x-cloak>
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900">Add Expense Category</h3>
-                <button @click="showExpenseCategoryModal = false" class="text-gray-400 hover:text-gray-600">
-                    <span class="material-icons">close</span>
-                </button>
-            </div>
-            <form id="expenseCategoryForm" @submit.prevent="submitExpenseCategoryForm()">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Name *</label>
-                    <input type="text" name="name" x-model="expenseCategoryForm.name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500" required>
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Description</label>
-                    <textarea name="description" x-model="expenseCategoryForm.description" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Sort Order</label>
-                    <input type="number" name="sort_order" x-model="expenseCategoryForm.sort_order" min="0" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Status *</label>
-                    <select name="status" x-model="expenseCategoryForm.status" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500" required>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                    </select>
-                </div>
-
-                <div class="flex justify-end space-x-3">
-                    <button type="button" @click="showExpenseCategoryModal = false" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">
-                        Cancel
-                    </button>
-                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700">
-                        Create
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Edit Expense Category Modal -->
-<div x-show="showEditExpenseCategoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" x-cloak>
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900">Edit Expense Category</h3>
-                <button @click="showEditExpenseCategoryModal = false" class="text-gray-400 hover:text-gray-600">
-                    <span class="material-icons">close</span>
-                </button>
-            </div>
-            <form id="editExpenseCategoryForm" @submit.prevent="submitEditExpenseCategoryForm()">
-                <input type="hidden" id="editExpenseCategoryId" name="id" x-model="editExpenseCategoryForm.id">
-                <input type="hidden" name="_method" value="PUT">
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Name *</label>
-                    <input type="text" name="name" x-model="editExpenseCategoryForm.name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500" required>
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Description</label>
-                    <textarea name="description" x-model="editExpenseCategoryForm.description" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Sort Order</label>
-                    <input type="number" name="sort_order" x-model="editExpenseCategoryForm.sort_order" min="0" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Status *</label>
-                    <select name="status" x-model="editExpenseCategoryForm.status" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500" required>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                    </select>
-                </div>
-
-                <div class="flex justify-end space-x-3">
-                    <button type="button" @click="showEditExpenseCategoryModal = false" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">
-                        Cancel
-                    </button>
-                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700">
-                        Update
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 <style>
 .custom-select {

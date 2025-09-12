@@ -18,15 +18,17 @@ class UserAccountCreated extends Mailable
     public $userData;
     public $accountType;
     public $loginUrl;
+    public $firmName;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($userData, $accountType)
+    public function __construct($userData, $accountType, $firmName = null)
     {
         $this->userData = $userData;
         $this->accountType = $accountType;
         $this->loginUrl = url('/login');
+        $this->firmName = $firmName ?? 'Naeelah Firm';
     }
 
     /**
@@ -35,10 +37,11 @@ class UserAccountCreated extends Mailable
     public function envelope(): Envelope
     {
         $subject = $this->accountType === 'client' ? 'Client Account Created' : 'Partner Account Created';
-        
+        $subject .= ' - ' . $this->firmName;
+
         // Get email settings from database
         $emailSettings = EmailConfigurationService::getEmailSettings();
-        
+
         return new Envelope(
             subject: $subject,
             from: new Address($emailSettings->from_email, $emailSettings->from_name),
@@ -56,6 +59,7 @@ class UserAccountCreated extends Mailable
                 'userData' => $this->userData,
                 'accountType' => $this->accountType,
                 'loginUrl' => $this->loginUrl,
+                'firmName' => $this->firmName,
             ],
         );
     }

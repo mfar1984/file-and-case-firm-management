@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Firm;
 use Spatie\Permission\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -14,16 +15,35 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::with('roles')->get();
-        
-        return view('settings.user', compact('users'));
+        // Super Administrator can see all users, others see only their firm's users
+        if (auth()->user()->hasRole('Super Administrator')) {
+            $users = User::with(['roles', 'firm'])->get();
+        } else {
+            // Regular users see only their firm's users
+            $firmId = session('current_firm_id') ?? auth()->user()->firm_id;
+            $users = User::where('firm_id', $firmId)->with(['roles', 'firm'])->get();
+        }
+
+        // Get all firms for filtering (Super Administrator only)
+        $firms = auth()->user()->hasRole('Super Administrator')
+            ? Firm::orderBy('name')->get()
+            : collect();
+
+        return view('settings.user', compact('users', 'firms'));
     }
 
     public function create()
     {
         $roles = Role::all();
-        
-        return view('settings.user-create', compact('roles'));
+
+        // Get all firms for Super Administrator, current firm for others
+        if (auth()->user()->hasRole('Super Administrator')) {
+            $firms = Firm::orderBy('name')->get();
+        } else {
+            $firms = collect([auth()->user()->firm]);
+        }
+
+        return view('settings.user-create', compact('roles', 'firms'));
     }
 
     public function store(Request $request)
@@ -38,6 +58,7 @@ class UserController extends Controller
             'phone' => 'nullable|string|max:20',
             'department' => 'nullable|string|max:100',
             'notes' => 'nullable|string|max:500',
+            'firm_id' => 'required|exists:firms,id',
         ]);
 
         try {
@@ -51,6 +72,7 @@ class UserController extends Controller
                 'phone' => $request->phone,
                 'department' => $request->department,
                 'notes' => $request->notes,
+                'firm_id' => $request->firm_id,
                 'email_verified_at' => $request->has('email_verified') ? now() : null,
             ]);
 
@@ -58,6 +80,19 @@ class UserController extends Controller
                 $roles = Role::whereIn('id', $request->roles)->get();
                 $user->assignRole($roles);
             }
+
+            // Log user creation
+            activity()
+                ->performedOn($user)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'username' => $user->username,
+                    'email' => $user->email,
+                    'firm_id' => $user->firm_id,
+                    'roles_count' => $request->has('roles') ? count($request->roles) : 0
+                ])
+                ->log("User {$user->username} created");
 
             DB::commit();
 
@@ -82,8 +117,15 @@ class UserController extends Controller
     {
         $user = User::with('roles')->findOrFail($id);
         $roles = Role::all();
-        
-        return view('settings.user-edit', compact('user', 'roles'));
+
+        // Get all firms for Super Administrator, current firm for others
+        if (auth()->user()->hasRole('Super Administrator')) {
+            $firms = Firm::orderBy('name')->get();
+        } else {
+            $firms = collect([auth()->user()->firm]);
+        }
+
+        return view('settings.user-edit', compact('user', 'roles', 'firms'));
     }
 
     public function update(Request $request, $id)
@@ -100,6 +142,7 @@ class UserController extends Controller
             'phone' => 'nullable|string|max:20',
             'department' => 'nullable|string|max:100',
             'notes' => 'nullable|string|max:500',
+            'firm_id' => 'required|exists:firms,id',
         ]);
 
         try {
@@ -112,6 +155,7 @@ class UserController extends Controller
                 'phone' => $request->phone,
                 'department' => $request->department,
                 'notes' => $request->notes,
+                'firm_id' => $request->firm_id,
             ];
 
             // Handle password update
@@ -135,6 +179,19 @@ class UserController extends Controller
             } else {
                 $user->syncRoles([]);
             }
+
+            // Log user update
+            activity()
+                ->performedOn($user)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'username' => $user->username,
+                    'email' => $user->email,
+                    'firm_id' => $user->firm_id,
+                    'roles_count' => $request->has('roles') ? count($request->roles) : 0
+                ])
+                ->log("User {$user->username} updated");
 
             DB::commit();
 
@@ -164,6 +221,17 @@ class UserController extends Controller
             // Remove all roles
             $user->syncRoles([]);
             
+            // Log user deletion
+            activity()
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'username' => $user->username,
+                    'email' => $user->email,
+                    'firm_id' => $user->firm_id
+                ])
+                ->log("User {$user->username} deleted");
+
             // Delete user
             $user->delete();
 
@@ -197,13 +265,19 @@ class UserController extends Controller
                     // Configure email settings
                     \App\Services\EmailConfigurationService::configureEmailSettings();
                     
+                    // Get firm name for email
+                    $firmId = session('current_firm_id') ?? auth()->user()->firm_id;
+                    $firm = \App\Models\Firm::find($firmId);
+                    $firmName = $firm ? $firm->name : 'Naeelah Firm';
+
                     // Send email
                     \Mail::send('emails.password-reset', [
                         'user' => $user,
-                        'newPassword' => $newPassword
-                    ], function($message) use ($user) {
+                        'newPassword' => $newPassword,
+                        'firmName' => $firmName
+                    ], function($message) use ($user, $firmName) {
                         $message->to($user->email, $user->name)
-                                ->subject('Password Reset - Naeelah Firm');
+                                ->subject('Password Reset - ' . $firmName);
                     });
                     
                     $message = 'Password reset successfully. New password has been sent to user\'s email.';
@@ -214,7 +288,18 @@ class UserController extends Controller
             } else {
                 $message = 'Password reset successfully. New password: ' . $newPassword . ' (Email not configured)';
             }
-            
+
+            // Log password reset
+            activity()
+                ->performedOn($user)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'username' => $user->username,
+                    'email' => $user->email
+                ])
+                ->log("Password reset for user {$user->username}");
+
             return response()->json([
                 'success' => true,
                 'message' => $message,
@@ -237,6 +322,17 @@ class UserController extends Controller
             $user->update([
                 'email_verified_at' => now()
             ]);
+
+            // Log email verification
+            activity()
+                ->performedOn($user)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'username' => $user->username,
+                    'email' => $user->email
+                ])
+                ->log("Email verified for user {$user->username}");
 
             return response()->json([
                 'success' => true,

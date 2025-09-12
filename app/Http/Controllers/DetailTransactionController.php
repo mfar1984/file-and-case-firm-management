@@ -8,6 +8,7 @@ use App\Models\Bill;
 use App\Models\Voucher;
 use App\Models\ExpenseCategory;
 use App\Models\OpeningBalance;
+use App\Models\Firm;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -19,14 +20,39 @@ class DetailTransactionController extends Controller
         $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
         $accountFilter = $request->get('account_filter', 'all');
+        $user = auth()->user();
+
+        // Get opening balances with firm scope filtering
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $openingBalances = OpeningBalance::forFirm(session('current_firm_id'))->where('status', 1)->get();
+            } else {
+                $openingBalances = OpeningBalance::withoutFirmScope()->where('status', 1)->get();
+            }
+        } else {
+            $openingBalances = OpeningBalance::where('status', 1)->get();
+        }
         
-        // Get opening balances
-        $openingBalances = OpeningBalance::where('status', 1)->get();
-        
-        // Get all transactions within date range
-        $receipts = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
-            ->with(['case', 'quotation', 'taxInvoice'])
-            ->get()
+        // Get all transactions within date range with firm scope filtering
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $receipts = Receipt::forFirm(session('current_firm_id'))
+                    ->whereBetween('receipt_date', [$startDate, $endDate])
+                    ->with(['case', 'quotation', 'taxInvoice'])
+                    ->get();
+            } else {
+                $receipts = Receipt::withoutFirmScope()
+                    ->whereBetween('receipt_date', [$startDate, $endDate])
+                    ->with(['case', 'quotation', 'taxInvoice'])
+                    ->get();
+            }
+        } else {
+            $receipts = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
+                ->with(['case', 'quotation', 'taxInvoice'])
+                ->get();
+        }
+
+        $receipts = $receipts
             ->map(function ($receipt) {
                 return [
                     'date' => $receipt->receipt_date,
@@ -41,14 +67,38 @@ class DetailTransactionController extends Controller
                 ];
             });
             
-        // Get active categories for proper mapping
-        $activeCategories = ExpenseCategory::active()->ordered()->get();
+        // Get active categories for proper mapping with firm scope
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $activeCategories = ExpenseCategory::forFirm(session('current_firm_id'))->active()->ordered()->get();
+            } else {
+                $activeCategories = ExpenseCategory::withoutFirmScope()->active()->ordered()->get();
+            }
+        } else {
+            $activeCategories = ExpenseCategory::active()->ordered()->get();
+        }
         $categoryMap = $activeCategories->pluck('name', 'name')->toArray();
 
-        $bills = Bill::whereBetween('bill_date', [$startDate, $endDate])
-            ->with(['items'])
-            ->get()
-            ->map(function ($bill) use ($categoryMap) {
+        // Get bills with firm scope filtering
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $bills = Bill::forFirm(session('current_firm_id'))
+                    ->whereBetween('bill_date', [$startDate, $endDate])
+                    ->with(['items'])
+                    ->get();
+            } else {
+                $bills = Bill::withoutFirmScope()
+                    ->whereBetween('bill_date', [$startDate, $endDate])
+                    ->with(['items'])
+                    ->get();
+            }
+        } else {
+            $bills = Bill::whereBetween('bill_date', [$startDate, $endDate])
+                ->with(['items'])
+                ->get();
+        }
+
+        $bills = $bills->map(function ($bill) use ($categoryMap) {
                 // Use proper category or default to 'Other'
                 $category = $bill->category && isset($categoryMap[$bill->category])
                     ? $bill->category
@@ -135,7 +185,21 @@ class DetailTransactionController extends Controller
         
         // Get account options
         $accountOptions = $openingBalances->pluck('bank_name')->unique()->prepend('All Accounts');
-        
+
+        // Log detail transaction access
+        activity()
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'account_filter' => $accountFilter,
+                'transactions_count' => $allTransactions->count(),
+                'total_debit' => $totalDebit,
+                'total_credit' => $totalCredit
+            ])
+            ->log("Detail Transaction report accessed for period {$startDate} to {$endDate}");
+
         return view('detail-transaction', compact(
             'allTransactions',
             'startDate',
@@ -239,13 +303,19 @@ class DetailTransactionController extends Controller
         $netChange = $totalDebit - $totalCredit;
 
         // Get firm settings for header
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+        $firm = Firm::find($firmId);
+
         $firmSettings = (object) [
-            'firm_name' => 'Naeelah Saleh & Associates',
-            'registration_number' => 'LLP0012345',
-            'address' => 'No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia',
-            'phone_number' => '+6019-3186436',
-            'email' => 'info@naaelahsaleh.my',
-            'tax_registration_number' => 'W24-2507-32000179'
+            'firm_name' => $firm ? $firm->name : 'Naeelah Saleh & Associates',
+            'registration_number' => $firm ? $firm->registration_number : 'LLP0012345',
+            'address' => $firm ? $firm->address : 'No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia',
+            'phone_number' => $firm ? $firm->phone : '+6019-3186436',
+            'email' => $firm ? $firm->email : 'info@naaelahsaleh.my',
+            'tax_registration_number' => $firm && isset($firm->settings['tax_registration_number'])
+                ? $firm->settings['tax_registration_number']
+                : 'W24-2507-32000179'
         ];
 
         $reportTitle = 'Detail Transaction Report';
@@ -261,6 +331,19 @@ class DetailTransactionController extends Controller
 
         // Generate filename with date range
         $filename = 'Detail_Transaction_' . date('Y-m-d', strtotime($startDate)) . '_to_' . date('Y-m-d', strtotime($endDate)) . '.pdf';
+
+        // Log detail transaction print
+        activity()
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'action' => 'print',
+                'filename' => $filename,
+                'transactions_count' => $allTransactions->count()
+            ])
+            ->log("Detail Transaction report printed for period {$startDate} to {$endDate}");
 
         return $pdf->download($filename);
     }

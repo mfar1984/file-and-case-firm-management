@@ -17,7 +17,11 @@ class ActivityLogController extends Controller
 
     public function getLogs(Request $request)
     {
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+
         $query = Activity::with(['causer', 'subject'])
+            ->where('firm_id', $firmId)
             ->latest();
 
         // Filter by level if provided
@@ -82,7 +86,11 @@ class ActivityLogController extends Controller
                 ], 403);
             }
 
-            Activity::truncate();
+            $user = Auth::user();
+            $firmId = session('current_firm_id') ?? $user->firm_id;
+
+            // Only clear logs for current firm
+            Activity::where('firm_id', $firmId)->delete();
 
             // Log the clear action
             activity()

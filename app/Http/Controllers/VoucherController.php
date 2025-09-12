@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Voucher;
 use App\Models\VoucherItem;
 use App\Models\ExpenseCategory;
+use App\Models\Payee;
 use App\Models\FirmSetting;
+use App\Models\Firm;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,29 +17,104 @@ class VoucherController extends Controller
 {
     public function index()
     {
-        $vouchers = Voucher::with(['items'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Get vouchers with proper firm scope filtering
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can see all vouchers or filter by session firm
+            if (session('current_firm_id')) {
+                $vouchers = Voucher::forFirm(session('current_firm_id'))
+                    ->with(['items'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            } else {
+                $vouchers = Voucher::withoutFirmScope()
+                    ->with(['items'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            }
+        } else {
+            // Regular users see only their firm's vouchers (HasFirmScope trait handles this)
+            $vouchers = Voucher::with(['items'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
 
         return view('voucher', compact('vouchers'));
     }
 
     public function create()
     {
-        $expenseCategories = ExpenseCategory::active()->ordered()->get();
-        return view('voucher-create', compact('expenseCategories'));
+        // Get expense categories and payees with proper firm scope filtering
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can see data from session firm or all firms
+            if (session('current_firm_id')) {
+                $expenseCategories = ExpenseCategory::forFirm(session('current_firm_id'))
+                    ->active()
+                    ->ordered()
+                    ->get();
+                $payees = Payee::forFirm(session('current_firm_id'))
+                    ->active()
+                    ->orderBy('name')
+                    ->get();
+            } else {
+                $expenseCategories = ExpenseCategory::withoutFirmScope()
+                    ->active()
+                    ->ordered()
+                    ->get();
+                $payees = Payee::withoutFirmScope()
+                    ->active()
+                    ->orderBy('name')
+                    ->get();
+            }
+        } else {
+            // Regular users see only their firm's data (HasFirmScope trait handles this)
+            $expenseCategories = ExpenseCategory::active()->ordered()->get();
+            $payees = Payee::active()->orderBy('name')->get();
+        }
+
+        return view('voucher-create', compact('expenseCategories', 'payees'));
     }
 
     public function show($id)
     {
-        $voucher = Voucher::with(['items'])->findOrFail($id);
+        // Find voucher with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can access any voucher
+            $voucher = Voucher::withoutFirmScope()
+                ->with(['items'])
+                ->findOrFail($id);
+        } else {
+            // Regular users can only access vouchers from their firm (HasFirmScope trait handles this)
+            $voucher = Voucher::with(['items'])->findOrFail($id);
+        }
+
         return view('voucher-show', compact('voucher'));
     }
 
     public function print($id)
     {
         $voucher = Voucher::with(['items'])->findOrFail($id);
-        $firmSettings = FirmSetting::getFirmSettings();
+
+        // Get firm settings for current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+        $firm = Firm::find($firmId);
+
+        $firmSettings = (object) [
+            'firm_name' => $firm ? $firm->name : 'Naeelah Saleh & Associates',
+            'registration_number' => $firm ? $firm->registration_number : 'LLP0012345',
+            'address' => $firm ? $firm->address : 'No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia',
+            'phone_number' => $firm ? $firm->phone : '+6019-3186436',
+            'email' => $firm ? $firm->email : 'info@naaelahsaleh.my',
+            'tax_registration_number' => $firm && isset($firm->settings['tax_registration_number'])
+                ? $firm->settings['tax_registration_number']
+                : 'W24-2507-32000179'
+        ];
 
         $pdf = Pdf::loadView('voucher-print', compact('voucher', 'firmSettings'));
         return $pdf->download('voucher-' . $voucher->voucher_no . '.pdf');
@@ -45,9 +122,48 @@ class VoucherController extends Controller
 
     public function edit($id)
     {
-        $voucher = Voucher::with(['items'])->findOrFail($id);
-        $expenseCategories = ExpenseCategory::active()->ordered()->get();
-        return view('voucher-edit', compact('voucher', 'expenseCategories'));
+        // Find voucher with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can edit any voucher
+            $voucher = Voucher::withoutFirmScope()
+                ->with(['items'])
+                ->findOrFail($id);
+
+            // Get expense categories based on voucher's firm or session firm
+            if (session('current_firm_id')) {
+                $expenseCategories = ExpenseCategory::forFirm(session('current_firm_id'))
+                    ->active()
+                    ->ordered()
+                    ->get();
+            } else {
+                // If no session firm, use the voucher's firm
+                $expenseCategories = ExpenseCategory::forFirm($voucher->firm_id)
+                    ->active()
+                    ->ordered()
+                    ->get();
+            }
+        } else {
+            // Regular users can only edit vouchers from their firm (HasFirmScope trait handles this)
+            $voucher = Voucher::with(['items'])->findOrFail($id);
+            // Get firm-scoped expense categories for regular users
+            $expenseCategories = ExpenseCategory::active()->ordered()->get();
+        }
+
+        // Get payees for the dropdown (same logic as create method)
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $payees = Payee::forFirm(session('current_firm_id'))->active()->orderBy('name')->get();
+            } else {
+                // If no session firm, use the voucher's firm
+                $payees = Payee::forFirm($voucher->firm_id)->active()->orderBy('name')->get();
+            }
+        } else {
+            $payees = Payee::active()->orderBy('name')->get();
+        }
+
+        return view('voucher-edit', compact('voucher', 'expenseCategories', 'payees'));
     }
 
     public function store(Request $request)
@@ -142,7 +258,16 @@ class VoucherController extends Controller
 
     public function update(Request $request, $id)
     {
-        $voucher = Voucher::findOrFail($id);
+        // Find voucher with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can update any voucher
+            $voucher = Voucher::withoutFirmScope()->findOrFail($id);
+        } else {
+            // Regular users can only update vouchers from their firm (HasFirmScope trait handles this)
+            $voucher = Voucher::findOrFail($id);
+        }
 
         $validated = $request->validate([
             'payee_name' => 'required|string|max:255',
@@ -250,7 +375,16 @@ class VoucherController extends Controller
 
     public function destroy($id)
     {
-        $voucher = Voucher::findOrFail($id);
+        // Find voucher with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can delete any voucher
+            $voucher = Voucher::withoutFirmScope()->findOrFail($id);
+        } else {
+            // Regular users can only delete vouchers from their firm (HasFirmScope trait handles this)
+            $voucher = Voucher::findOrFail($id);
+        }
 
         // Log voucher deletion before deleting
         activity()

@@ -28,14 +28,28 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        // Log successful login
+        $user = auth()->user();
+
+        // Set firm context in session
+        if ($user->firm_id) {
+            session(['current_firm_id' => $user->firm_id]);
+
+            // Set Spatie Permission team context
+            setPermissionsTeamId($user->firm_id);
+        }
+
+        // Log successful login with firm context
         activity()
-            ->causedBy(auth()->user())
-            ->withProperties(['ip' => $request->ip()])
+            ->causedBy($user)
+            ->withProperties([
+                'ip' => $request->ip(),
+                'firm_id' => $user->firm_id,
+                'firm_name' => $user->firm ? $user->firm->name : null
+            ])
             ->log('User logged in successfully');
 
         // Update last login time
-        auth()->user()->update(['last_login_at' => now()]);
+        $user->update(['last_login_at' => now()]);
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

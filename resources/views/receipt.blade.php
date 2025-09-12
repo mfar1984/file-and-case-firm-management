@@ -126,8 +126,9 @@
                             <td colspan="8" class="py-8 px-4 text-center text-gray-500">
                                 <div class="flex flex-col items-center">
                                     <span class="material-icons text-4xl text-gray-300 mb-2">receipt</span>
-                                    <p class="text-sm">No receipts found</p>
-                                    <p class="text-xs text-gray-400 mt-1">Create your first receipt to get started</p>
+                                    <p class="text-sm">No receipts available</p>
+                                    <p class="text-xs text-gray-400 mt-1">Create receipts to track customer payments</p>
+                                    <a href="{{ route('receipt.create') }}" class="text-blue-600 hover:text-blue-800 text-xs mt-2">Create your first receipt</a>
                                 </div>
                             </td>
                         </tr>
@@ -284,8 +285,9 @@
             @empty
             <div class="p-8 text-center text-gray-500">
                 <span class="material-icons text-4xl text-gray-300 mb-2">receipt</span>
-                <p class="text-sm">No receipts found</p>
-                <p class="text-xs text-gray-400 mt-1">Create your first receipt to get started</p>
+                <p class="text-sm">No receipts available</p>
+                <p class="text-xs text-gray-400 mt-1">Create receipts to track customer payments</p>
+                <a href="{{ route('receipt.create') }}" class="text-blue-600 hover:text-blue-800 text-xs mt-2 block">Create your first receipt</a>
             </div>
             @endforelse
             </div>

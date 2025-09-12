@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\CalendarEvent;
 use App\Models\CourtCase;
 use App\Models\CaseTimeline;
+use App\Services\NotificationService;
 use Carbon\Carbon;
 
 class CalendarController extends Controller
@@ -19,11 +20,26 @@ class CalendarController extends Controller
         $category = $request->get('category');
         $startDate = $request->get('start', now()->startOfMonth());
         $endDate = $request->get('end', now()->endOfMonth());
+        $user = auth()->user();
 
-        // Get calendar events with relationships
-        $eventsQuery = CalendarEvent::with(['case', 'timelineEvent', 'creator'])
-            ->active()
-            ->inDateRange($startDate, $endDate);
+        // Get calendar events with relationships and firm scope filtering
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $eventsQuery = CalendarEvent::forFirm(session('current_firm_id'))
+                    ->with(['case', 'timelineEvent', 'creator'])
+                    ->active()
+                    ->inDateRange($startDate, $endDate);
+            } else {
+                $eventsQuery = CalendarEvent::withoutFirmScope()
+                    ->with(['case', 'timelineEvent', 'creator'])
+                    ->active()
+                    ->inDateRange($startDate, $endDate);
+            }
+        } else {
+            $eventsQuery = CalendarEvent::with(['case', 'timelineEvent', 'creator'])
+                ->active()
+                ->inDateRange($startDate, $endDate);
+        }
 
         if ($category) {
             $eventsQuery->byCategory($category);
@@ -31,19 +47,44 @@ class CalendarController extends Controller
 
         $events = $eventsQuery->orderBy('start_date')->get();
 
-        // Get statistics
-        $stats = $this->getCalendarStats();
+        // Get statistics with firm scope
+        $stats = $this->getCalendarStats($user);
 
-        // Get upcoming events (next 7 days)
-        $upcomingEvents = CalendarEvent::with(['case', 'timelineEvent'])
-            ->active()
-            ->where('start_date', '>=', now())
-            ->where('start_date', '<=', now()->addDays(7))
-            ->orderBy('start_date')
-            ->limit(10)
-            ->get();
+        // Get upcoming events (next 7 days) with firm scope filtering
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $upcomingEvents = CalendarEvent::forFirm(session('current_firm_id'))
+                    ->with(['case', 'timelineEvent'])
+                    ->active()
+                    ->where('start_date', '>=', now())
+                    ->where('start_date', '<=', now()->addDays(7))
+                    ->orderBy('start_date')
+                    ->limit(10)
+                    ->get();
+            } else {
+                $upcomingEvents = CalendarEvent::withoutFirmScope()
+                    ->with(['case', 'timelineEvent'])
+                    ->active()
+                    ->where('start_date', '>=', now())
+                    ->where('start_date', '<=', now()->addDays(7))
+                    ->orderBy('start_date')
+                    ->limit(10)
+                    ->get();
+            }
+        } else {
+            $upcomingEvents = CalendarEvent::with(['case', 'timelineEvent'])
+                ->active()
+                ->where('start_date', '>=', now())
+                ->where('start_date', '<=', now()->addDays(7))
+                ->orderBy('start_date')
+                ->limit(10)
+                ->get();
+        }
 
-        return view('calendar', compact('events', 'stats', 'upcomingEvents'));
+        // Check if specific event should be shown
+        $showEventId = $request->get('event');
+
+        return view('calendar', compact('events', 'stats', 'upcomingEvents', 'showEventId'));
     }
 
     /**
@@ -54,9 +95,23 @@ class CalendarController extends Controller
         $start = $request->get('start');
         $end = $request->get('end');
         $category = $request->get('category');
+        $user = auth()->user();
 
-        $eventsQuery = CalendarEvent::with(['case', 'timelineEvent'])
-            ->active();
+        // Get events with firm scope filtering
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $eventsQuery = CalendarEvent::forFirm(session('current_firm_id'))
+                    ->with(['case', 'timelineEvent'])
+                    ->active();
+            } else {
+                $eventsQuery = CalendarEvent::withoutFirmScope()
+                    ->with(['case', 'timelineEvent'])
+                    ->active();
+            }
+        } else {
+            $eventsQuery = CalendarEvent::with(['case', 'timelineEvent'])
+                ->active();
+        }
 
         if ($start && $end) {
             $eventsQuery->inDateRange($start, $end);
@@ -82,12 +137,16 @@ class CalendarController extends Controller
                 'borderColor' => $this->getCategoryColor($event->category),
                 'textColor' => '#ffffff',
                 'extendedProps' => [
+                    'description' => $event->description,
+                    'location' => $event->location,
+                    'category' => $event->category,
                     'case_number' => $event->case->case_number ?? null,
                     'case_id' => $event->case_id,
                     'timeline_event_id' => $event->timeline_event_id,
                     'reminder_minutes' => $event->reminder_minutes,
                     'status' => $event->status,
                     'created_by' => $event->creator->name ?? 'System',
+                    'created_at' => $event->created_at->format('M j, Y g:i A'),
                 ]
             ];
         });
@@ -160,6 +219,10 @@ class CalendarController extends Controller
             'case_id' => 'nullable|exists:cases,id',
         ]);
 
+        // Get current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+
         $event = CalendarEvent::create([
             'title' => $request->title,
             'description' => $request->description,
@@ -171,11 +234,29 @@ class CalendarController extends Controller
             'case_id' => $request->case_id,
             'created_by' => auth()->id(),
             'status' => 'active',
+            'firm_id' => $firmId,
         ]);
+
+        // Create reminder notification if reminder is set
+        if ($request->reminder_minutes) {
+            NotificationService::createCalendarReminder($event);
+        }
+
+        // Log calendar event creation
+        activity()
+            ->performedOn($event)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'title' => $event->title,
+                'category' => $event->category,
+                'start_date' => $event->start_date
+            ])
+            ->log("Calendar event '{$event->title}' created");
 
         return response()->json([
             'success' => true,
-            'message' => 'Event created successfully',
+            'message' => 'Event created successfully' . ($request->reminder_minutes ? ' with reminder notification' : ''),
             'event' => $event
         ]);
     }
@@ -200,6 +281,18 @@ class CalendarController extends Controller
             'location', 'category', 'reminder_minutes'
         ]));
 
+        // Log calendar event update
+        activity()
+            ->performedOn($event)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'title' => $event->title,
+                'category' => $event->category,
+                'start_date' => $event->start_date
+            ])
+            ->log("Calendar event '{$event->title}' updated");
+
         return response()->json([
             'success' => true,
             'message' => 'Event updated successfully',
@@ -212,6 +305,18 @@ class CalendarController extends Controller
      */
     public function destroy(CalendarEvent $event)
     {
+        // Log calendar event deletion before deleting
+        activity()
+            ->performedOn($event)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'title' => $event->title,
+                'category' => $event->category,
+                'start_date' => $event->start_date
+            ])
+            ->log("Calendar event '{$event->title}' deleted");
+
         $event->delete();
 
         return response()->json([

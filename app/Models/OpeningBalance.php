@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasFirmScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OpeningBalance extends Model
 {
-    use HasFactory;
+    use HasFactory, HasFirmScope;
 
     protected $fillable = [
         'bank_code',
@@ -18,7 +20,8 @@ class OpeningBalance extends Model
         'debit_myr',
         'credit_myr',
         'exchange_rate',
-        'status'
+        'status',
+        'firm_id'
     ];
 
     protected $casts = [
@@ -64,4 +67,6 @@ class OpeningBalance extends Model
         }
         $this->save();
     }
+
+
 }

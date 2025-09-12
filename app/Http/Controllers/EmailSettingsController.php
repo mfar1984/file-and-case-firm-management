@@ -16,23 +16,43 @@ class EmailSettingsController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $request->validate([
-            'smtp_host' => 'required|string|max:255',
-            'smtp_port' => 'required|integer|min:1|max:65535',
-            'email_username' => 'required|email|max:255',
-            'email_password' => 'required|string|max:255',
-            'from_name' => 'required|string|max:255',
-            'from_email' => 'required|email|max:255',
-            'encryption' => 'boolean',
-            'notify_new_cases' => 'boolean',
-            'notify_document_uploads' => 'boolean',
-            'notify_case_status' => 'boolean',
-            'notify_maintenance' => 'boolean'
-        ]);
+        try {
+            $request->validate([
+                'smtp_host' => 'nullable|string|max:255',
+                'smtp_port' => 'nullable|integer|min:1|max:65535',
+                'email_username' => 'nullable|email|max:255',
+                'email_password' => 'nullable|string|max:255',
+                'from_name' => 'nullable|string|max:255',
+                'from_email' => 'nullable|email|max:255',
+                'encryption' => 'nullable|boolean',
+                'notify_new_cases' => 'nullable|boolean',
+                'notify_document_uploads' => 'nullable|boolean',
+                'notify_case_status' => 'nullable|boolean',
+                'notify_maintenance' => 'nullable|boolean'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        }
 
         try {
             $settings = EmailSetting::getEmailSettings();
+            $oldSettings = $settings->toArray();
             $settings->update($request->all());
+
+            // Log settings change
+            activity()
+                ->performedOn($settings)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'old_settings' => $oldSettings,
+                    'new_settings' => $request->all()
+                ])
+                ->log("Email settings updated");
 
             return response()->json([
                 'success' => true,

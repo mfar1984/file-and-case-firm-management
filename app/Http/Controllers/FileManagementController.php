@@ -16,7 +16,18 @@ class FileManagementController extends Controller
      */
     public function index(Request $request)
     {
-        $query = CaseFile::query();
+        // Apply firm scope filtering
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $query = CaseFile::forFirm(session('current_firm_id'));
+            } else {
+                $query = CaseFile::withoutFirmScope();
+            }
+        } else {
+            $query = CaseFile::query(); // HasFirmScope trait handles filtering
+        }
 
         // Filter by case reference
         if ($request->filled('case_ref')) {
@@ -35,11 +46,27 @@ class FileManagementController extends Controller
 
         $files = $query->with('fileType')->orderBy('created_at', 'desc')->get();
 
-        // Get available cases for dropdown
-        $cases = \App\Models\CourtCase::pluck('case_number')->filter()->values();
+        // Get available cases for dropdown with firm scope
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $cases = \App\Models\CourtCase::forFirm(session('current_firm_id'))->pluck('case_number')->filter()->values();
+            } else {
+                $cases = \App\Models\CourtCase::withoutFirmScope()->pluck('case_number')->filter()->values();
+            }
+        } else {
+            $cases = \App\Models\CourtCase::pluck('case_number')->filter()->values();
+        }
 
-        // Get file types from DB for dropdowns
-        $fileTypes = FileType::active()->orderBy('description')->get(['id','code','description']);
+        // Get file types from DB for dropdowns with firm scope
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $fileTypes = FileType::forFirm(session('current_firm_id'))->active()->orderBy('description')->get(['id','code','description']);
+            } else {
+                $fileTypes = FileType::withoutFirmScope()->active()->orderBy('description')->get(['id','code','description']);
+            }
+        } else {
+            $fileTypes = FileType::active()->orderBy('description')->get(['id','code','description']);
+        }
 
         return view('file-management', compact('files', 'cases', 'fileTypes'));
     }
@@ -84,6 +111,10 @@ class FileManagementController extends Controller
                     'file_path' => $filePath
                 ]);
 
+                // Get current firm context
+                $user = auth()->user();
+                $firmId = session('current_firm_id') ?? $user->firm_id;
+
                 $caseFile = CaseFile::create([
                     'case_ref' => $request->case_ref,
                     'file_name' => $file->getClientOriginalName(),
@@ -94,6 +125,7 @@ class FileManagementController extends Controller
                     'description' => $request->description,
                     'status' => 'IN',
                     'rack_location' => 'Rack A-01', // Default location
+                    'firm_id' => $firmId,
                 ]);
 
                 // Log file upload
@@ -245,10 +277,11 @@ class FileManagementController extends Controller
     }
 
     /**
-     * Get available cases for dropdown
+     * Get available cases for dropdown (firm-specific)
      */
     public function getCases()
     {
+        // Get cases from current firm only
         $cases = CaseFile::distinct()->pluck('case_ref')->filter()->values();
         return response()->json($cases);
     }
@@ -258,14 +291,41 @@ class FileManagementController extends Controller
      */
     public function getStats()
     {
-        $stats = [
-            'total_files' => CaseFile::count(),
-            'files_in' => CaseFile::where('status', 'IN')->count(),
-            'files_out' => CaseFile::where('status', 'OUT')->count(),
-            'overdue_files' => CaseFile::where('status', 'OUT')
-                ->where('expected_return', '<', now())
-                ->count(),
-        ];
+        // Apply firm scope filtering for stats
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $stats = [
+                    'total_files' => CaseFile::forFirm(session('current_firm_id'))->count(),
+                    'files_in' => CaseFile::forFirm(session('current_firm_id'))->where('status', 'IN')->count(),
+                    'files_out' => CaseFile::forFirm(session('current_firm_id'))->where('status', 'OUT')->count(),
+                    'overdue_files' => CaseFile::forFirm(session('current_firm_id'))
+                        ->where('status', 'OUT')
+                        ->where('expected_return', '<', now())
+                        ->count(),
+                ];
+            } else {
+                $stats = [
+                    'total_files' => CaseFile::withoutFirmScope()->count(),
+                    'files_in' => CaseFile::withoutFirmScope()->where('status', 'IN')->count(),
+                    'files_out' => CaseFile::withoutFirmScope()->where('status', 'OUT')->count(),
+                    'overdue_files' => CaseFile::withoutFirmScope()
+                        ->where('status', 'OUT')
+                        ->where('expected_return', '<', now())
+                        ->count(),
+                ];
+            }
+        } else {
+            $stats = [
+                'total_files' => CaseFile::count(),
+                'files_in' => CaseFile::where('status', 'IN')->count(),
+                'files_out' => CaseFile::where('status', 'OUT')->count(),
+                'overdue_files' => CaseFile::where('status', 'OUT')
+                    ->where('expected_return', '<', now())
+                    ->count(),
+            ];
+        }
 
         return response()->json($stats);
     }

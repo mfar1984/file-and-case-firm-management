@@ -10,7 +10,19 @@ class PayeeController extends Controller
 {
     public function index()
     {
-        $payees = Payee::orderBy('name')->get();
+        // Apply firm scope filtering
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $payees = Payee::forFirm(session('current_firm_id'))->orderBy('name')->get();
+            } else {
+                $payees = Payee::withoutFirmScope()->orderBy('name')->get();
+            }
+        } else {
+            $payees = Payee::orderBy('name')->get(); // HasFirmScope trait handles filtering
+        }
+
         return view('settings.payee.index', compact('payees'));
     }
 
@@ -34,7 +46,13 @@ class PayeeController extends Controller
         }
 
         try {
-            $payee = Payee::create($request->all());
+            // Get current firm context
+            $user = auth()->user();
+            $firmId = session('current_firm_id') ?? $user->firm_id;
+
+            $payee = Payee::create(array_merge($request->all(), [
+                'firm_id' => $firmId
+            ]));
             
             return response()->json([
                 'success' => true,

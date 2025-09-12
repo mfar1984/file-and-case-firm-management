@@ -22,11 +22,7 @@
 @section('content')
 <div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto">
     <!-- Success/Error Messages -->
-    @if(session('success'))
-        <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-            {{ session('success') }}
-        </div>
-    @endif
+    {{-- Success messages now handled by layout toast notifications --}}
 
     @if(session('error'))
         <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -242,8 +238,27 @@ function displayLogs() {
     const paginatedLogs = filteredLogs.slice(startIndex, endIndex);
 
     if (paginatedLogs.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-500 text-sm">No activity logs found</td></tr>';
-        mobileContainer.innerHTML = '<div class="text-center text-gray-500 text-sm py-8">No activity logs found</div>';
+        // Enhanced empty state for desktop table
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="py-8 text-center text-gray-500">
+                    <div class="flex flex-col items-center">
+                        <span class="material-icons text-gray-400 text-4xl mb-2">history</span>
+                        <p class="text-sm text-gray-500">No activity logs available</p>
+                        <p class="text-xs text-gray-400">Activity logs will appear here as users perform actions</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+
+        // Enhanced empty state for mobile
+        mobileContainer.innerHTML = `
+            <div class="text-center py-8">
+                <span class="material-icons text-gray-400 text-4xl mb-2">history</span>
+                <p class="text-sm text-gray-500">No activity logs available</p>
+                <p class="text-xs text-gray-400">Activity logs will appear here as users perform actions</p>
+            </div>
+        `;
         return;
     }
 

@@ -130,8 +130,12 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="px-4 py-8 text-center text-xs text-gray-500">
-                            No transactions found for the selected period.
+                        <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+                            <div class="flex flex-col items-center">
+                                <span class="material-icons text-gray-400 text-4xl mb-2">receipt_long</span>
+                                <p class="text-sm text-gray-500">No transactions available</p>
+                                <p class="text-xs text-gray-400">Transactions will appear here for the selected period</p>
+                            </div>
                         </td>
                     </tr>
                     @endforelse

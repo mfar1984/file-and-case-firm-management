@@ -12,6 +12,7 @@ use App\Models\EventStatus;
 use App\Models\Client;
 use App\Models\FileType;
 use App\Models\SystemSetting;
+use App\Models\Firm;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -21,15 +22,38 @@ class CaseController extends Controller
 {
     public function index()
     {
-        $cases = CourtCase::with([
-            'parties', 
-            'partners.partner',
-            'caseType',
-            'caseStatus'
-        ])->orderBy('created_at', 'desc')->get();
-        
-        $caseStatuses = \App\Models\CaseStatus::active()->orderBy('name')->get();
-        
+        // Get cases with proper firm scope filtering
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can see all cases or filter by session firm
+            if (session('current_firm_id')) {
+                $cases = CourtCase::forFirm(session('current_firm_id'))
+                    ->with(['parties', 'partners.partner', 'caseType', 'caseStatus'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+                $caseStatuses = \App\Models\CaseStatus::forFirm(session('current_firm_id'))
+                    ->active()
+                    ->orderBy('name')
+                    ->get();
+            } else {
+                $cases = CourtCase::withoutFirmScope()
+                    ->with(['parties', 'partners.partner', 'caseType', 'caseStatus'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+                $caseStatuses = \App\Models\CaseStatus::withoutFirmScope()
+                    ->active()
+                    ->orderBy('name')
+                    ->get();
+            }
+        } else {
+            // Regular users see only their firm's cases (HasFirmScope trait handles this)
+            $cases = CourtCase::with(['parties', 'partners.partner', 'caseType', 'caseStatus'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+            $caseStatuses = \App\Models\CaseStatus::active()->orderBy('name')->get();
+        }
+
         return view('case', compact('cases', 'caseStatuses'));
     }
 
@@ -42,29 +66,47 @@ class CaseController extends Controller
         $fileTypes = \App\Models\FileType::active()->orderBy('description')->get();
         // Fetch Category Status (for document status dropdown)
         $categoryStatuses = \App\Models\CaseStatus::active()->orderBy('name')->get();
-        return view('case-create', compact('partners', 'caseTypes', 'caseStatuses', 'clients', 'fileTypes', 'categoryStatuses'));
+
+        // Get all firms for Super Administrator, current firm for others
+        $user = auth()->user();
+        if ($user->hasRole('Super Administrator')) {
+            $firms = Firm::orderBy('name')->get();
+        } else {
+            $firmId = session('current_firm_id') ?? $user->firm_id;
+            $firms = Firm::where('id', $firmId)->get();
+        }
+
+        return view('case-create', compact('partners', 'caseTypes', 'caseStatuses', 'clients', 'fileTypes', 'categoryStatuses', 'firms'));
     }
 
     public function show($id)
     {
-        $case = CourtCase::with([
-            'parties',
-            'partners.partner',
-            'caseType',
-            'caseStatus',
-            'createdBy',
-            'files.fileType',
-            'timeline.createdBy'
-        ])->findOrFail($id);
-        
+        // Find case with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can access any case
+            $case = CourtCase::withoutFirmScope()
+                ->with(['parties', 'partners.partner', 'caseType', 'caseStatus', 'createdBy', 'files.fileType', 'timeline.createdBy'])
+                ->findOrFail($id);
+            // Get all data for Super Admin
+            $caseTypes = \App\Models\CaseType::withoutFirmScope()->active()->orderBy('description')->get();
+            $eventStatuses = EventStatus::withoutFirmScope()->active()->ordered()->get();
+            $allCases = CourtCase::withoutFirmScope()->orderBy('case_number')->pluck('case_number', 'id');
+            $courtLocations = CourtCase::withoutFirmScope()->distinct()->pluck('court_location')->filter();
+        } else {
+            // Regular users can only access cases from their firm (HasFirmScope trait handles this)
+            $case = CourtCase::with(['parties', 'partners.partner', 'caseType', 'caseStatus', 'createdBy', 'files.fileType', 'timeline.createdBy'])
+                ->findOrFail($id);
+            // Get firm-scoped data for regular users
+            $caseTypes = \App\Models\CaseType::active()->orderBy('description')->get();
+            $eventStatuses = EventStatus::active()->ordered()->get();
+            $allCases = CourtCase::orderBy('case_number')->pluck('case_number', 'id');
+            $courtLocations = CourtCase::distinct()->pluck('court_location')->filter();
+        }
+
         // Get system settings for date/time formatting
         $systemSettings = SystemSetting::getSystemSettings();
-        
-        // Get additional data for timeline event form
-        $caseTypes = \App\Models\CaseType::active()->orderBy('description')->get();
-        $eventStatuses = EventStatus::active()->ordered()->get();
-        $allCases = CourtCase::orderBy('case_number')->pluck('case_number', 'id');
-        $courtLocations = CourtCase::distinct()->pluck('court_location')->filter();
 
         return view('case-view', compact('case', 'systemSettings', 'caseTypes', 'eventStatuses', 'allCases', 'courtLocations'));
     }
@@ -81,15 +123,42 @@ class CaseController extends Controller
             'receipts',
         ])->findOrFail($id);
 
-        $partners = Partner::where('status', 'active')->orderBy('firm_name')->get();
+        // Get partners with proper firm scope filtering
+        $user = auth()->user();
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can see partners from session firm or all firms
+            if (session('current_firm_id')) {
+                $partners = Partner::forFirm(session('current_firm_id'))
+                    ->where('status', 'active')
+                    ->orderBy('firm_name')
+                    ->get();
+            } else {
+                $partners = Partner::withoutFirmScope()
+                    ->where('status', 'active')
+                    ->orderBy('firm_name')
+                    ->get();
+            }
+        } else {
+            // Regular users see only their firm's partners (HasFirmScope trait handles this)
+            $partners = Partner::where('status', 'active')->orderBy('firm_name')->get();
+        }
         $caseTypes = \App\Models\CaseType::active()->orderBy('description')->get();
         $caseStatuses = \App\Models\CaseStatus::active()->orderBy('name')->get();
         $clients = \App\Models\Client::orderBy('name')->get();
         $fileTypes = \App\Models\FileType::active()->orderBy('description')->get();
         $categoryStatuses = \App\Models\CaseStatus::active()->orderBy('name')->get();
 
+        // Get all firms for Super Administrator, current firm for others
+        $user = auth()->user();
+        if ($user->hasRole('Super Administrator')) {
+            $firms = Firm::orderBy('name')->get();
+        } else {
+            $firmId = session('current_firm_id') ?? $user->firm_id;
+            $firms = Firm::where('id', $firmId)->get();
+        }
+
         // Render the full create view in edit mode so all form scripts (section->documents) run properly
-        return view('case-create', compact('case', 'partners', 'caseTypes', 'caseStatuses', 'clients', 'fileTypes', 'categoryStatuses'));
+        return view('case-create', compact('case', 'partners', 'caseTypes', 'caseStatuses', 'clients', 'fileTypes', 'categoryStatuses', 'firms'));
     }
 
     public function store(Request $request)
@@ -135,6 +204,15 @@ class CaseController extends Controller
                 $title = $request->name_of_property;
             }
 
+            // Add firm context
+            $user = auth()->user();
+            $firmId = null;
+            if ($user->hasRole('Super Administrator') && $request->has('firm_id')) {
+                $firmId = $request->firm_id;
+            } else {
+                $firmId = session('current_firm_id') ?? $user->firm_id;
+            }
+
             // Create the case
             $case = CourtCase::create([
                 'case_number' => $request->case_ref,
@@ -147,6 +225,7 @@ class CaseController extends Controller
                 'court_location' => $request->court_name,
                 'claim_amount' => $request->claim_amount,
                 'created_by' => auth()->id(),
+                'firm_id' => $firmId,
                 // New persisted fields
                 'person_in_charge' => $request->person_in_charge,
                 'court_ref' => $request->court_ref,
@@ -178,6 +257,7 @@ class CaseController extends Controller
                                 'password' => null,
                                 'gender' => $existingClient->gender,
                                 'nationality' => $existingClient->nationality,
+                                'firm_id' => $case->firm_id,
                             ]);
                         } else {
                             // Create new client without user account
@@ -203,6 +283,7 @@ class CaseController extends Controller
                                 'password' => null,
                                 'gender' => $newClient->gender,
                                 'nationality' => $newClient->nationality,
+                                'firm_id' => $case->firm_id,
                             ]);
                         }
                     }
@@ -229,6 +310,7 @@ class CaseController extends Controller
                                 'password' => null,
                                 'gender' => $existingClient->gender,
                                 'nationality' => $existingClient->nationality,
+                                'firm_id' => $case->firm_id,
                             ]);
                         } else {
                             // Create new client without user account
@@ -254,6 +336,7 @@ class CaseController extends Controller
                                 'password' => null,
                                 'gender' => $newClient->gender,
                                 'nationality' => $newClient->nationality,
+                                'firm_id' => $case->firm_id,
                             ]);
                         }
                     }
@@ -283,7 +366,7 @@ class CaseController extends Controller
                         // Store file in storage/app/public/documents
                         $path = $document->storeAs('documents', $filename, 'public');
                         
-                        // Create document record
+                        // Create document record with firm context
                         \App\Models\CaseFile::create([
                             'case_ref' => $case->case_number,
                             'file_name' => $document->getClientOriginalName(),
@@ -298,6 +381,7 @@ class CaseController extends Controller
                             'expected_return' => null,
                             'actual_return' => null,
                             'rack_location' => 'Digital Storage',
+                            'firm_id' => $case->firm_id, // Use case's firm_id
                         ]);
                     }
                 }
@@ -409,7 +493,17 @@ class CaseController extends Controller
     public function changeStatus($id, Request $request)
     {
         try {
-            $case = CourtCase::findOrFail($id);
+            // Find case with firm scope validation
+            $user = auth()->user();
+
+            if ($user->hasRole('Super Administrator')) {
+                // Super Admin can change status for any case
+                $case = CourtCase::withoutFirmScope()->findOrFail($id);
+            } else {
+                // Regular users can only change status for cases from their firm (HasFirmScope trait handles this)
+                $case = CourtCase::findOrFail($id);
+            }
+
             $oldStatus = $case->caseStatus->name ?? 'Unknown';
 
             $case->update([
@@ -445,8 +539,17 @@ class CaseController extends Controller
     public function addTimelineEvent($id, Request $request)
     {
         try {
-            $case = CourtCase::findOrFail($id);
-            
+            // Find case with firm scope validation
+            $user = auth()->user();
+
+            if ($user->hasRole('Super Administrator')) {
+                // Super Admin can add timeline to any case
+                $case = CourtCase::withoutFirmScope()->findOrFail($id);
+            } else {
+                // Regular users can only add timeline to cases from their firm (HasFirmScope trait handles this)
+                $case = CourtCase::findOrFail($id);
+            }
+
             // Validate request
             $request->validate([
                 'title' => 'required|string|max:255',
@@ -455,7 +558,7 @@ class CaseController extends Controller
                 'event_time' => 'nullable|date_format:H:i',
                 'description' => 'nullable|string',
                 'location' => 'nullable|string|max:255',
-                'status' => 'required|in:completed,active,cancelled',
+                'status' => 'required|string',
                 // Metadata fields
                 'priority' => 'nullable|string|in:high,medium,low',
                 'case_type' => 'nullable|string|max:100',
@@ -534,6 +637,7 @@ class CaseController extends Controller
                 'event_date' => $eventDateTime,
                 'metadata' => $metadata,
                 'created_by' => auth()->id(),
+                'firm_id' => $case->firm_id,
             ]);
 
             // Create calendar event if requested
@@ -579,7 +683,17 @@ class CaseController extends Controller
     public function updateTimelineEvent(Request $request, $id, $timelineId)
     {
         try {
-            $case = CourtCase::findOrFail($id);
+            // Find case with firm scope validation
+            $user = auth()->user();
+
+            if ($user->hasRole('Super Administrator')) {
+                // Super Admin can update timeline for any case
+                $case = CourtCase::withoutFirmScope()->findOrFail($id);
+            } else {
+                // Regular users can only update timeline for cases from their firm (HasFirmScope trait handles this)
+                $case = CourtCase::findOrFail($id);
+            }
+
             $timelineEvent = \App\Models\CaseTimeline::where('case_id', $case->id)->findOrFail($timelineId);
 
             // Validate request
@@ -699,7 +813,17 @@ class CaseController extends Controller
     public function deleteTimelineEvent($id, $timelineId)
     {
         try {
-            $case = CourtCase::findOrFail($id);
+            // Find case with firm scope validation
+            $user = auth()->user();
+
+            if ($user->hasRole('Super Administrator')) {
+                // Super Admin can delete timeline for any case
+                $case = CourtCase::withoutFirmScope()->findOrFail($id);
+            } else {
+                // Regular users can only delete timeline for cases from their firm (HasFirmScope trait handles this)
+                $case = CourtCase::findOrFail($id);
+            }
+
             $timelineEvent = \App\Models\CaseTimeline::where('case_id', $case->id)->findOrFail($timelineId);
 
             // Delete associated calendar event if exists
@@ -740,7 +864,18 @@ class CaseController extends Controller
     public function destroy($id)
     {
         try {
-            $case = CourtCase::with(['parties', 'partners', 'files', 'timeline'])->findOrFail($id);
+            // Find case with firm scope validation
+            $user = auth()->user();
+
+            if ($user->hasRole('Super Administrator')) {
+                // Super Admin can delete any case
+                $case = CourtCase::withoutFirmScope()
+                    ->with(['parties', 'partners', 'files', 'timeline'])
+                    ->findOrFail($id);
+            } else {
+                // Regular users can only delete cases from their firm (HasFirmScope trait handles this)
+                $case = CourtCase::with(['parties', 'partners', 'files', 'timeline'])->findOrFail($id);
+            }
 
             DB::beginTransaction();
 
@@ -798,7 +933,16 @@ class CaseController extends Controller
 
     public function update($id, Request $request)
     {
-        $case = CourtCase::findOrFail($id);
+        // Find case with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can update any case
+            $case = CourtCase::withoutFirmScope()->findOrFail($id);
+        } else {
+            // Regular users can only update cases from their firm (HasFirmScope trait handles this)
+            $case = CourtCase::findOrFail($id);
+        }
 
         // Validate request with conditional rules (same as store method)
         $rules = [
@@ -878,6 +1022,7 @@ class CaseController extends Controller
                             'email' => $plaintiff['email'] ?? '',
                             'gender' => $plaintiff['gender'] ?? '',
                             'nationality' => $plaintiff['nationality'] ?? '',
+                            'firm_id' => $case->firm_id,
                         ]);
                     }
                 }
@@ -896,7 +1041,29 @@ class CaseController extends Controller
                             'email' => $defendant['email'] ?? '',
                             'gender' => $defendant['gender'] ?? '',
                             'nationality' => $defendant['nationality'] ?? '',
+                            'firm_id' => $case->firm_id,
                         ]);
+                    }
+                }
+            }
+
+            // Update partners
+            // Delete existing partners first
+            $case->partners()->delete();
+
+            // Add updated partners with firm validation
+            if ($request->has('partners')) {
+                foreach ($request->partners as $partner) {
+                    if (!empty($partner['partner_id'])) {
+                        // Validate that partner belongs to the same firm as the case
+                        $partnerModel = Partner::find($partner['partner_id']);
+                        if ($partnerModel && $partnerModel->firm_id === $case->firm_id) {
+                            CasePartner::create([
+                                'case_id' => $case->id,
+                                'partner_id' => $partner['partner_id'],
+                                'role' => $partner['role'] ?? '',
+                            ]);
+                        }
                     }
                 }
             }

@@ -6,6 +6,7 @@ use App\Models\Bill;
 use App\Models\BillItem;
 use App\Models\ExpenseCategory;
 use App\Models\FirmSetting;
+use App\Models\Firm;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,29 +15,95 @@ class BillController extends Controller
 {
     public function index()
     {
-        $bills = Bill::with(['items'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-            
+        // Get bills with proper firm scope filtering
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can see all bills or filter by session firm
+            if (session('current_firm_id')) {
+                $bills = Bill::forFirm(session('current_firm_id'))
+                    ->with(['items'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            } else {
+                $bills = Bill::withoutFirmScope()
+                    ->with(['items'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            }
+        } else {
+            // Regular users see only their firm's bills (HasFirmScope trait handles this)
+            $bills = Bill::with(['items'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
         return view('bill', compact('bills'));
     }
 
     public function create()
     {
-        $expenseCategories = ExpenseCategory::active()->ordered()->get();
+        // Get expense categories with proper firm scope filtering
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can see expense categories from session firm or all firms
+            if (session('current_firm_id')) {
+                $expenseCategories = ExpenseCategory::forFirm(session('current_firm_id'))
+                    ->active()
+                    ->ordered()
+                    ->get();
+            } else {
+                $expenseCategories = ExpenseCategory::withoutFirmScope()
+                    ->active()
+                    ->ordered()
+                    ->get();
+            }
+        } else {
+            // Regular users see only their firm's expense categories (HasFirmScope trait handles this)
+            $expenseCategories = ExpenseCategory::active()->ordered()->get();
+        }
+
         return view('bill-create', compact('expenseCategories'));
     }
 
     public function show($id)
     {
-        $bill = Bill::with(['items'])->findOrFail($id);
+        // Find bill with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can access any bill
+            $bill = Bill::withoutFirmScope()
+                ->with(['items'])
+                ->findOrFail($id);
+        } else {
+            // Regular users can only access bills from their firm (HasFirmScope trait handles this)
+            $bill = Bill::with(['items'])->findOrFail($id);
+        }
+
         return view('bill-show', compact('bill'));
     }
 
     public function print($id)
     {
         $bill = Bill::with(['items'])->findOrFail($id);
-        $firmSettings = FirmSetting::getFirmSettings();
+
+        // Get firm settings for current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+        $firm = Firm::find($firmId);
+
+        $firmSettings = (object) [
+            'firm_name' => $firm ? $firm->name : 'Naeelah Saleh & Associates',
+            'registration_number' => $firm ? $firm->registration_number : 'LLP0012345',
+            'address' => $firm ? $firm->address : 'No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia',
+            'phone_number' => $firm ? $firm->phone : '+6019-3186436',
+            'email' => $firm ? $firm->email : 'info@naaelahsaleh.my',
+            'tax_registration_number' => $firm && isset($firm->settings['tax_registration_number'])
+                ? $firm->settings['tax_registration_number']
+                : 'W24-2507-32000179'
+        ];
 
         $pdf = Pdf::loadView('bill-print', compact('bill', 'firmSettings'));
         return $pdf->download('bill-' . $bill->bill_no . '.pdf');
@@ -44,8 +111,35 @@ class BillController extends Controller
 
     public function edit($id)
     {
-        $bill = Bill::with(['items'])->findOrFail($id);
-        $expenseCategories = ExpenseCategory::active()->ordered()->get();
+        // Find bill with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can edit any bill
+            $bill = Bill::withoutFirmScope()
+                ->with(['items'])
+                ->findOrFail($id);
+
+            // Get expense categories based on bill's firm or session firm
+            if (session('current_firm_id')) {
+                $expenseCategories = ExpenseCategory::forFirm(session('current_firm_id'))
+                    ->active()
+                    ->ordered()
+                    ->get();
+            } else {
+                // If no session firm, use the bill's firm
+                $expenseCategories = ExpenseCategory::forFirm($bill->firm_id)
+                    ->active()
+                    ->ordered()
+                    ->get();
+            }
+        } else {
+            // Regular users can only edit bills from their firm (HasFirmScope trait handles this)
+            $bill = Bill::with(['items'])->findOrFail($id);
+            // Get firm-scoped expense categories for regular users
+            $expenseCategories = ExpenseCategory::active()->ordered()->get();
+        }
+
         return view('bill-edit', compact('bill', 'expenseCategories'));
     }
 
@@ -141,7 +235,16 @@ class BillController extends Controller
 
     public function update(Request $request, $id)
     {
-        $bill = Bill::findOrFail($id);
+        // Find bill with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can update any bill
+            $bill = Bill::withoutFirmScope()->findOrFail($id);
+        } else {
+            // Regular users can only update bills from their firm (HasFirmScope trait handles this)
+            $bill = Bill::findOrFail($id);
+        }
         
         $validated = $request->validate([
             'vendor_name' => 'required|string|max:255',
@@ -255,7 +358,16 @@ class BillController extends Controller
 
     public function destroy($id)
     {
-        $bill = Bill::findOrFail($id);
+        // Find bill with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can delete any bill
+            $bill = Bill::withoutFirmScope()->findOrFail($id);
+        } else {
+            // Regular users can only delete bills from their firm (HasFirmScope trait handles this)
+            $bill = Bill::findOrFail($id);
+        }
 
         // Log bill deletion before deleting
         activity()

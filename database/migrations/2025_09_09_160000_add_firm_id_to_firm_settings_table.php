@@ -1,0 +1,35 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('firm_settings', function (Blueprint $table) {
+            $table->unsignedBigInteger('firm_id')->nullable()->after('tax_registration_number');
+            $table->foreign('firm_id')->references('id')->on('firms')->onDelete('cascade');
+            $table->index('firm_id');
+        });
+
+        // Migrate existing data to default firm (firm_id = 1)
+        DB::table('firm_settings')->whereNull('firm_id')->update(['firm_id' => 1]);
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('firm_settings', function (Blueprint $table) {
+            $table->dropForeign(['firm_id']);
+            $table->dropIndex(['firm_id']);
+            $table->dropColumn('firm_id');
+        });
+    }
+};

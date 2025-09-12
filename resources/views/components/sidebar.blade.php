@@ -3,7 +3,7 @@
     $caseActive = request()->routeIs('case.index') || request()->routeIs('client.index') || request()->routeIs('partner.index');
     $accountingActive = request()->routeIs('pre-quotation.index') || request()->routeIs('quotation.index') || request()->routeIs('tax-invoice.index') || request()->routeIs('resit.index') || request()->routeIs('voucher.index') || request()->routeIs('bill.index');
     $gLedgerActive = request()->routeIs('general-ledger.index') || request()->routeIs('detail-transaction.index') || request()->routeIs('journal-report.index') || request()->routeIs('balance-sheet.index') || request()->routeIs('profit-loss.index') || request()->routeIs('trial-balance.index');
-    $settingsActive = request()->routeIs('settings.global') || request()->routeIs('settings.role') || request()->routeIs('settings.user') || request()->routeIs('settings.category') || request()->routeIs('settings.log');
+    $settingsActive = request()->routeIs('settings.global') || request()->routeIs('settings.role') || request()->routeIs('settings.user') || request()->routeIs('settings.category') || request()->routeIs('settings.log') || request()->routeIs('settings.firms.*');
 @endphp
 
 <!-- Logo Section -->
@@ -12,7 +12,13 @@
         <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
             <span class="material-icons text-white text-sm">gavel</span>
         </div>
-        <span class="text-lg font-bold text-gray-800">Naeelah Firm</span>
+        <span class="text-lg font-bold text-gray-800">
+            @if(isset($currentFirm))
+                {{ $currentFirm->name }}
+            @else
+                Law Firm System
+            @endif
+        </span>
     </div>
 </div>
 <div class="border-b border-gray-200 mb-2 mt-2"></div>
@@ -192,6 +198,16 @@
         </div>
     </div>
     <div id="settings-section" class="hierarchical-menu" style="display: {{ $settingsActive ? 'block' : 'none' }};">
+
+        {{-- Firm Management (Super Administrator only) --}}
+        @auth
+            @if(auth()->user()->hasRole('Super Administrator'))
+            <a href="{{ route('settings.firms.index') }}" class="sidebar-submenu-item {{ request()->routeIs('settings.firms.*') ? 'active' : '' }}">
+                <span class="material-icons text-xs mr-3">business</span>
+                <span class="text-xs">Firm Management</span>
+            </a>
+            @endif
+        @endauth
 
         @if(PermissionHelper::hasPermission('manage-firm-settings'))
         <a href="{{ route('settings.global') }}" class="sidebar-submenu-item {{ request()->routeIs('settings.global') ? 'active' : '' }}">

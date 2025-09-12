@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\HasFirmScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 class Quotation extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, HasFirmScope;
 
     protected $fillable = [
         'case_id',
@@ -28,6 +30,7 @@ class Quotation extends Model
         'tax_total',
         'total',
         'total_words',
+        'firm_id',
     ];
 
     protected $casts = [
@@ -47,6 +50,14 @@ class Quotation extends Model
     public function case()
     {
         return $this->belongsTo(CourtCase::class, 'case_id');
+    }
+
+    /**
+     * Get the firm that owns this quotation
+     */
+    public function firm(): BelongsTo
+    {
+        return $this->belongsTo(Firm::class);
     }
 
     public function getStatusColorAttribute()
@@ -218,7 +229,7 @@ class Quotation extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['quotation_no', 'client_name', 'status', 'total', 'valid_until'])
+            ->logOnly(['quotation_no', 'customer_name', 'status', 'total', 'valid_until', 'firm_id'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

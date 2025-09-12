@@ -7,6 +7,7 @@ use App\Models\Receipt;
 use App\Models\Bill;
 use App\Models\Voucher;
 use App\Models\ExpenseCategory;
+use App\Models\Firm;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -35,6 +36,20 @@ class ProfitLossController extends Controller
         // Get category breakdown for enhanced reporting
         $categoryBreakdown = $this->getCategoryBreakdown($expenses);
         $expenseCategories = ExpenseCategory::active()->ordered()->get();
+
+        // Log profit & loss access
+        activity()
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'total_revenue' => $totalRevenue,
+                'total_expenses' => $totalExpenses,
+                'net_profit' => $netProfit,
+                'profit_margin' => $profitMargin
+            ])
+            ->log("Profit & Loss report accessed for period {$startDate} to {$endDate}");
 
         return view('profit-loss', compact(
             'revenue',
@@ -250,13 +265,19 @@ class ProfitLossController extends Controller
         $profitMargin = $totalRevenue > 0 ? ($netProfit / $totalRevenue) * 100 : 0;
 
         // Get firm settings for header
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+        $firm = Firm::find($firmId);
+
         $firmSettings = (object) [
-            'firm_name' => 'Naeelah Saleh & Associates',
-            'registration_number' => 'LLP0012345',
-            'address' => 'No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia',
-            'phone_number' => '+6019-3186436',
-            'email' => 'info@naaelahsaleh.my',
-            'tax_registration_number' => 'W24-2507-32000179'
+            'firm_name' => $firm ? $firm->name : 'Naeelah Saleh & Associates',
+            'registration_number' => $firm ? $firm->registration_number : 'LLP0012345',
+            'address' => $firm ? $firm->address : 'No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia',
+            'phone_number' => $firm ? $firm->phone : '+6019-3186436',
+            'email' => $firm ? $firm->email : 'info@naaelahsaleh.my',
+            'tax_registration_number' => $firm && isset($firm->settings['tax_registration_number'])
+                ? $firm->settings['tax_registration_number']
+                : 'W24-2507-32000179'
         ];
 
         $reportTitle = 'Profit & Loss Statement';
@@ -273,6 +294,19 @@ class ProfitLossController extends Controller
 
         // Generate filename with date range
         $filename = 'Profit_Loss_' . date('Y-m-d', strtotime($startDate)) . '_to_' . date('Y-m-d', strtotime($endDate)) . '.pdf';
+
+        // Log profit & loss print
+        activity()
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'action' => 'print',
+                'filename' => $filename,
+                'net_profit' => $netProfit
+            ])
+            ->log("Profit & Loss report printed for period {$startDate} to {$endDate}");
 
         return $pdf->download($filename);
     }

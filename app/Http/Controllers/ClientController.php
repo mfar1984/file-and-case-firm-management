@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use App\Models\ClientAddress;
+use App\Models\Firm;
 use App\Services\UserCreationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,13 +13,44 @@ class ClientController extends Controller
 {
     public function index()
     {
-        $clients = Client::with(['addresses', 'user'])->orderBy('created_at', 'desc')->get();
+        // Get clients with proper firm scope filtering
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can see all clients or filter by session firm
+            if (session('current_firm_id')) {
+                $clients = Client::forFirm(session('current_firm_id'))
+                    ->with(['addresses', 'user'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            } else {
+                $clients = Client::withoutFirmScope()
+                    ->with(['addresses', 'user'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            }
+        } else {
+            // Regular users see only their firm's clients (HasFirmScope trait handles this)
+            $clients = Client::with(['addresses', 'user'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
         return view('client', compact('clients'));
     }
 
     public function create()
     {
-        return view('client-create');
+        // Get all firms for Super Administrator, current firm for others
+        $user = auth()->user();
+        if ($user->hasRole('Super Administrator')) {
+            $firms = Firm::orderBy('name')->get();
+        } else {
+            $firmId = session('current_firm_id') ?? $user->firm_id;
+            $firms = Firm::where('id', $firmId)->get();
+        }
+
+        return view('client-create', compact('firms'));
     }
 
     public function store(Request $request)
@@ -94,6 +126,14 @@ class ClientController extends Controller
         $userResult = UserCreationService::createUserForClient($clientData);
         $clientData['user_id'] = $userResult['user']->id;
 
+        // Add firm context
+        $user = auth()->user();
+        if ($user->hasRole('Super Administrator') && $request->has('firm_id')) {
+            $clientData['firm_id'] = $request->firm_id;
+        } else {
+            $clientData['firm_id'] = session('current_firm_id') ?? $user->firm_id;
+        }
+
         // Create client
         $client = Client::create($clientData);
 
@@ -145,14 +185,41 @@ class ClientController extends Controller
 
     public function show($id)
     {
-        $client = Client::with(['addresses', 'user'])->findOrFail($id);
+        // Find client with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can access any client
+            $client = Client::withoutFirmScope()
+                ->with(['addresses', 'user'])
+                ->findOrFail($id);
+        } else {
+            // Regular users can only access clients from their firm (HasFirmScope trait handles this)
+            $client = Client::with(['addresses', 'user'])->findOrFail($id);
+        }
+
         return view('client-show', compact('client'));
     }
 
     public function edit($id)
     {
-        $client = Client::with(['addresses', 'user'])->findOrFail($id);
-        return view('client-edit', compact('client'));
+        // Find client with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can edit any client
+            $client = Client::withoutFirmScope()
+                ->with(['addresses', 'user'])
+                ->findOrFail($id);
+            $firms = Firm::orderBy('name')->get();
+        } else {
+            // Regular users can only edit clients from their firm (HasFirmScope trait handles this)
+            $client = Client::with(['addresses', 'user'])->findOrFail($id);
+            $firmId = session('current_firm_id') ?? $user->firm_id;
+            $firms = Firm::where('id', $firmId)->get();
+        }
+
+        return view('client-edit', compact('client', 'firms'));
     }
 
     public function update(Request $request, $id)
@@ -228,6 +295,14 @@ class ClientController extends Controller
         // Ensure dependent is always an integer
         $clientData['dependent'] = (int)($clientData['dependent']);
 
+        // Add firm context
+        $user = auth()->user();
+        if ($user->hasRole('Super Administrator') && $request->has('firm_id')) {
+            $clientData['firm_id'] = $request->firm_id;
+        } else {
+            $clientData['firm_id'] = session('current_firm_id') ?? $user->firm_id;
+        }
+
         $client = Client::findOrFail($id);
         $client->update($clientData);
 
@@ -253,14 +328,7 @@ class ClientController extends Controller
             }
         }
 
-        return redirect()->route('client.show', $client->id)->with('success', 'Client updated successfully');
-    }
-
-    public function destroy($id)
-    {
-        $client = Client::findOrFail($id);
-
-        // Log client deletion before deleting
+        // Log client update
         activity()
             ->performedOn($client)
             ->causedBy(auth()->user())
@@ -270,6 +338,35 @@ class ClientController extends Controller
                 'ic_passport' => $client->ic_passport,
                 'email' => $client->email
             ])
+            ->log("Client {$client->name} updated");
+
+        return redirect()->route('client.show', $client->id)->with('success', 'Client updated successfully');
+    }
+
+    public function destroy($id)
+    {
+        // Find client with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can delete any client
+            $client = Client::withoutFirmScope()->findOrFail($id);
+        } else {
+            // Regular users can only delete clients from their firm (HasFirmScope trait handles this)
+            $client = Client::findOrFail($id);
+        }
+
+        // Log client deletion before deleting
+        activity()
+            ->performedOn($client)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'client_name' => $client->name,
+                'ic_passport' => $client->ic_passport,
+                'email' => $client->email,
+                'firm_id' => $client->firm_id
+            ])
             ->log("Client {$client->name} deleted");
 
         $client->delete();
@@ -278,9 +375,32 @@ class ClientController extends Controller
 
     public function toggleBan($id)
     {
-        $client = Client::findOrFail($id);
+        // Find client with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can toggle ban for any client
+            $client = Client::withoutFirmScope()->findOrFail($id);
+        } else {
+            // Regular users can only toggle ban for clients from their firm (HasFirmScope trait handles this)
+            $client = Client::findOrFail($id);
+        }
+
         $client->is_banned = !$client->is_banned;
         $client->save();
+
+        // Log the action
+        activity()
+            ->performedOn($client)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'client_name' => $client->name,
+                'action' => $client->is_banned ? 'banned' : 'unbanned',
+                'firm_id' => $client->firm_id
+            ])
+            ->log("Client {$client->name} " . ($client->is_banned ? 'banned' : 'unbanned'));
+
         return redirect()->back()->with('success', $client->is_banned ? 'Client banned' : 'Client unbanned');
     }
 }

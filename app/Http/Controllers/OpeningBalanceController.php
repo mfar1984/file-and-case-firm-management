@@ -24,8 +24,12 @@ class OpeningBalanceController extends Controller
     public function store(Request $request)
     {
         try {
+            // Get current firm context for validation
+            $user = auth()->user();
+            $firmId = session('current_firm_id') ?? $user->firm_id;
+
             $validator = Validator::make($request->all(), [
-                'bank_code' => 'required|string|max:20|unique:opening_balances,bank_code',
+                'bank_code' => 'required|string|max:20|unique:opening_balances,bank_code,NULL,id,firm_id,' . $firmId,
                 'bank_name' => 'required|string|max:255',
                 'currency' => 'required|string|max:10',
                 'debit' => 'nullable|numeric|min:0',
@@ -41,7 +45,15 @@ class OpeningBalanceController extends Controller
                 ], 422);
             }
 
+            if (!$firmId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No firm context available'
+                ], 400);
+            }
+
             $data = $request->all();
+            $data['firm_id'] = $firmId;
             $data['debit'] = $data['debit'] ?? 0;
             $data['credit'] = $data['credit'] ?? 0;
             $data['exchange_rate'] = $data['exchange_rate'] ?? 1.0000;

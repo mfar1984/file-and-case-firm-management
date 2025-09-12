@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\HasFirmScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CourtCase extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, HasFirmScope;
 
     protected $table = 'cases';
 
@@ -35,6 +37,7 @@ class CourtCase extends Model
         // Conveyancing specific fields
         'name_of_property',
         'others_document',
+        'firm_id',
     ];
 
     protected $casts = [
@@ -108,6 +111,8 @@ class CourtCase extends Model
     {
         return $this->hasMany(CalendarEvent::class, 'case_id')->orderBy('start_date', 'asc');
     }
+
+
 
     public function getActivitylogOptions(): LogOptions
     {

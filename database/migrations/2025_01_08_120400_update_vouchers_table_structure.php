@@ -7,30 +7,71 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
+        // Check if vouchers table exists
+        if (!Schema::hasTable('vouchers')) {
+            return;
+        }
+
         Schema::table('vouchers', function (Blueprint $table) {
-            // Drop payee_id column and add payee_name
-            $table->dropColumn('payee_id');
-            $table->string('payee_name')->after('voucher_no');
-            
-            // Add missing columns
-            $table->string('email')->nullable()->after('phone');
-            $table->decimal('subtotal', 12, 2)->default(0)->after('remark');
-            $table->decimal('tax_total', 12, 2)->default(0)->after('subtotal');
-            $table->string('total_words')->nullable()->after('total_amount');
-            $table->enum('status', ['draft', 'pending', 'approved', 'paid', 'cancelled'])->default('draft')->after('total_words');
-            
-            // Update payment_method to enum
-            $table->enum('payment_method', ['cash', 'cheque', 'bank_transfer', 'online_banking', 'credit_card'])->default('cash')->change();
+            // Drop payee_id column if it exists
+            if (Schema::hasColumn('vouchers', 'payee_id')) {
+                $table->dropColumn('payee_id');
+            }
+
+            // Add payee_name if it doesn't exist
+            if (!Schema::hasColumn('vouchers', 'payee_name')) {
+                $table->string('payee_name')->after('voucher_no');
+            }
+
+            // Add missing columns if they don't exist
+            if (!Schema::hasColumn('vouchers', 'email')) {
+                $table->string('email')->nullable()->after('phone');
+            }
+            if (!Schema::hasColumn('vouchers', 'subtotal')) {
+                $table->decimal('subtotal', 12, 2)->default(0)->after('remark');
+            }
+            if (!Schema::hasColumn('vouchers', 'tax_total')) {
+                $table->decimal('tax_total', 12, 2)->default(0)->after('subtotal');
+            }
+            if (!Schema::hasColumn('vouchers', 'total_words')) {
+                $table->string('total_words')->nullable()->after('total_amount');
+            }
+            if (!Schema::hasColumn('vouchers', 'status')) {
+                $table->enum('status', ['draft', 'pending', 'approved', 'paid', 'cancelled'])->default('draft')->after('total_words');
+            }
+
+            // Update payment_method to enum if column exists
+            if (Schema::hasColumn('vouchers', 'payment_method')) {
+                $table->enum('payment_method', ['cash', 'cheque', 'bank_transfer', 'online_banking', 'credit_card'])->default('cash')->change();
+            }
         });
     }
 
     public function down(): void
     {
+        // Check if vouchers table exists
+        if (!Schema::hasTable('vouchers')) {
+            return;
+        }
+
         Schema::table('vouchers', function (Blueprint $table) {
-            // Reverse the changes
-            $table->dropColumn(['payee_name', 'email', 'subtotal', 'tax_total', 'total_words', 'status']);
-            $table->unsignedBigInteger('payee_id')->after('voucher_no');
-            $table->string('payment_method')->change();
+            // Drop columns if they exist
+            $columnsToRemove = ['payee_name', 'email', 'subtotal', 'tax_total', 'total_words', 'status'];
+            foreach ($columnsToRemove as $column) {
+                if (Schema::hasColumn('vouchers', $column)) {
+                    $table->dropColumn($column);
+                }
+            }
+
+            // Add payee_id back if it doesn't exist
+            if (!Schema::hasColumn('vouchers', 'payee_id')) {
+                $table->unsignedBigInteger('payee_id')->after('voucher_no');
+            }
+
+            // Revert payment_method if column exists
+            if (Schema::hasColumn('vouchers', 'payment_method')) {
+                $table->string('payment_method')->change();
+            }
         });
     }
 };

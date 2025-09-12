@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\HasFirmScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 class PreQuotation extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, HasFirmScope;
 
     protected $fillable = [
         'quotation_no',
@@ -26,6 +28,7 @@ class PreQuotation extends Model
         'discount_total',
         'tax_total',
         'total',
+        'firm_id',
     ];
 
     protected $casts = [
@@ -40,6 +43,14 @@ class PreQuotation extends Model
     public function items()
     {
         return $this->hasMany(PreQuotationItem::class);
+    }
+
+    /**
+     * Get the firm that owns this pre-quotation
+     */
+    public function firm(): BelongsTo
+    {
+        return $this->belongsTo(Firm::class);
     }
 
     public function getStatusColorAttribute()
@@ -87,7 +98,7 @@ class PreQuotation extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['quotation_no', 'client_name', 'status', 'total_amount'])
+            ->logOnly(['quotation_no', 'full_name', 'status', 'total', 'firm_id'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

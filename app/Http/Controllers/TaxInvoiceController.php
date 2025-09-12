@@ -7,6 +7,7 @@ use App\Models\TaxInvoiceItem;
 use App\Models\Quotation;
 use App\Models\CourtCase;
 use App\Models\FirmSetting;
+use App\Models\Firm;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,14 +16,51 @@ class TaxInvoiceController extends Controller
 {
     public function index()
     {
-        $taxInvoices = TaxInvoice::with(['case', 'quotation'])->latest()->get();
+        // Get tax invoices with proper firm scope filtering
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can see all tax invoices or filter by session firm
+            if (session('current_firm_id')) {
+                $taxInvoices = TaxInvoice::forFirm(session('current_firm_id'))
+                    ->with(['case', 'quotation'])
+                    ->latest()
+                    ->get();
+            } else {
+                $taxInvoices = TaxInvoice::withoutFirmScope()
+                    ->with(['case', 'quotation'])
+                    ->latest()
+                    ->get();
+            }
+        } else {
+            // Regular users see only their firm's tax invoices (HasFirmScope trait handles this)
+            $taxInvoices = TaxInvoice::with(['case', 'quotation'])->latest()->get();
+        }
+
         return view('tax-invoice', compact('taxInvoices'));
     }
 
     public function create(Request $request)
     {
-        // Get quotations for selection
-        $quotations = Quotation::latest()->take(50)->get(['id', 'quotation_no']);
+        // Get quotations for selection with proper firm scope filtering
+        $user = auth()->user();
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can see quotations from session firm or all firms
+            if (session('current_firm_id')) {
+                $quotations = Quotation::forFirm(session('current_firm_id'))
+                    ->latest()
+                    ->take(50)
+                    ->get(['id', 'quotation_no']);
+            } else {
+                $quotations = Quotation::withoutFirmScope()
+                    ->latest()
+                    ->take(50)
+                    ->get(['id', 'quotation_no']);
+            }
+        } else {
+            // Regular users see only their firm's quotations (HasFirmScope trait handles this)
+            $quotations = Quotation::latest()->take(50)->get(['id', 'quotation_no']);
+        }
         
         // Prefill from quotation if provided
         $qFrom = null;
@@ -134,6 +172,10 @@ class TaxInvoiceController extends Controller
                 }
             }
 
+            // Get current firm context
+            $user = auth()->user();
+            $firmId = session('current_firm_id') ?? $user->firm_id;
+
             $taxInvoice = TaxInvoice::create([
                 'invoice_no' => $invoiceNo,
                 'case_id' => $caseId,
@@ -153,6 +195,7 @@ class TaxInvoiceController extends Controller
                 'tax_total' => $taxTotal,
                 'total' => $total,
                 'status' => 'draft',
+                'firm_id' => $firmId,
             ]);
 
             // Create invoice items
@@ -202,14 +245,52 @@ class TaxInvoiceController extends Controller
 
     public function show($id)
     {
-        $taxInvoice = TaxInvoice::with(['items', 'case', 'quotation'])->findOrFail($id);
+        // Find tax invoice with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can access any tax invoice
+            $taxInvoice = TaxInvoice::withoutFirmScope()
+                ->with(['items', 'case', 'quotation'])
+                ->findOrFail($id);
+        } else {
+            // Regular users can only access tax invoices from their firm (HasFirmScope trait handles this)
+            $taxInvoice = TaxInvoice::with(['items', 'case', 'quotation'])->findOrFail($id);
+        }
+
         return view('tax-invoice-show', compact('taxInvoice'));
     }
 
     public function print($id)
     {
-        $taxInvoice = TaxInvoice::with(['items', 'case', 'quotation'])->findOrFail($id);
-        $firmSettings = FirmSetting::getFirmSettings();
+        // Find tax invoice with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can print any tax invoice
+            $taxInvoice = TaxInvoice::withoutFirmScope()
+                ->with(['items', 'case', 'quotation'])
+                ->findOrFail($id);
+        } else {
+            // Regular users can only print tax invoices from their firm (HasFirmScope trait handles this)
+            $taxInvoice = TaxInvoice::with(['items', 'case', 'quotation'])->findOrFail($id);
+        }
+
+        // Get firm settings for current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+        $firm = Firm::find($firmId);
+
+        $firmSettings = (object) [
+            'firm_name' => $firm ? $firm->name : 'Naeelah Saleh & Associates',
+            'registration_number' => $firm ? $firm->registration_number : 'LLP0012345',
+            'address' => $firm ? $firm->address : 'No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia',
+            'phone_number' => $firm ? $firm->phone : '+6019-3186436',
+            'email' => $firm ? $firm->email : 'info@naaelahsaleh.my',
+            'tax_registration_number' => $firm && isset($firm->settings['tax_registration_number'])
+                ? $firm->settings['tax_registration_number']
+                : 'W24-2507-32000179'
+        ];
 
         $pdf = Pdf::loadView('tax-invoice-print', compact('taxInvoice', 'firmSettings'));
         return $pdf->download('tax-invoice-' . $taxInvoice->invoice_no . '.pdf');
@@ -217,10 +298,22 @@ class TaxInvoiceController extends Controller
 
     public function edit($id)
     {
-        $taxInvoice = TaxInvoice::with(['items', 'case', 'quotation'])->findOrFail($id);
-        
-        // Get quotations for selection
-        $quotations = Quotation::latest()->take(50)->get(['id', 'quotation_no']);
+        // Find tax invoice with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can edit any tax invoice
+            $taxInvoice = TaxInvoice::withoutFirmScope()
+                ->with(['items', 'case', 'quotation'])
+                ->findOrFail($id);
+            // Get all quotations for Super Admin
+            $quotations = Quotation::withoutFirmScope()->latest()->take(50)->get(['id', 'quotation_no']);
+        } else {
+            // Regular users can only edit tax invoices from their firm (HasFirmScope trait handles this)
+            $taxInvoice = TaxInvoice::with(['items', 'case', 'quotation'])->findOrFail($id);
+            // Get firm-scoped quotations for regular users
+            $quotations = Quotation::latest()->take(50)->get(['id', 'quotation_no']);
+        }
         
         // Prepare items for Alpine.js
         $items = $taxInvoice->items->map(function($i) {
@@ -239,7 +332,16 @@ class TaxInvoiceController extends Controller
 
     public function update(Request $request, $id)
     {
-        $taxInvoice = TaxInvoice::findOrFail($id);
+        // Find tax invoice with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can update any tax invoice
+            $taxInvoice = TaxInvoice::withoutFirmScope()->findOrFail($id);
+        } else {
+            // Regular users can only update tax invoices from their firm (HasFirmScope trait handles this)
+            $taxInvoice = TaxInvoice::findOrFail($id);
+        }
         
         $validated = $request->validate([
             'case_id' => 'nullable|integer|exists:cases,id',
@@ -273,6 +375,10 @@ class TaxInvoiceController extends Controller
             $taxTotal = 0; // Can be refined later
             $total = $subtotal; // Simple for now
 
+            // Get current firm context
+            $user = auth()->user();
+            $firmId = session('current_firm_id') ?? $user->firm_id;
+
             // Update tax invoice
             $taxInvoice->update([
                 'case_id' => $validated['case_id'] ?? null,
@@ -291,6 +397,7 @@ class TaxInvoiceController extends Controller
                 'discount_total' => $discountTotal,
                 'tax_total' => $taxTotal,
                 'total' => $total,
+                'firm_id' => $firmId,
             ]);
 
             // Delete existing items and create new ones
@@ -324,8 +431,17 @@ class TaxInvoiceController extends Controller
     {
         try {
             DB::beginTransaction();
-            
-            $taxInvoice = TaxInvoice::findOrFail($id);
+
+            // Find tax invoice with firm scope validation
+            $user = auth()->user();
+
+            if ($user->hasRole('Super Administrator')) {
+                // Super Admin can delete any tax invoice
+                $taxInvoice = TaxInvoice::withoutFirmScope()->findOrFail($id);
+            } else {
+                // Regular users can only delete tax invoices from their firm (HasFirmScope trait handles this)
+                $taxInvoice = TaxInvoice::findOrFail($id);
+            }
             $quotationId = $taxInvoice->quotation_id;
             
             // Log tax invoice deletion before deleting

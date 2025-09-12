@@ -12,9 +12,18 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        
+
         <!-- Alpine.js -->
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        <script>
+            // Suppress benign Alpine.js cancelled transition warnings in console
+            window.addEventListener('unhandledrejection', function(e) {
+                if (e && e.reason && e.reason.isFromCancelledTransition) {
+                    e.preventDefault();
+                }
+            });
+        </script>
+
 
         <!-- Tagify CSS and JS -->
         <link href="https://unpkg.com/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
@@ -87,7 +96,7 @@
             <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed z-50 inset-y-0 left-0 w-64 bg-white shadow-lg border-r border-gray-200 flex flex-col transform transition-transform duration-200 md:relative md:translate-x-0 md:flex md:w-64">
                 @component('components.sidebar')
                 @endcomponent
-                
+
                 <!-- Close button for mobile -->
                 <button @click="sidebarOpen = false" class="absolute top-4 right-4 md:hidden">
                     <span class="material-icons text-gray-500 hover:text-gray-700">close</span>
@@ -105,7 +114,7 @@
                             <button @click="sidebarOpen = true" class="p-1">
                                 <span class="material-icons text-2xl text-gray-600 hover:text-gray-800">menu</span>
                             </button>
-                            
+
                             <!-- Page Title (from breadcrumb) -->
                             <div class="flex-1 text-center">
                                 <h1 class="text-sm font-semibold text-gray-800 truncate">
@@ -116,32 +125,32 @@
                                     @endif
                                 </h1>
                             </div>
-                            
+
                             <!-- Mobile Actions -->
                             <div class="flex items-center space-x-2">
                                 <!-- Notifications (Mobile) -->
-                                <div class="relative" x-data="{ showNotifications: false, notifications: [], unreadCount: 0 }">
+                                <div class="relative" x-data="notificationDropdown()" x-init="loadNotifications()" id="mobile-notification-container">
                                     <button @click="showNotifications = !showNotifications" class="p-1 text-gray-500 hover:text-gray-700 relative">
                                         <span class="material-icons text-xl">notifications</span>
-                                        <span x-show="unreadCount > 0" x-text="unreadCount" class="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center"></span>
+                                        <span x-show="unreadCount > 0" x-text="unreadCount" class="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center font-medium"></span>
                                     </button>
-                                    
+
                                     <!-- Mobile Notifications Dropdown -->
                                     <div x-show="showNotifications" @click.away="showNotifications = false" class="absolute right-0 top-10 mt-1 w-72 bg-white rounded-md shadow-lg z-20 border border-gray-200 overflow-hidden">
                                         <div class="py-2 px-3 bg-gray-100 border-b border-gray-200 flex justify-between items-center">
                                             <h3 class="text-xs font-semibold text-gray-700">Notifications</h3>
-                                            <span x-show="unreadCount > 0" @click="window.markAllAsRead()" class="text-xs text-blue-500 hover:text-blue-700 cursor-pointer">Mark all as read</span>
+                                            <span x-show="unreadCount > 0" @click="markAllAsRead()" class="text-xs text-blue-500 hover:text-blue-700 cursor-pointer">Mark all as read</span>
                                         </div>
-                                        
+
                                         <div class="max-h-48 overflow-y-auto">
                                             <template x-if="notifications.length === 0">
                                                 <div class="py-4 px-3 text-center text-gray-500 text-xs">
                                                     <p>No new notifications</p>
                                                 </div>
                                             </template>
-                                            
+
                                             <template x-for="notification in notifications" :key="notification.id">
-                                                <a :href="notification.url" class="block py-2 px-3 hover:bg-gray-50 border-b border-gray-100 transition duration-150 ease-in-out" :class="{'bg-blue-50': !notification.read_at}">
+                                                <a :href="notification.url" @click="markAsRead(notification.id)" class="block py-2 px-3 hover:bg-gray-50 border-b border-gray-100 transition duration-150 ease-in-out" :class="{'bg-blue-50': !notification.read_at}">
                                                     <div class="flex items-start">
                                                         <div class="flex-shrink-0 mr-2">
                                                             <span class="material-icons text-blue-600 text-sm" x-text="notification.icon || 'forum'"></span>
@@ -158,19 +167,19 @@
                                                 </a>
                                             </template>
                                         </div>
-                                        
-                                        <a href="#" class="block text-center py-2 text-xs text-blue-600 hover:bg-gray-50 font-medium">
-                                            View all notifications
-                                        </a>
+
+                                        <button @click="showNotifications = false" class="block w-full text-center py-2 text-xs text-blue-600 hover:bg-gray-50 font-medium">
+                                            Close notifications
+                                        </button>
                                     </div>
                                 </div>
-                                
+
                                 <!-- User Menu (Mobile) -->
                                 <div class="relative" x-data="{ open: false }">
                                     <button @click="open = !open" class="p-1 text-gray-500 hover:text-gray-700">
                                         <span class="material-icons text-xl">account_circle</span>
                                     </button>
-                                    
+
                                     <!-- Mobile User Dropdown -->
                                     <div x-show="open" @click.away="open = false" class="absolute right-0 top-10 mt-1 w-48 bg-white rounded-md shadow-lg z-20 border border-gray-200 overflow-hidden">
                                         <div class="py-2 px-3 bg-gray-100 border-b border-gray-200">
@@ -182,7 +191,7 @@
                                                 @endauth
                                             </p>
                                         </div>
-                                        
+
                                         <div class="py-1">
                                             <a href="{{ route('profile.edit') }}" class="block px-3 py-2 text-xs text-gray-700 hover:bg-gray-50">
                                                 <span class="material-icons text-sm mr-2">person</span>
@@ -201,7 +210,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Desktop Header -->
                     <div class="hidden md:block">
                         <div class="flex justify-between items-center px-6 py-3">
@@ -222,28 +231,28 @@
                             <!-- Notifications & User Menu -->
                             <div class="flex items-center space-x-4">
                                 <!-- Notifications -->
-                                <div class="flex items-center justify-center h-8" x-data="{ showNotifications: false, notifications: [], unreadCount: 0 }" id="notification-container">
+                                <div class="flex items-center justify-center h-8" x-data="notificationDropdown()" x-init="loadNotifications()" id="notification-container">
                                     <button @click="showNotifications = !showNotifications" class="text-gray-500 hover:text-gray-700 flex items-center justify-center relative">
                                         <span class="material-icons text-xl">notifications</span>
-                                        <span x-show="unreadCount > 0" x-text="unreadCount" class="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center"></span>
+                                        <span x-show="unreadCount > 0" x-text="unreadCount" class="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center font-medium"></span>
                                     </button>
-                                    
+
                                     <!-- Desktop Notifications Dropdown -->
                                     <div x-show="showNotifications" @click.away="showNotifications = false" class="absolute right-16 top-16 mt-2 w-80 bg-white rounded-md shadow-lg z-20 border border-gray-200 overflow-hidden">
                                         <div class="py-2 px-3 bg-gray-100 border-b border-gray-200 flex justify-between items-center">
                                             <h3 class="text-xs font-semibold text-gray-700">Notifications</h3>
-                                            <span x-show="unreadCount > 0" @click="window.markAllAsRead()" class="text-xs text-blue-500 hover:text-blue-700 cursor-pointer">Mark all as read</span>
+                                            <span x-show="unreadCount > 0" @click="markAllAsRead()" class="text-xs text-blue-500 hover:text-blue-700 cursor-pointer">Mark all as read</span>
                                         </div>
-                                        
+
                                         <div class="max-h-64 overflow-y-auto">
                                             <template x-if="notifications.length === 0">
                                                 <div class="py-4 px-3 text-center text-gray-500 text-xs">
                                                     <p>No new notifications</p>
                                                 </div>
                                             </template>
-                                            
+
                                             <template x-for="notification in notifications" :key="notification.id">
-                                                <a :href="notification.url" class="block py-2 px-3 hover:bg-gray-50 border-b border-gray-100 transition duration-150 ease-in-out" :class="{'bg-blue-50': !notification.read_at}">
+                                                <a :href="notification.url" @click="markAsRead(notification.id)" class="block py-2 px-3 hover:bg-gray-50 border-b border-gray-100 transition duration-150 ease-in-out" :class="{'bg-blue-50': !notification.read_at}">
                                                     <div class="flex items-start">
                                                         <div class="flex-shrink-0 mr-2">
                                                             <span class="material-icons text-blue-600" x-text="notification.icon || 'forum'"></span>
@@ -260,12 +269,95 @@
                                                 </a>
                                             </template>
                                         </div>
-                                        
-                                        <a href="#" class="block text-center py-2 text-xs text-blue-600 hover:bg-gray-50 font-medium">
-                                            View all notifications
-                                        </a>
+
+                                        <div class="border-t border-gray-200 flex">
+                                            <button @click="showNotifications = false" class="flex-1 text-center py-2 text-xs text-blue-600 hover:bg-gray-50 font-medium">
+                                                Close notifications
+                                            </button>
+                                            <button @click="toggleSound()" class="px-3 py-2 text-xs text-gray-500 hover:bg-gray-50 flex items-center border-l border-gray-200">
+                                                <span class="material-icons text-xs mr-1" x-text="soundEnabled ? 'volume_up' : 'volume_off'"></span>
+                                                <span x-text="soundEnabled ? 'On' : 'Off'"></span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
+
+                                <!-- Firm Selector (Super Administrator only) -->
+                                @auth
+                                    @if(auth()->user()->hasRole('Super Administrator'))
+                                        <div class="relative" x-data="{ firmOpen: false }">
+                                            <button @click="firmOpen = !firmOpen" class="flex items-center text-xs font-medium text-gray-500 hover:text-gray-700 focus:outline-none transition duration-150 ease-in-out">
+                                                <div class="flex items-center space-x-2">
+                                                    <div class="h-8 w-8 rounded-base bg-blue-100 flex items-center justify-center">
+                                                        <span class="material-icons text-xs text-blue-600">business</span>
+                                                    </div>
+                                                    <div class="hidden md:flex flex-col items-start">
+                                                        <span class="text-xs font-medium">
+                                                            @if(isset($currentFirm))
+                                                                {{ $currentFirm->name }}
+                                                            @else
+                                                                Select Firm
+                                                            @endif
+                                                        </span>
+                                                        <span class="text-xs text-gray-400">Switch Firm</span>
+                                                    </div>
+                                                </div>
+                                                <div class="ml-1">
+                                                    <svg class="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </div>
+                                            </button>
+
+                                            <!-- Firm Dropdown Menu -->
+                                            <div x-show="firmOpen" @click.away="firmOpen = false" x-cloak class="absolute right-0 mt-2 w-64 bg-white rounded-base shadow-lg z-20 border border-gray-200 py-2">
+                                                <div class="px-4 py-2 border-b border-gray-200">
+                                                    <h3 class="text-xs font-semibold text-gray-700">Select Firm</h3>
+                                                </div>
+                                                <div class="max-h-64 overflow-y-auto">
+                                                    @php
+                                                        $allFirms = App\Models\Firm::where('status', 'active')->orderBy('name')->get();
+                                                    @endphp
+                                                    @foreach($allFirms as $firm)
+                                                        <form method="POST" action="{{ route('firm.switch') }}" class="block">
+                                                            @csrf
+                                                            <input type="hidden" name="firm_id" value="{{ $firm->id }}">
+                                                            <button type="submit" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-100 transition-colors
+                                                                {{ (isset($currentFirm) && $currentFirm->id === $firm->id) ? 'bg-blue-50 text-blue-700' : 'text-gray-700' }}">
+                                                                <div class="flex items-center space-x-3">
+                                                                    @if($firm->logo)
+                                                                        <img src="{{ Storage::url($firm->logo) }}" alt="{{ $firm->name }}" class="h-6 w-6 rounded-base object-cover">
+                                                                    @else
+                                                                        <div class="h-6 w-6 rounded-base bg-gray-200 flex items-center justify-center">
+                                                                            <span class="material-icons text-xs text-gray-400">business</span>
+                                                                        </div>
+                                                                    @endif
+                                                                    <div class="flex-1">
+                                                                        <div class="font-medium">{{ $firm->name }}</div>
+                                                                        @if($firm->registration_number)
+                                                                            <div class="text-gray-500">{{ $firm->registration_number }}</div>
+                                                                        @endif
+                                                                    </div>
+                                                                    @if(isset($currentFirm) && $currentFirm->id === $firm->id)
+                                                                        <span class="material-icons text-xs text-blue-600">check</span>
+                                                                    @endif
+                                                                </div>
+                                                            </button>
+                                                        </form>
+                                                    @endforeach
+                                                </div>
+                                                <div class="border-t border-gray-200 pt-2">
+                                                    <a href="{{ route('settings.firms.index') }}" class="block px-4 py-2 text-xs text-blue-600 hover:bg-gray-100">
+                                                        <div class="flex items-center space-x-2">
+                                                            <span class="material-icons text-xs">settings</span>
+                                                            <span>Manage Firms</span>
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                @endauth
 
                                 <!-- User Menu -->
                                 <div class="relative" x-data="{ open: false }">
@@ -289,7 +381,7 @@
                                             </svg>
                                         </div>
                                     </button>
-                                    
+
                                     <!-- Dropdown Menu -->
                                     <div x-show="open" @click.away="open = false" x-cloak class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 border border-gray-200 py-2">
                                         @auth
@@ -338,7 +430,7 @@
                                     <span class="text-gray-700">@yield('breadcrumb')</span>
                                 @endif
                             </nav>
-                            
+
                             <!-- Weather Widget (Desktop Only) -->
                             <div class="hidden md:block relative" x-data="{ weather: null, loading: true, showTooltip: false, locationInfo: null }" x-init="
                                 // Fetch weather data with error handling
@@ -357,7 +449,7 @@
                                         console.warn('Weather fetch error:', error.message);
                                         loading = false;
                                     });
-                                
+
                                 // Fetch location info from settings with error handling
                                 fetch('/settings/weather/get', {
                                         headers: { 'X-Requested-With': 'XMLHttpRequest' },
@@ -382,8 +474,8 @@
                                         console.warn('Location info fetch error:', error.message);
                                     });
                             ">
-                                <div class="flex items-center space-x-2 text-xs cursor-pointer" 
-                                     @mouseenter="showTooltip = true" 
+                                <div class="flex items-center space-x-2 text-xs cursor-pointer"
+                                     @mouseenter="showTooltip = true"
                                      @mouseleave="showTooltip = false">
                                     <span class="material-icons text-blue-600 text-sm">wb_sunny</span>
                                     <div x-show="!loading && weather" class="flex items-center space-x-1">
@@ -398,9 +490,9 @@
                                         <span class="text-gray-500">Weather unavailable</span>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Weather Tooltip -->
-                                <div x-show="showTooltip && weather" 
+                                <div x-show="showTooltip && weather"
                                      x-transition:enter="transition ease-out duration-200"
                                      x-transition:enter-start="opacity-0 scale-95"
                                      x-transition:enter-end="opacity-100 scale-100"
@@ -408,7 +500,7 @@
                                      x-transition:leave-start="opacity-100 scale-100"
                                      x-transition:leave-end="opacity-0 scale-95"
                                      class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 p-4">
-                                    
+
                                     <!-- Location Info -->
                                     <div class="mb-4 pb-3 border-b border-gray-200">
                                         <div class="flex items-center justify-between mb-2">
@@ -434,7 +526,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Current Weather -->
                                     <div class="mb-4">
                                         <h3 class="text-sm font-semibold text-gray-800 mb-2">Current Weather</h3>
@@ -465,7 +557,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Forecast -->
                                     <div class="mb-4" x-show="weather?.forecast">
                                         <h3 class="text-sm font-semibold text-gray-800 mb-2">3-Day Forecast</h3>
@@ -482,7 +574,7 @@
                                             </template>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Footer -->
                                     <div class="pt-3 border-t border-gray-200">
                                         <div class="flex justify-between items-center text-xs">
@@ -510,25 +602,284 @@
             // Simple date and time formatting for topbar
             function updateDateTime() {
                 const now = new Date();
-                
+
                 // Format: "Wednesday, 6 August 2025 at 02:00:00 am"
                 const dayName = now.toLocaleString('en-US', { weekday: 'long' });
                 const day = now.getDate();
                 const month = now.toLocaleString('en-US', { month: 'long' });
                 const year = now.getFullYear();
-                
+
                 const hours = String(now.getHours()).padStart(2, '0');
                 const minutes = String(now.getMinutes()).padStart(2, '0');
                 const seconds = String(now.getSeconds()).padStart(2, '0');
                 const ampm = now.getHours() < 12 ? 'am' : 'pm';
-                
+
                 const formattedDateTime = `${dayName}, ${day} ${month} ${year} at ${hours}:${minutes}:${seconds} ${ampm}`;
                 document.getElementById('current-date-time').textContent = formattedDateTime;
             }
-            
+
             // Initialize and update every second
             updateDateTime();
             setInterval(updateDateTime, 1000);
         </script>
+
+        <!-- Notification System JavaScript -->
+        <script>
+            // Notification dropdown Alpine.js component
+            function notificationDropdown() {
+                return {
+                    showNotifications: false,
+                    notifications: [],
+                    unreadCount: 0,
+                    loading: false,
+                    soundEnabled: localStorage.getItem('notificationSound') !== 'false',
+
+                    async loadNotifications() {
+                        const previousUnreadCount = this.unreadCount;
+                        this.loading = true;
+
+                        try {
+                            const response = await fetch('/notifications', {
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
+                                credentials: 'same-origin'
+                            });
+                            const data = await response.json();
+                            this.notifications = data.notifications;
+                            this.unreadCount = data.unreadCount;
+
+                            // Play sound and show browser notification if new notifications arrived
+                            if (this.unreadCount > previousUnreadCount && previousUnreadCount >= 0) {
+                                if (this.soundEnabled) {
+                                    this.playNotificationSound();
+                                }
+
+                                // Show browser notification for new notifications
+                                const newNotifications = this.notifications.filter(n => !n.read_at);
+                                if (newNotifications.length > 0) {
+                                    this.showBrowserNotification(newNotifications[0]);
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Failed to load notifications:', error);
+                        } finally {
+                            this.loading = false;
+                        }
+                    },
+
+                    playNotificationSound() {
+                        try {
+                            // Create a subtle notification sound
+                            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                            const oscillator = audioContext.createOscillator();
+                            const gainNode = audioContext.createGain();
+
+                            oscillator.connect(gainNode);
+                            gainNode.connect(audioContext.destination);
+
+                            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                            oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+
+                            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                            gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01);
+                            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
+                            oscillator.start(audioContext.currentTime);
+                            oscillator.stop(audioContext.currentTime + 0.2);
+                        } catch (error) {
+                            // Audio not supported or blocked - silently fail
+                        }
+                    },
+
+                    toggleSound() {
+                        this.soundEnabled = !this.soundEnabled;
+                        localStorage.setItem('notificationSound', this.soundEnabled.toString());
+
+                        // Play test sound if enabling
+                        if (this.soundEnabled) {
+                            this.playNotificationSound();
+                        }
+                    },
+
+                    async showBrowserNotification(notification) {
+                        // Request permission if not granted
+                        if (Notification.permission === 'default') {
+                            await Notification.requestPermission();
+                        }
+
+                        // Show notification if permission granted
+                        if (Notification.permission === 'granted') {
+                            const browserNotification = new Notification(notification.title, {
+                                body: notification.message,
+                                icon: '/favicon.ico',
+                                badge: '/favicon.ico',
+                                tag: 'calendar-reminder',
+                                requireInteraction: false, // Changed to false to avoid issues
+                                // Removed actions as they're only supported for Service Worker notifications
+                            });
+
+                            // Handle notification click
+                            browserNotification.onclick = () => {
+                                window.focus();
+                                window.location.href = notification.url;
+                                browserNotification.close();
+                            };
+
+                            // Auto-close after 10 seconds
+                            setTimeout(() => {
+                                browserNotification.close();
+                            }, 10000);
+                        }
+                    },
+
+                    async markAllAsRead() {
+                        try {
+                            const response = await fetch('/notifications/mark-all-read', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Content-Type': 'application/json',
+                                },
+                            });
+
+                            if (response.ok) {
+                                this.notifications.forEach(n => n.read_at = new Date().toISOString());
+                                this.unreadCount = 0;
+                            }
+                        } catch (error) {
+                            console.error('Failed to mark all as read:', error);
+                        }
+                    },
+
+                    async markAsRead(notificationId) {
+                        try {
+                            const response = await fetch(`/notifications/${notificationId}/read`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Content-Type': 'application/json',
+                                },
+                            });
+
+                            if (response.ok) {
+                                const notification = this.notifications.find(n => n.id === notificationId);
+                                if (notification && !notification.read_at) {
+                                    notification.read_at = new Date().toISOString();
+                                    this.unreadCount = Math.max(0, this.unreadCount - 1);
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Failed to mark as read:', error);
+                        }
+                    }
+                }
+            }
+
+            // Auto-refresh notifications every 30 seconds
+            setInterval(() => {
+                // Refresh desktop notifications
+                const container = document.getElementById('notification-container');
+                if (container && container.__x) {
+                    container.__x.$data.loadNotifications();
+                }
+
+                // Refresh mobile notifications
+                const mobileContainer = document.getElementById('mobile-notification-container');
+                if (mobileContainer && mobileContainer.__x) {
+                    mobileContainer.__x.$data.loadNotifications();
+                }
+            }, 30000);
+
+            // Listen for page visibility changes to refresh when user returns
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    // Refresh desktop notifications
+                    const container = document.getElementById('notification-container');
+                    if (container && container.__x) {
+                        container.__x.$data.loadNotifications();
+                    }
+
+                    // Refresh mobile notifications
+                    const mobileContainer = document.getElementById('mobile-notification-container');
+                    if (mobileContainer && mobileContainer.__x) {
+                        mobileContainer.__x.$data.loadNotifications();
+                    }
+                }
+            });
+
+            // Global function for backward compatibility
+            window.markAllAsRead = function() {
+                // Mark all read for desktop
+                const container = document.getElementById('notification-container');
+                if (container && container.__x) {
+                    container.__x.$data.markAllAsRead();
+                }
+
+                // Mark all read for mobile
+                const mobileContainer = document.getElementById('mobile-notification-container');
+                if (mobileContainer && mobileContainer.__x) {
+                    mobileContainer.__x.$data.markAllAsRead();
+                }
+            };
+        </script>
+
+        <!-- Session Flash Messages -->
+        @if(session('success'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Create custom toast notification instead of alert
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-3 py-2 rounded text-xs z-50 transition-opacity duration-300';
+                toast.style.fontSize = '11px';
+                toast.style.lineHeight = '1.2';
+                toast.style.minHeight = '32px';
+                toast.style.display = 'flex';
+                toast.style.alignItems = 'center';
+                toast.textContent = '{{ session('success') }}';
+
+                document.body.appendChild(toast);
+
+                // Auto remove after 3 seconds
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    setTimeout(() => {
+                        if (toast.parentNode) {
+                            document.body.removeChild(toast);
+                        }
+                    }, 300);
+                }, 3000);
+            });
+        </script>
+        @endif
+
+        @if(session('error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Create custom toast notification for errors
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-xs z-50 transition-opacity duration-300';
+                toast.style.fontSize = '11px';
+                toast.style.lineHeight = '1.2';
+                toast.style.minHeight = '32px';
+                toast.style.display = 'flex';
+                toast.style.alignItems = 'center';
+                toast.textContent = '{{ session('error') }}';
+
+                document.body.appendChild(toast);
+
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    setTimeout(() => {
+                        if (toast.parentNode) {
+                            document.body.removeChild(toast);
+                        }
+                    }, 300);
+                }, 5000);
+            });
+        </script>
+        @endif
     </body>
 </html>

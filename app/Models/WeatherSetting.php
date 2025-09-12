@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasFirmScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WeatherSetting extends Model
 {
-    use HasFactory;
+    use HasFactory, HasFirmScope;
 
     protected $fillable = [
         'api_provider',
@@ -21,7 +23,8 @@ class WeatherSetting extends Model
         'longitude',
         'units',
         'is_active',
-        'notes'
+        'notes',
+        'firm_id'
     ];
 
     protected $casts = [
@@ -41,12 +44,20 @@ class WeatherSetting extends Model
         if ($this->city) $parts[] = $this->city;
         if ($this->state) $parts[] = $this->state;
         if ($this->country) $parts[] = $this->country;
-        
+
         return implode(', ', $parts);
     }
 
     public function getCoordinatesString()
     {
         return $this->latitude . ',' . $this->longitude;
+    }
+
+    /**
+     * Get the firm that owns this setting
+     */
+    public function firm(): BelongsTo
+    {
+        return $this->belongsTo(Firm::class);
     }
 }

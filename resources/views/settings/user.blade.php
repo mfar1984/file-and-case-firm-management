@@ -60,6 +60,15 @@
                            onkeyup="filterUsers()"
                            class="border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-64">
 
+                    @if(auth()->user()->hasRole('Super Administrator') && $firms->count() > 0)
+                        <select id="firmFilter" onchange="filterUsers()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                            <option value="">All Firms</option>
+                            @foreach($firms as $firm)
+                                <option value="{{ $firm->name }}">{{ $firm->name }}</option>
+                            @endforeach
+                        </select>
+                    @endif
+
                     <select id="statusFilter" onchange="filterUsers()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                         <option value="">All Status</option>
                         <option value="Active">Active</option>
@@ -82,6 +91,7 @@
                             <th class="py-3 px-4 text-left rounded-tl">User</th>
                             <th class="py-3 px-4 text-left">Username</th>
                             <th class="py-3 px-4 text-left">Email</th>
+                            <th class="py-3 px-4 text-left">Firm</th>
                             <th class="py-3 px-4 text-left">Roles</th>
                             <th class="py-3 px-4 text-left">Status</th>
                             <th class="py-3 px-4 text-left">Last Login</th>
@@ -106,6 +116,16 @@
                             </td>
                             <td class="py-1 px-4 text-[11px] text-gray-600">{{ $user->username }}</td>
                             <td class="py-1 px-4 text-[11px] text-gray-600">{{ $user->email }}</td>
+                            <td class="py-1 px-4 text-[11px]">
+                                @if($user->firm)
+                                    <div class="flex items-center">
+                                        <span class="material-icons text-xs text-blue-600 mr-1">business</span>
+                                        <span class="text-gray-900">{{ $user->firm->name }}</span>
+                                    </div>
+                                @else
+                                    <span class="text-gray-400 italic">No firm assigned</span>
+                                @endif
+                            </td>
                             <td class="py-1 px-4 text-[11px]">
                                 <div class="flex flex-wrap gap-1">
                                     @if($user->roles->count() > 0)
@@ -376,12 +396,14 @@ function changePerPage() {
 function filterUsers() {
     const searchTerm = (document.getElementById('searchFilter')?.value || '').toLowerCase();
     const statusFilter = (document.getElementById('statusFilter')?.value || '');
+    const firmFilter = (document.getElementById('firmFilter')?.value || '');
 
     filteredUsers = allUsers.filter(user => {
         const matchesSearch = searchTerm === '' || user.searchText.includes(searchTerm);
         const matchesStatus = statusFilter === '' || user.searchText.includes(statusFilter.toLowerCase());
+        const matchesFirm = firmFilter === '' || user.searchText.includes(firmFilter.toLowerCase());
 
-        return matchesSearch && matchesStatus;
+        return matchesSearch && matchesStatus && matchesFirm;
     });
 
     currentPage = 1;
@@ -392,6 +414,7 @@ function filterUsers() {
 function resetFilters() {
     if (document.getElementById('searchFilter')) document.getElementById('searchFilter').value = '';
     if (document.getElementById('statusFilter')) document.getElementById('statusFilter').value = '';
+    if (document.getElementById('firmFilter')) document.getElementById('firmFilter').value = '';
 
     filteredUsers = [...allUsers];
     currentPage = 1;

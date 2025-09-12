@@ -112,7 +112,13 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="text-center text-xs text-gray-500 py-6">No clients yet. Click Add Client to create one.</td>
+                            <td colspan="7" class="py-8 text-center text-gray-500">
+                                <div class="flex flex-col items-center">
+                                    <span class="material-icons text-gray-400 text-4xl mb-2">person</span>
+                                    <p class="text-sm text-gray-500">No clients available</p>
+                                    <p class="text-xs text-gray-400">Add clients to manage case parties</p>
+                                </div>
+                            </td>
                         </tr>
                         @endforelse
                     </tbody>

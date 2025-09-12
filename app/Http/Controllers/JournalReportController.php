@@ -8,6 +8,7 @@ use App\Models\Bill;
 use App\Models\Voucher;
 use App\Models\ExpenseCategory;
 use App\Models\OpeningBalance;
+use App\Models\Firm;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -18,14 +19,29 @@ class JournalReportController extends Controller
         // Get date range from request or default to current month
         $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
-        
-        // Get all transactions within date range and convert to journal entries
+
+        // Get all transactions within date range and convert to journal entries with firm scope
         $journalEntries = collect();
-        
-        // Process Receipts (Money In)
-        $receipts = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
-            ->with(['case', 'quotation', 'taxInvoice'])
-            ->get();
+        $user = auth()->user();
+
+        // Process Receipts (Money In) with firm scope filtering
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $receipts = Receipt::forFirm(session('current_firm_id'))
+                    ->whereBetween('receipt_date', [$startDate, $endDate])
+                    ->with(['case', 'quotation', 'taxInvoice'])
+                    ->get();
+            } else {
+                $receipts = Receipt::withoutFirmScope()
+                    ->whereBetween('receipt_date', [$startDate, $endDate])
+                    ->with(['case', 'quotation', 'taxInvoice'])
+                    ->get();
+            }
+        } else {
+            $receipts = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
+                ->with(['case', 'quotation', 'taxInvoice'])
+                ->get();
+        }
             
         foreach ($receipts as $receipt) {
             $journalEntries->push([
@@ -51,14 +67,36 @@ class JournalReportController extends Controller
             ]);
         }
         
-        // Get active categories for proper mapping
-        $activeCategories = ExpenseCategory::active()->ordered()->get();
+        // Get active categories for proper mapping with firm scope
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $activeCategories = ExpenseCategory::forFirm(session('current_firm_id'))->active()->ordered()->get();
+            } else {
+                $activeCategories = ExpenseCategory::withoutFirmScope()->active()->ordered()->get();
+            }
+        } else {
+            $activeCategories = ExpenseCategory::active()->ordered()->get();
+        }
         $categoryMap = $activeCategories->pluck('name', 'name')->toArray();
 
-        // Process Bills (Money Out for Expenses)
-        $bills = Bill::whereBetween('bill_date', [$startDate, $endDate])
-            ->with(['items'])
-            ->get();
+        // Process Bills (Money Out for Expenses) with firm scope filtering
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $bills = Bill::forFirm(session('current_firm_id'))
+                    ->whereBetween('bill_date', [$startDate, $endDate])
+                    ->with(['items'])
+                    ->get();
+            } else {
+                $bills = Bill::withoutFirmScope()
+                    ->whereBetween('bill_date', [$startDate, $endDate])
+                    ->with(['items'])
+                    ->get();
+            }
+        } else {
+            $bills = Bill::whereBetween('bill_date', [$startDate, $endDate])
+                ->with(['items'])
+                ->get();
+        }
 
         foreach ($bills as $bill) {
             // Use proper category mapping or default to 'Other'
@@ -91,10 +129,24 @@ class JournalReportController extends Controller
             ]);
         }
         
-        // Process Vouchers (Money Out for Payments)
-        $vouchers = Voucher::whereBetween('payment_date', [$startDate, $endDate])
-            ->with(['items'])
-            ->get();
+        // Process Vouchers (Money Out for Payments) with firm scope filtering
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $vouchers = Voucher::forFirm(session('current_firm_id'))
+                    ->whereBetween('payment_date', [$startDate, $endDate])
+                    ->with(['items'])
+                    ->get();
+            } else {
+                $vouchers = Voucher::withoutFirmScope()
+                    ->whereBetween('payment_date', [$startDate, $endDate])
+                    ->with(['items'])
+                    ->get();
+            }
+        } else {
+            $vouchers = Voucher::whereBetween('payment_date', [$startDate, $endDate])
+                ->with(['items'])
+                ->get();
+        }
             
         foreach ($vouchers as $voucher) {
             // Get primary category from voucher items
@@ -159,11 +211,26 @@ class JournalReportController extends Controller
         $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
 
         $journalEntries = collect();
+        $user = auth()->user();
 
-        // Process Receipts (Money In)
-        $receipts = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
-            ->with(['case', 'quotation', 'taxInvoice'])
-            ->get();
+        // Process Receipts (Money In) with firm scope filtering
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $receipts = Receipt::forFirm(session('current_firm_id'))
+                    ->whereBetween('receipt_date', [$startDate, $endDate])
+                    ->with(['case', 'quotation', 'taxInvoice'])
+                    ->get();
+            } else {
+                $receipts = Receipt::withoutFirmScope()
+                    ->whereBetween('receipt_date', [$startDate, $endDate])
+                    ->with(['case', 'quotation', 'taxInvoice'])
+                    ->get();
+            }
+        } else {
+            $receipts = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
+                ->with(['case', 'quotation', 'taxInvoice'])
+                ->get();
+        }
 
         foreach ($receipts as $receipt) {
             $journalEntries->push([
@@ -267,13 +334,19 @@ class JournalReportController extends Controller
         $totalCredit = $journalEntries->sum('credit');
 
         // Get firm settings for header
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+        $firm = Firm::find($firmId);
+
         $firmSettings = (object) [
-            'firm_name' => 'Naeelah Saleh & Associates',
-            'registration_number' => 'LLP0012345',
-            'address' => 'No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia',
-            'phone_number' => '+6019-3186436',
-            'email' => 'info@naaelahsaleh.my',
-            'tax_registration_number' => 'W24-2507-32000179'
+            'firm_name' => $firm ? $firm->name : 'Naeelah Saleh & Associates',
+            'registration_number' => $firm ? $firm->registration_number : 'LLP0012345',
+            'address' => $firm ? $firm->address : 'No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia',
+            'phone_number' => $firm ? $firm->phone : '+6019-3186436',
+            'email' => $firm ? $firm->email : 'info@naaelahsaleh.my',
+            'tax_registration_number' => $firm && isset($firm->settings['tax_registration_number'])
+                ? $firm->settings['tax_registration_number']
+                : 'W24-2507-32000179'
         ];
 
         $reportTitle = 'Journal Report';

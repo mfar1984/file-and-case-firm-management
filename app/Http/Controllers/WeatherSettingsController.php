@@ -10,40 +10,101 @@ class WeatherSettingsController extends Controller
 {
     public function index()
     {
-        $weatherSettings = WeatherSetting::getActiveSettings() ?? new WeatherSetting();
+        // Get current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+
+        $weatherSettings = WeatherSetting::where('firm_id', $firmId)->where('is_active', true)->first() ?? new WeatherSetting();
         return view('settings.weather', compact('weatherSettings'));
+    }
+
+    public function get(): JsonResponse
+    {
+        // Get current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+
+        $settings = WeatherSetting::where('firm_id', $firmId)->where('is_active', true)->first();
+        return response()->json($settings);
     }
 
     public function store(Request $request): JsonResponse
     {
-        $request->validate([
-            'api_provider' => 'required|string|in:tomorrow_io,openweathermap',
-            'api_key' => 'nullable|string',
-            'postcode' => 'nullable|string|max:20',
-            'country' => 'required|string|max:100',
-            'state' => 'required|string|max:100',
-            'city' => 'required|string|max:100',
-            'latitude' => 'required|numeric|between:-90,90',
-            'longitude' => 'required|numeric|between:-180,180',
-            'units' => 'required|string|in:metric,imperial',
-            'is_active' => 'boolean',
-            'notes' => 'nullable|string'
-        ]);
+        try {
+            $request->validate([
+                'api_provider' => 'required|string|in:tomorrow_io,openweathermap',
+                'api_key' => 'nullable|string',
+                'postcode' => 'nullable|string|max:20',
+                'country' => 'required|string|max:100',
+                'state' => 'required|string|max:100',
+                'city' => 'required|string|max:100',
+                'latitude' => 'required|numeric|between:-90,90',
+                'longitude' => 'required|numeric|between:-180,180',
+                'units' => 'required|string|in:metric,imperial',
+                'is_active' => 'nullable|boolean',
+                'notes' => 'nullable|string'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Weather settings validation failed', [
+                'errors' => $e->errors(),
+                'data' => $request->all()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        }
 
-        // Deactivate all existing settings
-        WeatherSetting::query()->update(['is_active' => false]);
+        try {
+            // Get current firm context
+            $user = auth()->user();
+            $firmId = session('current_firm_id') ?? $user->firm_id;
 
-        // Create or update weather settings
-        $weatherSettings = WeatherSetting::updateOrCreate(
-            ['id' => $request->input('id')],
-            $request->all()
-        );
+            if (!$firmId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No firm context available'
+                ], 400);
+            }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Weather settings updated successfully',
-            'data' => $weatherSettings
-        ]);
+            // Deactivate all existing settings for current firm
+            WeatherSetting::where('firm_id', $firmId)->update(['is_active' => false]);
+
+            // Prepare data with firm_id
+            $data = $request->all();
+            $data['firm_id'] = $firmId;
+
+            // Create or update weather settings
+            $weatherSettings = WeatherSetting::updateOrCreate(
+                ['id' => $request->input('id'), 'firm_id' => $firmId],
+                $data
+            );
+
+            // Log settings change
+            activity()
+                ->performedOn($weatherSettings)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'api_provider' => $weatherSettings->api_provider,
+                    'city' => $weatherSettings->city,
+                    'state' => $weatherSettings->state,
+                    'country' => $weatherSettings->country
+                ])
+                ->log("Weather settings updated");
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Weather settings updated successfully',
+                'data' => $weatherSettings
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error saving weather settings: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function testApi(Request $request): JsonResponse

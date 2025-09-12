@@ -2,18 +2,21 @@
 
 namespace App\Models;
 
+use App\Traits\HasFirmScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ExpenseCategory extends Model
 {
-    use HasFactory;
+    use HasFactory, HasFirmScope;
 
     protected $fillable = [
         'name',
         'description',
         'status',
         'sort_order',
+        'firm_id',
     ];
 
     protected $attributes = [
@@ -50,25 +53,35 @@ class ExpenseCategory extends Model
     }
 
     // Validation rules
-    public static function validationRules()
+    public static function validationRules($firmId = null)
     {
+        if (!$firmId) {
+            $user = auth()->user();
+            $firmId = session('current_firm_id') ?? $user->firm_id;
+        }
+
         return [
-            'name' => 'required|string|max:255|unique:expense_categories,name',
+            'name' => 'required|string|max:255|unique:expense_categories,name,NULL,id,firm_id,' . $firmId,
             'description' => 'nullable|string|max:500',
             'status' => 'required|in:active,inactive',
             'sort_order' => 'nullable|integer|min:0',
         ];
     }
 
-    public static function updateValidationRules($id)
+    public static function updateValidationRules($id, $firmId = null)
     {
+        if (!$firmId) {
+            $user = auth()->user();
+            $firmId = session('current_firm_id') ?? $user->firm_id;
+        }
+
         return [
-            'name' => 'required|string|max:255|unique:expense_categories,name,' . $id,
+            'name' => 'required|string|max:255|unique:expense_categories,name,' . $id . ',id,firm_id,' . $firmId,
             'description' => 'nullable|string|max:500',
             'status' => 'required|in:active,inactive',
             'sort_order' => 'nullable|integer|min:0',
         ];
     }
+
+
 }
-
-

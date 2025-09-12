@@ -155,7 +155,14 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="py-4 px-4 text-center text-gray-500 text-sm">No vouchers found</td>
+                            <td colspan="9" class="py-8 px-4 text-center text-gray-500">
+                                <div class="flex flex-col items-center">
+                                    <span class="material-icons text-gray-400 text-4xl mb-2">confirmation_number</span>
+                                    <p class="text-sm text-gray-500">No vouchers available</p>
+                                    <p class="text-xs text-gray-400">Create payment vouchers to track expenses</p>
+                                    <a href="{{ route('voucher.create') }}" class="text-blue-600 hover:text-blue-800 text-xs mt-2">Create your first voucher</a>
+                                </div>
+                            </td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -334,8 +341,10 @@
             </div>
             @empty
             <div class="text-center py-8">
-                <span class="material-icons text-gray-400 text-4xl mb-2">payment</span>
-                <p class="text-gray-500 text-sm">No vouchers found</p>
+                <span class="material-icons text-gray-400 text-4xl mb-2">confirmation_number</span>
+                <p class="text-sm text-gray-500">No vouchers available</p>
+                <p class="text-xs text-gray-400">Create payment vouchers to track expenses</p>
+                <a href="{{ route('voucher.create') }}" class="text-blue-600 hover:text-blue-800 text-xs mt-2 block">Create your first voucher</a>
             </div>
             @endforelse
             </div>

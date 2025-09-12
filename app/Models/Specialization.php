@@ -2,17 +2,20 @@
 
 namespace App\Models;
 
+use App\Traits\HasFirmScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Specialization extends Model
 {
-    use HasFactory;
+    use HasFactory, HasFirmScope;
 
     protected $fillable = [
         'specialist_name',
         'description',
-        'status'
+        'status',
+        'firm_id'
     ];
 
     protected $casts = [
@@ -33,5 +36,13 @@ class Specialization extends Model
     public function scopeInactive($query)
     {
         return $query->where('status', 'inactive');
+    }
+
+    /**
+     * Get the firm that owns this specialization
+     */
+    public function firm(): BelongsTo
+    {
+        return $this->belongsTo(Firm::class);
     }
 }

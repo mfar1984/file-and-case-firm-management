@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Account Created - Naeelah Firm</title>
+    <title>Account Created - {{ $firmName ?? 'Naeelah Firm' }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -80,7 +80,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>Welcome to Naeelah Firm</h1>
+        <h1>Welcome to {{ $firmName ?? 'Naeelah Firm' }}</h1>
         <p>Your {{ ucfirst($accountType) }} Account Has Been Created</p>
     </div>
     
@@ -124,12 +124,12 @@
         <p>If you have any questions or need assistance, please contact our support team.</p>
         
         <p>Best regards,<br>
-        <strong>Naeelah Firm Team</strong></p>
+        <strong>{{ $firmName ?? 'Naeelah Firm' }} Team</strong></p>
     </div>
     
     <div class="footer">
         <p>This is an automated message. Please do not reply to this email.</p>
-        <p>&copy; {{ date('Y') }} Naeelah Firm. All rights reserved.</p>
+        <p>&copy; {{ date('Y') }} {{ $firmName ?? 'Naeelah Firm' }}. All rights reserved.</p>
     </div>
 </body>
 </html> 

@@ -50,6 +50,19 @@
                         <label class="block text-xs font-medium text-gray-700 mb-2">Created Date</label>
                         <p class="text-xs text-gray-900">{{ $role->created_at->format('M d, Y H:i') }}</p>
                     </div>
+                    @if(auth()->user()->hasRole('Super Administrator'))
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-2">Firm</label>
+                            @if($firm)
+                                <div class="flex items-center">
+                                    <span class="material-icons text-xs text-blue-600 mr-1">business</span>
+                                    <p class="text-xs text-gray-900 font-medium">{{ $firm->name }}</p>
+                                </div>
+                            @else
+                                <p class="text-xs text-gray-500 italic">Global role (no specific firm)</p>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             </div>
 

@@ -139,6 +139,34 @@
                 <!-- SPACER -->
                 <div class="h-6 bg-transparent"></div>
 
+                @if(auth()->user()->hasRole('Super Administrator') && $firms->count() > 0)
+                    <!-- Firm Selection Section -->
+                    <div class="bg-gray-50 p-4 rounded-sm mb-6">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-1 flex items-center">
+                            <span class="material-icons text-purple-600 text-base mr-2">business</span>
+                            Firm Assignment *
+                        </h3>
+                        <p class="text-xs text-gray-600 mb-4 ml-6">Select which firm this client belongs to</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-2">Firm *</label>
+                                <select name="firm_id" required class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 @error('firm_id') border-red-500 @enderror">
+                                    <option value="">Select Firm</option>
+                                    @foreach($firms as $firm)
+                                        <option value="{{ $firm->id }}" {{ old('firm_id') == $firm->id ? 'selected' : '' }}>{{ $firm->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('firm_id')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="h-6 bg-transparent"></div>
+                @endif
+
                 <!-- Personal Information Section -->
                 <div class="bg-gray-50 p-4 rounded-sm mb-6">
                     <h3 class="text-sm font-semibold text-gray-700 mb-1 flex items-center">

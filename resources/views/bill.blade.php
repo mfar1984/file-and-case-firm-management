@@ -155,7 +155,14 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="py-4 px-4 text-center text-gray-500 text-sm">No bills found</td>
+                            <td colspan="9" class="py-8 px-4 text-center text-gray-500">
+                                <div class="flex flex-col items-center">
+                                    <span class="material-icons text-gray-400 text-4xl mb-2">account_balance_wallet</span>
+                                    <p class="text-sm text-gray-500">No bills available</p>
+                                    <p class="text-xs text-gray-400">Create bills to manage vendor payments</p>
+                                    <a href="{{ route('bill.create') }}" class="text-blue-600 hover:text-blue-800 text-xs mt-2">Create your first bill</a>
+                                </div>
+                            </td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -334,8 +341,10 @@
             </div>
             @empty
             <div class="text-center py-8">
-                <span class="material-icons text-gray-400 text-4xl mb-2">receipt_long</span>
-                <p class="text-gray-500 text-sm">No bills found</p>
+                <span class="material-icons text-gray-400 text-4xl mb-2">account_balance_wallet</span>
+                <p class="text-sm text-gray-500">No bills available</p>
+                <p class="text-xs text-gray-400">Create bills to manage vendor payments</p>
+                <a href="{{ route('bill.create') }}" class="text-blue-600 hover:text-blue-800 text-xs mt-2 block">Create your first bill</a>
             </div>
             @endforelse
             </div>

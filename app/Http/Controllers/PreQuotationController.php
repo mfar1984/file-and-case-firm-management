@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PreQuotation;
 use App\Models\PreQuotationItem;
 use App\Models\FirmSetting;
+use App\Models\Firm;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
@@ -13,10 +14,28 @@ class PreQuotationController extends Controller
 {
     public function index()
     {
-        // Get all pre-quotations with related data
-        $preQuotations = PreQuotation::with(['items'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Get pre-quotations with proper firm scope filtering
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can see all pre-quotations or filter by session firm
+            if (session('current_firm_id')) {
+                $preQuotations = PreQuotation::forFirm(session('current_firm_id'))
+                    ->with(['items'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            } else {
+                $preQuotations = PreQuotation::withoutFirmScope()
+                    ->with(['items'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            }
+        } else {
+            // Regular users see only their firm's pre-quotations (HasFirmScope trait handles this)
+            $preQuotations = PreQuotation::with(['items'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
 
         return view('pre-quotation', compact('preQuotations'));
     }
@@ -77,6 +96,10 @@ class PreQuotationController extends Controller
 
         $total = $subtotal - $discountTotal + $taxTotal;
 
+        // Get current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+
         // Create pre-quotation
         $preQuotation = PreQuotation::create([
             'quotation_no' => $quotationNo,
@@ -93,6 +116,7 @@ class PreQuotationController extends Controller
             'tax_total' => $taxTotal,
             'total' => $total,
             'status' => 'pending',
+            'firm_id' => $firmId,
         ]);
 
         // Create items
@@ -137,14 +161,41 @@ class PreQuotationController extends Controller
 
     public function show($id)
     {
-        $preQuotation = PreQuotation::with(['items'])->findOrFail($id);
+        // Find pre-quotation with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can access any pre-quotation
+            $preQuotation = PreQuotation::withoutFirmScope()
+                ->with(['items'])
+                ->findOrFail($id);
+        } else {
+            // Regular users can only access pre-quotations from their firm (HasFirmScope trait handles this)
+            $preQuotation = PreQuotation::with(['items'])->findOrFail($id);
+        }
+
         return view('pre-quotation-show', compact('preQuotation'));
     }
 
     public function print($id)
     {
         $preQuotation = PreQuotation::with(['items'])->findOrFail($id);
-        $firmSettings = FirmSetting::getFirmSettings();
+
+        // Get firm settings for current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+        $firm = Firm::find($firmId);
+
+        $firmSettings = (object) [
+            'firm_name' => $firm ? $firm->name : 'Naeelah Saleh & Associates',
+            'registration_number' => $firm ? $firm->registration_number : 'LLP0012345',
+            'address' => $firm ? $firm->address : 'No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia',
+            'phone_number' => $firm ? $firm->phone : '+6019-3186436',
+            'email' => $firm ? $firm->email : 'info@naaelahsaleh.my',
+            'tax_registration_number' => $firm && isset($firm->settings['tax_registration_number'])
+                ? $firm->settings['tax_registration_number']
+                : 'W24-2507-32000179'
+        ];
 
         $pdf = Pdf::loadView('pre-quotation-print', compact('preQuotation', 'firmSettings'));
         return $pdf->download('pre-quotation-' . $preQuotation->quotation_no . '.pdf');
@@ -152,7 +203,19 @@ class PreQuotationController extends Controller
 
     public function edit($id)
     {
-        $preQuotation = PreQuotation::with(['items'])->findOrFail($id);
+        // Find pre-quotation with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can edit any pre-quotation
+            $preQuotation = PreQuotation::withoutFirmScope()
+                ->with(['items'])
+                ->findOrFail($id);
+        } else {
+            // Regular users can only edit pre-quotations from their firm (HasFirmScope trait handles this)
+            $preQuotation = PreQuotation::with(['items'])->findOrFail($id);
+        }
+
         return view('pre-quotation-create', compact('preQuotation'));
     }
 
@@ -202,6 +265,10 @@ class PreQuotationController extends Controller
 
         $total = $subtotal - $discountTotal + $taxTotal;
 
+        // Get current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+
         // Update pre-quotation
         $preQuotation->update([
             'quotation_date' => $request->quotation_date,
@@ -216,6 +283,7 @@ class PreQuotationController extends Controller
             'discount_total' => $discountTotal,
             'tax_total' => $taxTotal,
             'total' => $total,
+            'firm_id' => $firmId,
         ]);
 
         // Delete existing items and create new ones
@@ -277,7 +345,16 @@ class PreQuotationController extends Controller
 
     public function destroy($id)
     {
-        $preQuotation = PreQuotation::findOrFail($id);
+        // Find pre-quotation with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can delete any pre-quotation
+            $preQuotation = PreQuotation::withoutFirmScope()->findOrFail($id);
+        } else {
+            // Regular users can only delete pre-quotations from their firm (HasFirmScope trait handles this)
+            $preQuotation = PreQuotation::findOrFail($id);
+        }
 
         // Log pre-quotation deletion before deleting
         activity()

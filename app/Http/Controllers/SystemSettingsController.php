@@ -16,15 +16,23 @@ class SystemSettingsController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $request->validate([
-            'date_format' => 'required|string|max:20',
-            'time_format' => 'required|string|max:20',
-            'time_zone' => 'required|string|max:50',
-            'maintenance_mode' => 'boolean',
-            'maintenance_message' => 'nullable|string',
-            'session_timeout' => 'required|integer|min:1|max:1440',
-            'debug_mode' => 'boolean'
-        ]);
+        try {
+            $request->validate([
+                'date_format' => 'required|string|max:20',
+                'time_format' => 'required|string|max:20',
+                'time_zone' => 'required|string|max:50',
+                'maintenance_mode' => 'nullable|boolean',
+                'maintenance_message' => 'nullable|string',
+                'session_timeout' => 'required|integer|min:1|max:1440',
+                'debug_mode' => 'nullable|boolean'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        }
 
         try {
             $settings = SystemSetting::getSystemSettings();

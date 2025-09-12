@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\HasFirmScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class CaseTimeline extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity, HasFirmScope;
 
     protected $fillable = [
         'case_id',
@@ -17,7 +20,8 @@ class CaseTimeline extends Model
         'status',
         'event_date',
         'metadata',
-        'created_by'
+        'created_by',
+        'firm_id'
     ];
 
     protected $casts = [
@@ -119,4 +123,20 @@ class CaseTimeline extends Model
     }
 
     // Removed isPending() as 'pending' is no longer a primary selectable status
+
+    /**
+     * Get the firm that owns this case timeline
+     */
+    public function firm()
+    {
+        return $this->belongsTo(Firm::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['case_id', 'event_type', 'title', 'status', 'event_date', 'firm_id'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 }

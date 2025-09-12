@@ -66,6 +66,15 @@
                         <option value="Inactive">Inactive</option>
                     </select>
 
+                    @if(auth()->user()->hasRole('Super Administrator') && $firms->count() > 0)
+                        <select id="firmFilter" onchange="filterRoles()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                            <option value="">All Firms</option>
+                            @foreach($firms as $firm)
+                                <option value="{{ $firm->name }}">{{ $firm->name }}</option>
+                            @endforeach
+                        </select>
+                    @endif
+
                     <button onclick="filterRoles()" class="px-3 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
                         🔍 Search
                     </button>
@@ -83,6 +92,9 @@
                             <th class="py-3 px-4 text-left">Description</th>
                             <th class="py-3 px-4 text-left">Permissions</th>
                             <th class="py-3 px-4 text-left">Users Count</th>
+                            @if(auth()->user()->hasRole('Super Administrator'))
+                                <th class="py-3 px-4 text-left">Firm</th>
+                            @endif
                             <th class="py-3 px-4 text-left">Status</th>
                             <th class="py-3 px-4 text-center rounded-tr">Action</th>
                         </tr>
@@ -107,6 +119,25 @@
                                 </div>
                             </td>
                             <td class="py-1 px-4 text-[11px]">{{ $roleUserCounts[$role->id] ?? 0 }}</td>
+                            @if(auth()->user()->hasRole('Super Administrator'))
+                                <td class="py-1 px-4 text-[11px]">
+                                    @if($role->firm_id)
+                                        @php
+                                            $firm = \App\Models\Firm::find($role->firm_id);
+                                        @endphp
+                                        @if($firm)
+                                            <div class="flex items-center">
+                                                <span class="material-icons text-xs text-blue-600 mr-1">business</span>
+                                                <span class="text-gray-900">{{ $firm->name }}</span>
+                                            </div>
+                                        @else
+                                            <span class="text-gray-400 italic">Firm not found</span>
+                                        @endif
+                                    @else
+                                        <span class="text-gray-400 italic">Global role</span>
+                                    @endif
+                                </td>
+                            @endif
                             <td class="py-1 px-4 text-[11px]">
                                 <span class="inline-block bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full text-[10px]">Active</span>
                             </td>
@@ -335,12 +366,14 @@ function changePerPage() {
 function filterRoles() {
     const searchTerm = (document.getElementById('searchFilter')?.value || '').toLowerCase();
     const statusFilter = (document.getElementById('statusFilter')?.value || '');
+    const firmFilter = (document.getElementById('firmFilter')?.value || '');
 
     filteredRoles = allRoles.filter(role => {
         const matchesSearch = searchTerm === '' || role.searchText.includes(searchTerm);
         const matchesStatus = statusFilter === '' || role.searchText.includes(statusFilter.toLowerCase());
+        const matchesFirm = firmFilter === '' || role.searchText.includes(firmFilter.toLowerCase());
 
-        return matchesSearch && matchesStatus;
+        return matchesSearch && matchesStatus && matchesFirm;
     });
 
     currentPage = 1;
@@ -351,6 +384,7 @@ function filterRoles() {
 function resetFilters() {
     if (document.getElementById('searchFilter')) document.getElementById('searchFilter').value = '';
     if (document.getElementById('statusFilter')) document.getElementById('statusFilter').value = '';
+    if (document.getElementById('firmFilter')) document.getElementById('firmFilter').value = '';
 
     filteredRoles = [...allRoles];
     currentPage = 1;

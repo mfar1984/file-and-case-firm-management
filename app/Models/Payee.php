@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasFirmScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Payee extends Model
 {
-    use HasFactory;
+    use HasFactory, HasFirmScope;
 
     protected $fillable = [
         'name',
@@ -16,7 +18,8 @@ class Payee extends Model
         'phone',
         'email',
         'category',
-        'is_active'
+        'is_active',
+        'firm_id'
     ];
 
     protected $casts = [
@@ -31,5 +34,13 @@ class Payee extends Model
     public function getDisplayNameAttribute()
     {
         return $this->name . ' (' . $this->category . ')';
+    }
+
+    /**
+     * Get the firm that owns this payee
+     */
+    public function firm(): BelongsTo
+    {
+        return $this->belongsTo(Firm::class);
     }
 }

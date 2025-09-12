@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasFirmScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CalendarEvent extends Model
 {
+    use HasFirmScope;
     protected $fillable = [
         'title',
         'description',
@@ -19,6 +21,7 @@ class CalendarEvent extends Model
         'timeline_event_id',
         'created_by',
         'status',
+        'firm_id',
     ];
 
     protected $casts = [
@@ -73,5 +76,13 @@ class CalendarEvent extends Model
     public function scopeByCategory($query, $category)
     {
         return $query->where('category', $category);
+    }
+
+    /**
+     * Get the firm that owns this calendar event
+     */
+    public function firm(): BelongsTo
+    {
+        return $this->belongsTo(Firm::class);
     }
 }

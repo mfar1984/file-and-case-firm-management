@@ -27,6 +27,22 @@ class UserCreationService
         // Use actual client email if provided, otherwise use generated email
         $email = !empty($clientData['email']) ? $clientData['email'] : $generatedEmail;
         
+        // Get firm context for user creation
+        $currentUser = auth()->user();
+        $firmId = null;
+        if ($currentUser) {
+            // For Super Admin, use session firm_id if available
+            if ($currentUser->hasRole('Super Administrator') && session('current_firm_id')) {
+                $firmId = session('current_firm_id');
+            } else {
+                // For regular users, use their assigned firm
+                $firmId = $currentUser->firm_id;
+            }
+        } else {
+            // Default to firm 1 if no user context
+            $firmId = 1;
+        }
+
         // Create user
         $user = User::create([
             'name' => $clientData['name'],
@@ -36,6 +52,7 @@ class UserCreationService
             'password' => Hash::make($password),
             'department' => 'Client',
             'notes' => 'Auto-generated user account for client: ' . $clientData['name'],
+            'firm_id' => $firmId,
         ]);
 
         // Assign client role
@@ -59,13 +76,18 @@ class UserCreationService
                 try {
                     // Configure email settings from database
                     EmailConfigurationService::configureEmailSettings();
-                    
+
+                    // Get firm name for email
+                    $firmId = session('current_firm_id') ?? auth()->user()->firm_id;
+                    $firm = \App\Models\Firm::find($firmId);
+                    $firmName = $firm ? $firm->name : 'Naeelah Firm';
+
                     Mail::to($clientData['email'])->send(new UserAccountCreated([
                         'name' => $clientData['name'],
                         'username' => $username,
                         'email' => $email,
                         'password' => $password,
-                    ], 'client'));
+                    ], 'client', $firmName));
                 } catch (\Exception $e) {
                     // Log error but don't fail the creation
                     \Log::error('Failed to send email notification: ' . $e->getMessage());
@@ -97,6 +119,22 @@ class UserCreationService
         // Use actual partner email if provided, otherwise use generated email
         $email = !empty($partnerData['incharge_email']) ? $partnerData['incharge_email'] : $generatedEmail;
         
+        // Get firm context for user creation
+        $currentUser = auth()->user();
+        $firmId = null;
+        if ($currentUser) {
+            // For Super Admin, use session firm_id if available
+            if ($currentUser->hasRole('Super Administrator') && session('current_firm_id')) {
+                $firmId = session('current_firm_id');
+            } else {
+                // For regular users, use their assigned firm
+                $firmId = $currentUser->firm_id;
+            }
+        } else {
+            // Default to firm 1 if no user context
+            $firmId = 1;
+        }
+
         // Create user
         $user = User::create([
             'name' => $partnerData['incharge_name'],
@@ -106,6 +144,7 @@ class UserCreationService
             'password' => Hash::make($password),
             'department' => 'Partner',
             'notes' => 'Auto-generated user account for partner firm: ' . $partnerData['firm_name'],
+            'firm_id' => $firmId,
         ]);
 
         // Assign partner role
@@ -129,13 +168,18 @@ class UserCreationService
                 try {
                     // Configure email settings from database
                     EmailConfigurationService::configureEmailSettings();
-                    
+
+                    // Get firm name for email
+                    $firmId = session('current_firm_id') ?? auth()->user()->firm_id;
+                    $firm = \App\Models\Firm::find($firmId);
+                    $firmName = $firm ? $firm->name : 'Naeelah Firm';
+
                     Mail::to($partnerData['incharge_email'])->send(new UserAccountCreated([
                         'name' => $partnerData['incharge_name'],
                         'username' => $username,
                         'email' => $email,
                         'password' => $password,
-                    ], 'partner'));
+                    ], 'partner', $firmName));
                 } catch (\Exception $e) {
                     // Log error but don't fail the creation
                     \Log::error('Failed to send email notification: ' . $e->getMessage());

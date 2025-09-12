@@ -7,23 +7,29 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const payeeSelect = document.getElementById('payeeSelect');
+    const payeeName = document.getElementById('payeeName');
     const payeeAddress = document.getElementById('payeeAddress');
     const contactPerson = document.getElementById('contactPerson');
     const phoneNumber = document.getElementById('phoneNumber');
-    
+    const payeeEmail = document.getElementById('payeeEmail');
+
     payeeSelect.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
-        
+
         if (selectedOption.value) {
             // Auto-populate payee details
+            payeeName.value = selectedOption.dataset.name || '';
             payeeAddress.value = selectedOption.dataset.address || '';
             contactPerson.value = selectedOption.dataset.contact || '';
             phoneNumber.value = selectedOption.dataset.phone || '';
+            payeeEmail.value = selectedOption.dataset.email || '';
         } else {
             // Clear fields if no payee selected
+            payeeName.value = '';
             payeeAddress.value = '';
             contactPerson.value = '';
             phoneNumber.value = '';
+            payeeEmail.value = '';
         }
     });
 });
@@ -63,15 +69,18 @@ input[type='number'] {
                         <label class="block text-xs font-medium text-gray-700 mb-2">Payee Name *</label>
                         <select name="payee_id" id="payeeSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                             <option value="">Select payee</option>
-                            @foreach(\App\Models\Payee::where('is_active', true)->orderBy('name')->get() as $payee)
-                                <option value="{{ $payee->id }}" 
+                            @foreach($payees as $payee)
+                                <option value="{{ $payee->id }}"
+                                        data-name="{{ $payee->name }}"
                                         data-address="{{ $payee->address }}"
                                         data-contact="{{ $payee->contact_person }}"
-                                        data-phone="{{ $payee->phone }}">
+                                        data-phone="{{ $payee->phone }}"
+                                        data-email="{{ $payee->email }}">
                                     {{ $payee->name }} ({{ $payee->category }})
                                 </option>
                             @endforeach
                         </select>
+                        <input type="hidden" name="payee_name" id="payeeName" required>
                     </div>
                     
                     <div>
@@ -85,6 +94,11 @@ input[type='number'] {
                             <input type="text" name="contact_person" id="contactPerson" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" placeholder="Contact Person" readonly>
                             <input type="text" name="phone" id="phoneNumber" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" placeholder="Phone Number" readonly>
                         </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" name="email" id="payeeEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" placeholder="Email address will auto-populate" readonly>
                     </div>
                 </div>
                 
@@ -128,34 +142,54 @@ input[type='number'] {
             
             <!-- Expense Breakdown Section -->
             <div class="mb-8" x-data="{
-    expenses: [
-        { description: '', category: '', amount: 0 }
+    items: [
+        { description: '', category: '', qty: 1, uom: 'unit', unit_price: 0, discount_percent: 0, tax_percent: 0 }
     ],
     totalAmount() {
-        return this.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+        return this.items.reduce((sum, item) => {
+            const lineTotal = item.qty * item.unit_price;
+            const discountAmount = lineTotal * (item.discount_percent / 100);
+            const afterDiscount = lineTotal - discountAmount;
+            const taxAmount = afterDiscount * (item.tax_percent / 100);
+            return sum + afterDiscount + taxAmount;
+        }, 0);
     },
-    addExpense() {
-        this.expenses.push({ description: '', category: '', amount: 0 });
+    addItem() {
+        this.items.push({ description: '', category: '', qty: 1, uom: 'unit', unit_price: 0, discount_percent: 0, tax_percent: 0 });
     },
-    insertExpense() {
-        this.expenses.unshift({ description: '', category: '', amount: 0 });
+    insertItem() {
+        this.items.unshift({ description: '', category: '', qty: 1, uom: 'unit', unit_price: 0, discount_percent: 0, tax_percent: 0 });
     },
-    removeExpense(idx) {
-        if (this.expenses.length > 1) {
-            this.expenses.splice(idx, 1);
+    removeItem(idx) {
+        if (this.items.length > 1) {
+            this.items.splice(idx, 1);
         }
+    },
+    generateHiddenInputs() {
+        const container = document.getElementById('hiddenItemsContainer');
+        container.innerHTML = '';
+        this.items.forEach((item, index) => {
+            const fields = ['description', 'category', 'qty', 'uom', 'unit_price', 'discount_percent', 'tax_percent'];
+            fields.forEach(field => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = `items[${index}][${field}]`;
+                input.value = item[field] || '';
+                container.appendChild(input);
+            });
+        });
     }
-}" x-init="$watch('expenses', value => { document.getElementById('expensesJson').value = JSON.stringify(value); }, {deep: true}); document.getElementById('expensesJson').value = JSON.stringify(expenses);">
+}" x-init="$watch('items', () => { generateHiddenInputs(); }, {deep: true}); generateHiddenInputs();">
                 <!-- Add/Insert Buttons Above Table -->
                 <div class="flex flex-row items-end space-x-8 my-3">
                     <div class="flex flex-col items-center">
-                        <button type="button" @click="addExpense()" class="w-8 h-8 md:w-5 md:h-5 flex items-center justify-center bg-green-600 text-white rounded-full text-base mb-1 focus:outline-none" title="Add Expense">
+                        <button type="button" @click="addItem()" class="w-8 h-8 md:w-5 md:h-5 flex items-center justify-center bg-green-600 text-white rounded-full text-base mb-1 focus:outline-none" title="Add Item">
                             +
                         </button>
                         <span class="text-green-600 text-xs font-medium">Add</span>
                     </div>
                     <div class="flex flex-col items-center">
-                        <button type="button" @click="insertExpense()" class="w-8 h-8 md:w-5 md:h-5 flex items-center justify-center bg-purple-600 text-white rounded-full text-base mb-1 focus:outline-none" title="Insert Expense">
+                        <button type="button" @click="insertItem()" class="w-8 h-8 md:w-5 md:h-5 flex items-center justify-center bg-purple-600 text-white rounded-full text-base mb-1 focus:outline-none" title="Insert Item">
                             +
                         </button>
                         <span class="text-purple-600 text-xs font-medium">Insert</span>
@@ -167,33 +201,53 @@ input[type='number'] {
                     <table class="min-w-full">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Expense Description</th>
-                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Category</th>
-                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Amount (RM) *</th>
-                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Action</th>
+                                <th class="px-2 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Description</th>
+                                <th class="px-2 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Category</th>
+                                <th class="px-2 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Qty</th>
+                                <th class="px-2 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">UOM</th>
+                                <th class="px-2 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Unit Price</th>
+                                <th class="px-2 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Disc %</th>
+                                <th class="px-2 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Tax %</th>
+                                <th class="px-2 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Action</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white">
-                            <template x-for="(expense, idx) in expenses" :key="idx">
+                            <template x-for="(item, idx) in items" :key="idx">
                                 <tr>
-                                    <td class="px-4 py-3 align-middle">
-                                        <textarea x-model="expense.description" class="w-full px-3 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y align-middle" placeholder="Expense description" rows="1"></textarea>
+                                    <td class="px-2 py-3 align-middle">
+                                        <textarea x-model="item.description" class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y" placeholder="Description" rows="1" required></textarea>
                                     </td>
-                                    <td class="px-4 py-3 text-center">
-                                        <select x-model="expense.category" class="w-32 px-3 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-left">
-                                            <option value="">Select Category</option>
+                                    <td class="px-2 py-3 text-center">
+                                        <select x-model="item.category" class="w-24 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                            <option value="">Select</option>
                                             @foreach($expenseCategories as $category)
                                                 <option value="{{ $category->name }}">{{ $category->name }}</option>
                                             @endforeach
                                         </select>
                                     </td>
-                                    <td class="px-4 py-3 text-center">
-                                        <input type="number" min="0" step="0.01" x-model.number="expense.amount" class="w-32 px-3 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="0.00">
+                                    <td class="px-2 py-3 text-center">
+                                        <input type="number" min="0.01" step="0.01" x-model.number="item.qty" class="w-16 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" required>
                                     </td>
-                                    <td class="px-4 py-3 text-center">
-                                        <div class="flex justify-center">
-                                            <button type="button" @click="removeExpense(idx)" class="text-red-600 hover:text-red-800 text-base font-light" title="Delete Expense">❌</button>
-                                        </div>
+                                    <td class="px-2 py-3 text-center">
+                                        <select x-model="item.uom" class="w-20 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" required>
+                                            <option value="unit">Unit</option>
+                                            <option value="hour">Hour</option>
+                                            <option value="day">Day</option>
+                                            <option value="month">Month</option>
+                                            <option value="lot">Lot</option>
+                                        </select>
+                                    </td>
+                                    <td class="px-2 py-3 text-center">
+                                        <input type="number" min="0" step="0.01" x-model.number="item.unit_price" class="w-20 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" required>
+                                    </td>
+                                    <td class="px-2 py-3 text-center">
+                                        <input type="number" min="0" max="100" step="0.01" x-model.number="item.discount_percent" class="w-16 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center">
+                                    </td>
+                                    <td class="px-2 py-3 text-center">
+                                        <input type="number" min="0" max="100" step="0.01" x-model.number="item.tax_percent" class="w-16 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center">
+                                    </td>
+                                    <td class="px-2 py-3 text-center">
+                                        <button type="button" @click="removeItem(idx)" class="text-red-600 hover:text-red-800 text-base" title="Delete Item">❌</button>
                                     </td>
                                 </tr>
                             </template>
@@ -201,24 +255,24 @@ input[type='number'] {
                     </table>
                 </div>
 
-                <!-- Mobile Card View for Expenses -->
+                <!-- Mobile Card View for Items -->
                 <div class="md:hidden space-y-4">
-                    <template x-for="(expense, idx) in expenses" :key="idx">
+                    <template x-for="(item, idx) in items" :key="idx">
                         <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
                             <div class="flex items-center justify-between">
-                                <span class="text-sm font-medium text-gray-800">Expense <span x-text="idx + 1"></span></span>
-                                <button type="button" @click="removeExpense(idx)" class="text-red-600 hover:text-red-800 text-lg" title="Delete Expense">❌</button>
+                                <span class="text-sm font-medium text-gray-800">Item <span x-text="idx + 1"></span></span>
+                                <button type="button" @click="removeItem(idx)" class="text-red-600 hover:text-red-800 text-lg" title="Delete Item">❌</button>
                             </div>
-                            
+
                             <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
-                                <textarea x-model="expense.description" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y" placeholder="Expense description" rows="2"></textarea>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Description *</label>
+                                <textarea x-model="item.description" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y" placeholder="Item description" rows="2" required></textarea>
                             </div>
-                            
+
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-1">Category</label>
-                                    <select x-model="expense.category" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    <select x-model="item.category" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
                                         <option value="">Select Category</option>
                                         @foreach($expenseCategories as $category)
                                             <option value="{{ $category->name }}">{{ $category->name }}</option>
@@ -226,15 +280,36 @@ input[type='number'] {
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Amount (RM)</label>
-                                    <input type="number" min="0" step="0.01" x-model.number="expense.amount" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="0.00">
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Quantity *</label>
+                                    <input type="number" min="0.01" step="0.01" x-model.number="item.qty" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" required>
                                 </div>
                             </div>
-                            
-                            <div class="pt-2 border-t border-gray-100">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-xs font-medium text-gray-600">Amount:</span>
-                                    <span class="text-sm font-semibold text-gray-900" x-text="'RM ' + expense.amount.toFixed(2)"></span>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">UOM *</label>
+                                    <select x-model="item.uom" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" required>
+                                        <option value="unit">Unit</option>
+                                        <option value="hour">Hour</option>
+                                        <option value="day">Day</option>
+                                        <option value="month">Month</option>
+                                        <option value="lot">Lot</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price (RM) *</label>
+                                    <input type="number" min="0" step="0.01" x-model.number="item.unit_price" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" required>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Discount %</label>
+                                    <input type="number" min="0" max="100" step="0.01" x-model.number="item.discount_percent" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Tax %</label>
+                                    <input type="number" min="0" max="100" step="0.01" x-model.number="item.tax_percent" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
                                 </div>
                             </div>
                         </div>
@@ -252,7 +327,8 @@ input[type='number'] {
                     </div>
                 </div>
             </div>
-            <input type="hidden" id="expensesJson" name="expenses" value="[]">
+            <!-- Hidden inputs for items -->
+            <div id="hiddenItemsContainer"></div>
             
             <!-- Form Actions -->
             <div class="flex flex-col md:flex-row justify-end space-y-2 md:space-y-0 md:space-x-3 pt-6">

@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\HasFirmScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 class CaseFile extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, HasFirmScope;
 
     protected $fillable = [
         'case_ref',
@@ -25,6 +27,7 @@ class CaseFile extends Model
         'expected_return',
         'actual_return',
         'rack_location',
+        'firm_id',
     ];
 
     protected $casts = [
@@ -233,10 +236,26 @@ class CaseFile extends Model
         return $this->belongsTo(FileType::class, 'category_id');
     }
 
+    /**
+     * Get the firm that owns this case file
+     */
+    public function firm(): BelongsTo
+    {
+        return $this->belongsTo(Firm::class);
+    }
+
+    /**
+     * Get the case associated with this file
+     */
+    public function case(): BelongsTo
+    {
+        return $this->belongsTo(CourtCase::class, 'case_ref', 'case_number');
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['case_ref', 'file_name', 'status', 'category_id', 'file_size'])
+            ->logOnly(['case_ref', 'file_name', 'status', 'category_id', 'file_size', 'firm_id'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

@@ -19,7 +19,15 @@ class CheckPermission
             return redirect()->route('login');
         }
 
-        if (!auth()->user()->hasPermissionTo($permission)) {
+        $user = auth()->user();
+
+        // Set firm context for permission checking if user has firm_id
+        if ($user->firm_id) {
+            setPermissionsTeamId($user->firm_id);
+        }
+
+        // Check permission with firm context
+        if (!$user->hasPermissionTo($permission)) {
             abort(403, 'Unauthorized action.');
         }
 

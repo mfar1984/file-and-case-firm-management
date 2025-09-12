@@ -13,7 +13,19 @@ return new class extends Migration
     {
         Schema::create('firms', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->string('registration_number')->nullable();
+            $table->text('address')->nullable();
+            $table->string('phone')->nullable();
+            $table->string('email')->nullable();
+            $table->string('logo')->nullable();
+            $table->json('settings')->nullable();
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
+
+            // Add indexes for performance
+            $table->index('status');
+            $table->index('name');
         });
     }
 

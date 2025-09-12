@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\HasFirmScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Receipt extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, HasFirmScope;
 
     protected $fillable = [
         'receipt_no',
@@ -26,6 +28,7 @@ class Receipt extends Model
         'outstanding_balance',
         'payment_notes',
         'status',
+        'firm_id',
     ];
 
     protected $casts = [
@@ -156,6 +159,8 @@ class Receipt extends Model
         $nextId = (self::max('id') ?? 0) + 1;
         return 'RCP-' . str_pad((string)$nextId, 5, '0', STR_PAD_LEFT);
     }
+
+
 
     public function getActivitylogOptions(): LogOptions
     {

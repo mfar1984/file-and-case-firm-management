@@ -78,7 +78,7 @@ input[type='number'] {
                         @php $qFrom = request('from_quotation') ? \App\Models\Quotation::with('items','case.parties')->find(request('from_quotation')) : null; @endphp
                         <select id="quotation_select" name="quotation_id" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" @if(!$qFrom) required @endif onchange="window.__fillFromQuotation(this.value)">
                             <option value="">Choose from existing quotations</option>
-                            @foreach(\App\Models\Quotation::latest()->take(50)->get(['id','quotation_no']) as $opt)
+                            @foreach($quotations as $opt)
                                 <option value="{{ $opt->id }}" @if($qFrom && $qFrom->id === $opt->id) selected @endif>{{ $opt->quotation_no }}</option>
                             @endforeach
                         </select>
@@ -97,12 +97,12 @@ input[type='number'] {
                     
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Email</label>
-                        <input name="customer_email" type="email" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" value="{{ $qFrom?->customer_email ?? '' }}" readonly>
+                        <input id="customer_email" name="customer_email" type="email" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" value="{{ $qFrom?->customer_email ?? '' }}" readonly>
                     </div>
-                    
+
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-2">Phone</label>
-                        <input name="customer_phone" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" value="{{ $qFrom?->customer_phone ?? '' }}" readonly>
+                        <input id="customer_phone" name="customer_phone" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" value="{{ $qFrom?->customer_phone ?? '' }}" readonly>
                     </div>
                     
                     <div>
@@ -361,7 +361,19 @@ input[type='number'] {
 
 <script>
 @php
-$__qCache = \App\Models\Quotation::with('items')->latest()->take(100)->get()->map(function($q){
+// Get quotations with proper firm scope filtering for JavaScript cache
+$user = auth()->user();
+if ($user->hasRole('Super Administrator')) {
+    if (session('current_firm_id')) {
+        $quotationsForCache = \App\Models\Quotation::forFirm(session('current_firm_id'))->with('items')->latest()->take(100)->get();
+    } else {
+        $quotationsForCache = \App\Models\Quotation::withoutFirmScope()->with('items')->latest()->take(100)->get();
+    }
+} else {
+    $quotationsForCache = \App\Models\Quotation::with('items')->latest()->take(100)->get();
+}
+
+$__qCache = $quotationsForCache->map(function($q){
     return [
         'id' => $q->id,
         'quotation_no' => $q->quotation_no,

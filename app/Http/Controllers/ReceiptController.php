@@ -7,6 +7,7 @@ use App\Models\Quotation;
 use App\Models\TaxInvoice;
 use App\Models\CourtCase;
 use App\Models\FirmSetting;
+use App\Models\Firm;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,17 +16,51 @@ class ReceiptController extends Controller
 {
     public function index()
     {
-        $receipts = Receipt::with(['case', 'quotation', 'taxInvoice'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-            
+        // Get receipts with proper firm scope filtering
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can see all receipts or filter by session firm
+            if (session('current_firm_id')) {
+                $receipts = Receipt::forFirm(session('current_firm_id'))
+                    ->with(['case', 'quotation', 'taxInvoice'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            } else {
+                $receipts = Receipt::withoutFirmScope()
+                    ->with(['case', 'quotation', 'taxInvoice'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            }
+        } else {
+            // Regular users see only their firm's receipts (HasFirmScope trait handles this)
+            $receipts = Receipt::with(['case', 'quotation', 'taxInvoice'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
         return view('receipt', compact('receipts'));
     }
 
     public function create(Request $request)
     {
-        // Get tax invoices for selection (exclude fully paid invoices)
-        $taxInvoices = TaxInvoice::whereIn('status', ['sent', 'partially_paid'])
+        // Get tax invoices for selection with proper firm scope filtering
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can see tax invoices from session firm or all firms
+            if (session('current_firm_id')) {
+                $taxInvoicesQuery = TaxInvoice::forFirm(session('current_firm_id'));
+            } else {
+                $taxInvoicesQuery = TaxInvoice::withoutFirmScope();
+            }
+        } else {
+            // Regular users see only their firm's tax invoices (HasFirmScope trait handles this)
+            $taxInvoicesQuery = TaxInvoice::query();
+        }
+
+        $taxInvoices = $taxInvoicesQuery
+            ->whereIn('status', ['sent', 'partially_paid'])
             ->with(['case', 'items'])
             ->orderBy('created_at', 'desc')
             ->get(['id', 'invoice_no', 'case_id', 'total'])
@@ -36,8 +71,16 @@ class ReceiptController extends Controller
                 return $outstandingBalance > 0; // Only show invoices with outstanding balance
             });
 
-        // Get case options
-        $caseOptions = CourtCase::orderBy('case_number')->get(['id', 'case_number']);
+        // Get case options with proper firm scope filtering
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $caseOptions = CourtCase::forFirm(session('current_firm_id'))->orderBy('case_number')->get(['id', 'case_number']);
+            } else {
+                $caseOptions = CourtCase::withoutFirmScope()->orderBy('case_number')->get(['id', 'case_number']);
+            }
+        } else {
+            $caseOptions = CourtCase::orderBy('case_number')->get(['id', 'case_number']);
+        }
 
         // Prefill from tax invoice if provided
         $prefillData = null;
@@ -152,14 +195,41 @@ class ReceiptController extends Controller
 
     public function show($id)
     {
-        $receipt = Receipt::with(['case', 'quotation', 'taxInvoice'])->findOrFail($id);
+        // Find receipt with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can access any receipt
+            $receipt = Receipt::withoutFirmScope()
+                ->with(['case', 'quotation', 'taxInvoice'])
+                ->findOrFail($id);
+        } else {
+            // Regular users can only access receipts from their firm (HasFirmScope trait handles this)
+            $receipt = Receipt::with(['case', 'quotation', 'taxInvoice'])->findOrFail($id);
+        }
+
         return view('receipt-show', compact('receipt'));
     }
 
     public function print($id)
     {
         $receipt = Receipt::with(['case', 'quotation', 'taxInvoice'])->findOrFail($id);
-        $firmSettings = FirmSetting::getFirmSettings();
+
+        // Get firm settings for current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+        $firm = Firm::find($firmId);
+
+        $firmSettings = (object) [
+            'firm_name' => $firm ? $firm->name : 'Naeelah Saleh & Associates',
+            'registration_number' => $firm ? $firm->registration_number : 'LLP0012345',
+            'address' => $firm ? $firm->address : 'No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia',
+            'phone_number' => $firm ? $firm->phone : '+6019-3186436',
+            'email' => $firm ? $firm->email : 'info@naaelahsaleh.my',
+            'tax_registration_number' => $firm && isset($firm->settings['tax_registration_number'])
+                ? $firm->settings['tax_registration_number']
+                : 'W24-2507-32000179'
+        ];
 
         $pdf = Pdf::loadView('receipt-print', compact('receipt', 'firmSettings'));
         return $pdf->download('receipt-' . $receipt->receipt_no . '.pdf');
@@ -167,20 +237,38 @@ class ReceiptController extends Controller
 
     public function edit($id)
     {
-        $receipt = Receipt::with(['case', 'quotation', 'taxInvoice'])->findOrFail($id);
-        
-        // Get quotations and tax invoices for selection
-        $quotations = Quotation::where('status', 'accepted')
-            ->with(['case', 'items'])
-            ->orderBy('created_at', 'desc')
-            ->get(['id', 'quotation_no', 'case_id', 'total']);
+        // Find receipt with firm scope validation
+        $user = auth()->user();
 
-        $taxInvoices = TaxInvoice::whereIn('status', ['sent', 'paid', 'partially_paid'])
-            ->with(['case', 'items'])
-            ->orderBy('created_at', 'desc')
-            ->get(['id', 'invoice_no', 'case_id', 'total']);
-
-        $caseOptions = CourtCase::orderBy('case_number')->get(['id', 'case_number']);
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can edit any receipt
+            $receipt = Receipt::withoutFirmScope()
+                ->with(['case', 'quotation', 'taxInvoice'])
+                ->findOrFail($id);
+            // Get all data for Super Admin
+            $quotations = Quotation::withoutFirmScope()->where('status', 'accepted')
+                ->with(['case', 'items'])
+                ->orderBy('created_at', 'desc')
+                ->get(['id', 'quotation_no', 'case_id', 'total']);
+            $taxInvoices = TaxInvoice::withoutFirmScope()->whereIn('status', ['sent', 'paid', 'partially_paid'])
+                ->with(['case', 'items'])
+                ->orderBy('created_at', 'desc')
+                ->get(['id', 'invoice_no', 'case_id', 'total']);
+            $caseOptions = CourtCase::withoutFirmScope()->orderBy('case_number')->get(['id', 'case_number']);
+        } else {
+            // Regular users can only edit receipts from their firm (HasFirmScope trait handles this)
+            $receipt = Receipt::with(['case', 'quotation', 'taxInvoice'])->findOrFail($id);
+            // Get firm-scoped data for regular users
+            $quotations = Quotation::where('status', 'accepted')
+                ->with(['case', 'items'])
+                ->orderBy('created_at', 'desc')
+                ->get(['id', 'quotation_no', 'case_id', 'total']);
+            $taxInvoices = TaxInvoice::whereIn('status', ['sent', 'paid', 'partially_paid'])
+                ->with(['case', 'items'])
+                ->orderBy('created_at', 'desc')
+                ->get(['id', 'invoice_no', 'case_id', 'total']);
+            $caseOptions = CourtCase::orderBy('case_number')->get(['id', 'case_number']);
+        }
 
         return view('receipt-edit', compact('receipt', 'quotations', 'taxInvoices', 'caseOptions'));
     }
@@ -245,7 +333,16 @@ class ReceiptController extends Controller
     public function destroy($id)
     {
         try {
-            $receipt = Receipt::findOrFail($id);
+            // Find receipt with firm scope validation
+            $user = auth()->user();
+
+            if ($user->hasRole('Super Administrator')) {
+                // Super Admin can delete any receipt
+                $receipt = Receipt::withoutFirmScope()->findOrFail($id);
+            } else {
+                // Regular users can only delete receipts from their firm (HasFirmScope trait handles this)
+                $receipt = Receipt::findOrFail($id);
+            }
 
             // Log receipt deletion before deleting
             activity()

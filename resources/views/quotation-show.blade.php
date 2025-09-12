@@ -65,24 +65,36 @@
                         <tr>
                             <th class="px-3 py-2 text-center text-sm w-12" style="font-weight: 900;">ITEM.</th>
                             <th class="px-3 py-2 text-center text-sm" style="font-weight: 900;">DESCRIPTION</th>
-                            <th class="px-3 py-2 text-center text-sm w-20" style="font-weight: 900;">QTY</th>
-                            <th class="px-3 py-2 text-center text-sm w-20" style="font-weight: 900;">UOM</th>
                             <th class="px-3 py-2 text-center text-sm w-24" style="font-weight: 900;">PRICE<br>(RM)</th>
                             <th class="px-3 py-2 text-center text-sm w-20" style="font-weight: 900;">DISC.</th>
                             <th class="px-3 py-2 text-center text-sm w-24" style="font-weight: 900;">AMOUNT<br>(RM)</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @php
+                            $itemCounter = 1; // Counter for regular items only
+                        @endphp
                         @forelse($quotation->items as $index => $item)
-                            <tr>
-                                <td class="px-3 py-2 text-sm">{{ $index + 1 }}.</td>
-                                <td class="px-3 py-2 text-sm">{{ $item->description }}</td>
-                                <td class="px-3 py-2 text-sm text-right">{{ number_format($item->qty, 2) }}</td>
-                                <td class="px-3 py-2 text-sm">{{ $item->uom }}</td>
-                                <td class="px-3 py-2 text-sm text-right">{{ number_format($item->unit_price, 2) }}</td>
-                                <td class="px-3 py-2 text-sm text-right">{{ number_format($item->discount_amount ?? 0, 2) }}</td>
-                                <td class="px-3 py-2 text-sm text-right">{{ number_format($item->amount, 2) }}</td>
-                            </tr>
+                            @if($item->item_type === 'title')
+                                <!-- Title Row -->
+                                <tr class="bg-orange-50">
+                                    <td colspan="5" class="px-3 py-2 text-sm">
+                                        <span class="text-sm font-medium text-orange-800">{{ $item->title_text }}</span>
+                                    </td>
+                                </tr>
+                            @else
+                                <!-- Regular Item Row -->
+                                <tr>
+                                    <td class="px-3 py-2 text-sm">{{ $itemCounter }}.</td>
+                                    <td class="px-3 py-2 text-sm">{{ $item->description }}</td>
+                                    <td class="px-3 py-2 text-sm text-right">{{ number_format($item->unit_price, 2) }}</td>
+                                    <td class="px-3 py-2 text-sm text-right">{{ number_format($item->discount_amount ?? 0, 2) }}</td>
+                                    <td class="px-3 py-2 text-sm text-right">{{ number_format($item->amount, 2) }}</td>
+                                </tr>
+                                @php
+                                    $itemCounter++; // Increment counter only for regular items
+                                @endphp
+                            @endif
                         @empty
                             <tr>
                                 <td class="px-3 py-2 text-sm">1.</td>

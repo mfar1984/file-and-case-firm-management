@@ -14,6 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'webhook' => \App\Http\Middleware\WebhookMiddleware::class,
             'permission' => \App\Http\Middleware\CheckPermission::class,
+            'firm.scope' => \App\Http\Middleware\FirmScope::class,
+        ]);
+
+        // Apply FirmScope middleware to web routes
+        $middleware->web(append: [
+            \App\Http\Middleware\FirmScope::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

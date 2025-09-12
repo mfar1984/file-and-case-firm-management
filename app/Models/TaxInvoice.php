@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\HasFirmScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 class TaxInvoice extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, HasFirmScope;
 
     protected $fillable = [
         'invoice_no',
@@ -30,6 +32,7 @@ class TaxInvoice extends Model
         'tax_total',
         'total',
         'status',
+        'firm_id',
     ];
 
     protected $casts = [
@@ -49,6 +52,14 @@ class TaxInvoice extends Model
     public function quotation()
     {
         return $this->belongsTo(Quotation::class, 'quotation_id');
+    }
+
+    /**
+     * Get the firm that owns this tax invoice
+     */
+    public function firm(): BelongsTo
+    {
+        return $this->belongsTo(Firm::class);
     }
 
     public function items()
@@ -101,7 +112,7 @@ class TaxInvoice extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['invoice_no', 'customer_name', 'status', 'total', 'due_date'])
+            ->logOnly(['invoice_no', 'customer_name', 'status', 'total', 'due_date', 'firm_id'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

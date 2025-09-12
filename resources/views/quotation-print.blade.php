@@ -183,17 +183,49 @@
         }
         .item-table th {
             background-color: transparent;
-            font-weight: 900;
+            font-weight: 900 !important;
             color: #374151;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            font-size: 9pt;
+            font-size: 9pt !important;
             text-align: center !important; /* Center align header text */
             vertical-align: middle !important; /* Middle align header text */
             border-top: 1px solid #d1d5db;
             border-bottom: 1px solid #d1d5db;
             border-left: none;
             border-right: none;
+        }
+
+        /* Specific styling for item numbers */
+        .item-table td.item-number {
+            font-weight: 400 !important;
+            font-size: 10pt !important;
+            vertical-align: middle !important;
+            text-align: left !important;
+        }
+
+        /* Specific styling for amount values */
+        .item-table td.amount-value {
+            font-weight: 400 !important;
+            font-size: 10pt !important;
+            vertical-align: middle !important;
+            text-align: right !important;
+        }
+
+        /* Specific styling for price and discount values */
+        .item-table td.price-value {
+            font-weight: 400 !important;
+            font-size: 10pt !important;
+            vertical-align: middle !important;
+            text-align: right !important;
+        }
+
+        /* Specific styling for description */
+        .item-table td.description-value {
+            font-weight: 400 !important;
+            font-size: 10pt !important;
+            vertical-align: middle !important;
+            text-align: left !important;
         }
         .item-table thead {
             display: table-header-group; /* Repeat header on each page */
@@ -562,24 +594,36 @@
                 <tr>
                     <th>ITEM.</th>
                     <th>DESCRIPTION</th>
-                    <th>QTY</th>
-                    <th>UOM</th>
                     <th>PRICE<br>(RM)</th>
                     <th>DISC.</th>
                     <th>AMOUNT<br>(RM)</th>
                 </tr>
             </thead>
             <tbody>
+                @php
+                    $itemCounter = 1; // Counter for regular items only
+                @endphp
                 @forelse($quotation->items as $index => $item)
-                    <tr>
-                        <td>{{ $index + 1 }}.</td>
-                        <td>{{ $item->description }}</td>
-                        <td>{{ number_format($item->qty, 2) }}</td>
-                        <td>{{ $item->uom }}</td>
-                        <td class="text-right">{{ number_format($item->unit_price, 2) }}</td>
-                        <td class="text-right">{{ number_format($item->discount_amount ?? 0, 2) }}</td>
-                        <td class="text-right">{{ number_format($item->amount, 2) }}</td>
-                    </tr>
+                    @if($item->item_type === 'title')
+                        <!-- Title Row -->
+                        <tr style="background-color: #fff7ed;">
+                            <td colspan="5" style="padding: 8px; font-weight: bold; color: #c2410c; text-align: left;">
+                                {{ $item->title_text }}
+                            </td>
+                        </tr>
+                    @else
+                        <!-- Regular Item Row -->
+                        <tr>
+                            <td class="item-number">{{ $itemCounter }}.</td>
+                            <td class="description-value">{{ $item->description }}</td>
+                            <td class="price-value">{{ number_format($item->unit_price, 2) }}</td>
+                            <td class="price-value">{{ number_format($item->discount_amount ?? 0, 2) }}</td>
+                            <td class="amount-value">{{ number_format($item->amount, 2) }}</td>
+                        </tr>
+                        @php
+                            $itemCounter++; // Increment counter only for regular items
+                        @endphp
+                    @endif
                 @empty
                     <tr>
                         <td colspan="7" class="text-center">No items found</td>

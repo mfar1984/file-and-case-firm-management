@@ -8,4 +8,10 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    server: {
+        hmr: {
+            overlay: false, // Disable error overlay
+        },
+    },
+    logLevel: 'warn', // Only show warnings and errors, not info messages
 });

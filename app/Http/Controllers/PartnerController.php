@@ -11,13 +11,57 @@ class PartnerController extends Controller
 {
     public function index()
     {
-        $partners = Partner::with('user')->orderBy('created_at', 'desc')->get();
+        // Get partners with proper firm scope filtering
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can see all partners or filter by session firm
+            if (session('current_firm_id')) {
+                $partners = Partner::forFirm(session('current_firm_id'))
+                    ->with('user')
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            } else {
+                $partners = Partner::withoutFirmScope()
+                    ->with('user')
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            }
+        } else {
+            // Regular users see only their firm's partners (HasFirmScope trait handles this)
+            $partners = Partner::with('user')
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
         return view('partner', compact('partners'));
     }
 
     public function create()
     {
-        $specializations = Specialization::where('status', 'active')->orderBy('specialist_name')->get();
+        // Get specializations with firm scope filtering
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can see all specializations or filter by session firm
+            if (session('current_firm_id')) {
+                $specializations = Specialization::forFirm(session('current_firm_id'))
+                    ->where('status', 'active')
+                    ->orderBy('specialist_name')
+                    ->get();
+            } else {
+                $specializations = Specialization::withoutFirmScope()
+                    ->where('status', 'active')
+                    ->orderBy('specialist_name')
+                    ->get();
+            }
+        } else {
+            // Regular users see only their firm's specializations (HasFirmScope trait handles this)
+            $specializations = Specialization::where('status', 'active')
+                ->orderBy('specialist_name')
+                ->get();
+        }
+
         return view('partner-create', compact('specializations'));
     }
 
@@ -100,14 +144,52 @@ class PartnerController extends Controller
 
     public function show($id)
     {
-        $partner = Partner::with('user')->findOrFail($id);
+        // Find partner with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can access any partner
+            $partner = Partner::withoutFirmScope()
+                ->with('user')
+                ->findOrFail($id);
+        } else {
+            // Regular users can only access partners from their firm (HasFirmScope trait handles this)
+            $partner = Partner::with('user')->findOrFail($id);
+        }
+
         return view('partner-show', compact('partner'));
     }
 
     public function edit($id)
     {
-        $partner = Partner::with('user')->findOrFail($id);
-        $specializations = Specialization::where('status', 'active')->orderBy('specialist_name')->get();
+        // Find partner with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can edit any partner
+            $partner = Partner::withoutFirmScope()
+                ->with('user')
+                ->findOrFail($id);
+            // Get all specializations for Super Admin
+            if (session('current_firm_id')) {
+                $specializations = Specialization::forFirm(session('current_firm_id'))
+                    ->where('status', 'active')
+                    ->orderBy('specialist_name')
+                    ->get();
+            } else {
+                $specializations = Specialization::withoutFirmScope()
+                    ->where('status', 'active')
+                    ->orderBy('specialist_name')
+                    ->get();
+            }
+        } else {
+            // Regular users can only edit partners from their firm (HasFirmScope trait handles this)
+            $partner = Partner::with('user')->findOrFail($id);
+            $specializations = Specialization::where('status', 'active')
+                ->orderBy('specialist_name')
+                ->get();
+        }
+
         return view('partner-edit', compact('partner', 'specializations'));
     }
 
@@ -132,14 +214,7 @@ class PartnerController extends Controller
         $partner = Partner::findOrFail($id);
         $partner->update($data);
 
-        return redirect()->route('partner.show', $partner->id)->with('success', 'Partner updated successfully');
-    }
-
-    public function destroy($id)
-    {
-        $partner = Partner::findOrFail($id);
-
-        // Log partner deletion before deleting
+        // Log partner update
         activity()
             ->performedOn($partner)
             ->causedBy(auth()->user())
@@ -149,6 +224,35 @@ class PartnerController extends Controller
                 'incharge_name' => $partner->incharge_name,
                 'email' => $partner->email
             ])
+            ->log("Partner {$partner->firm_name} updated");
+
+        return redirect()->route('partner.show', $partner->id)->with('success', 'Partner updated successfully');
+    }
+
+    public function destroy($id)
+    {
+        // Find partner with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can delete any partner
+            $partner = Partner::withoutFirmScope()->findOrFail($id);
+        } else {
+            // Regular users can only delete partners from their firm (HasFirmScope trait handles this)
+            $partner = Partner::findOrFail($id);
+        }
+
+        // Log partner deletion before deleting
+        activity()
+            ->performedOn($partner)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'firm_name' => $partner->firm_name,
+                'incharge_name' => $partner->incharge_name,
+                'email' => $partner->email,
+                'firm_id' => $partner->firm_id
+            ])
             ->log("Partner {$partner->firm_name} deleted");
 
         $partner->delete();
@@ -157,9 +261,32 @@ class PartnerController extends Controller
 
     public function toggleBan($id)
     {
-        $partner = Partner::findOrFail($id);
+        // Find partner with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can toggle ban for any partner
+            $partner = Partner::withoutFirmScope()->findOrFail($id);
+        } else {
+            // Regular users can only toggle ban for partners from their firm (HasFirmScope trait handles this)
+            $partner = Partner::findOrFail($id);
+        }
+
         $partner->is_banned = !$partner->is_banned;
         $partner->save();
+
+        // Log the action
+        activity()
+            ->performedOn($partner)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'firm_name' => $partner->firm_name,
+                'action' => $partner->is_banned ? 'banned' : 'unbanned',
+                'firm_id' => $partner->firm_id
+            ])
+            ->log("Partner {$partner->firm_name} " . ($partner->is_banned ? 'banned' : 'unbanned'));
+
         return redirect()->back()->with('success', $partner->is_banned ? 'Partner banned' : 'Partner unbanned');
     }
 } 

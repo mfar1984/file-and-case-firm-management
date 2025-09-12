@@ -7,6 +7,7 @@ use App\Models\QuotationItem;
 use App\Models\CourtCase;
 use App\Models\Client;
 use App\Models\FirmSetting;
+use App\Models\Firm;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
@@ -15,11 +16,29 @@ class QuotationController extends Controller
 {
     public function index()
     {
-        // Get all quotations with related data
-        $quotations = Quotation::with(['case', 'items'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-            
+        // Get quotations with proper firm scope filtering
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can see all quotations or filter by session firm
+            if (session('current_firm_id')) {
+                $quotations = Quotation::forFirm(session('current_firm_id'))
+                    ->with(['case', 'items'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            } else {
+                $quotations = Quotation::withoutFirmScope()
+                    ->with(['case', 'items'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            }
+        } else {
+            // Regular users see only their firm's quotations (HasFirmScope trait handles this)
+            $quotations = Quotation::with(['case', 'items'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
         return view('quotation', compact('quotations'));
     }
     public function create(Request $request)
@@ -100,25 +119,51 @@ class QuotationController extends Controller
             'customer_email' => 'nullable|email|max:255',
             'customer_address' => 'nullable|string',
             'items' => 'required|array|min:1',
+            'items.*.type' => 'required|string|in:item,title',
+            'items.*.title_text' => 'nullable|string',
             'items.*.description' => 'nullable|string',
-            'items.*.qty' => 'required|numeric|min:0.01',
-            'items.*.uom' => 'required|string|max:32',
-            'items.*.unit_price' => 'required|numeric|min:0',
+            'items.*.qty' => 'nullable|numeric|min:0',
+            'items.*.uom' => 'nullable|string|max:32',
+            'items.*.unit_price' => 'nullable|numeric|min:0',
             'items.*.discount_amount' => 'nullable|numeric|min:0',
             'items.*.tax_percent' => 'nullable|numeric|min:0|max:100',
-            'items.*.amount' => 'required|numeric|min:0',
+            'items.*.amount' => 'nullable|numeric|min:0',
+            'from_quotation' => 'nullable|integer|exists:quotations,id', // Add validation for edit mode
         ]);
 
-        // Generate quotation number (simple incremental)
-        $nextId = (Quotation::max('id') ?? 0) + 1;
-        $quotationNo = 'Q-' . str_pad((string)$nextId, 5, '0', STR_PAD_LEFT);
+        // Check if this is edit mode (from_quotation parameter exists)
+        $isEditMode = $request->filled('from_quotation');
+        $existingQuotation = null;
 
-        // Calculate proper subtotal, tax, and total
+        if ($isEditMode) {
+            // Find existing quotation for update
+            $user = auth()->user();
+            if ($user->hasRole('Super Administrator')) {
+                $existingQuotation = Quotation::withoutFirmScope()->findOrFail($validated['from_quotation']);
+            } else {
+                $existingQuotation = Quotation::findOrFail($validated['from_quotation']);
+            }
+        }
+
+        // Generate quotation number only for new quotations
+        if ($isEditMode) {
+            $quotationNo = $existingQuotation->quotation_no;
+        } else {
+            $nextId = (Quotation::max('id') ?? 0) + 1;
+            $quotationNo = 'Q-' . str_pad((string)$nextId, 5, '0', STR_PAD_LEFT);
+        }
+
+        // Calculate proper subtotal, tax, and total (skip title items)
         $subtotal = 0;
         $taxTotal = 0;
 
         foreach ($validated['items'] as $item) {
-            $itemSubtotal = $item['qty'] * $item['unit_price'];
+            // Skip title items in calculations
+            if ($item['type'] === 'title') {
+                continue;
+            }
+
+            $itemSubtotal = ($item['qty'] ?? 0) * ($item['unit_price'] ?? 0);
             $itemAfterDiscount = $itemSubtotal - ($item['discount_amount'] ?? 0);
             $itemTax = $itemAfterDiscount * ($item['tax_percent'] ?? 0) / 100;
 
@@ -129,41 +174,88 @@ class QuotationController extends Controller
         $discountTotal = 0; // For future use
         $total = $subtotal + $taxTotal;
 
-        $quotation = Quotation::create([
-            'case_id' => $validated['case_id'],
-            'quotation_no' => $quotationNo,
-            'quotation_date' => $validated['quotation_date'],
-            'valid_until' => $validated['valid_until'] ?? Carbon::parse($validated['quotation_date'])->addDays(30)->toDateString(),
-            'payment_terms' => $validated['payment_terms'] ?? null,
-            'remark' => $validated['remark'] ?? null,
-            'customer_name' => $validated['customer_name'] ?? null,
-            'customer_phone' => $validated['customer_phone'] ?? null,
-            'customer_email' => $validated['customer_email'] ?? null,
-            'customer_address' => $validated['customer_address'] ?? null,
-            'subtotal' => $subtotal,
-            'discount_total' => $discountTotal,
-            'tax_total' => $taxTotal,
-            'total' => $total,
-        ]);
+        // Get current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
 
-        foreach ($validated['items'] as $item) {
-            // Calculate item amount (subtotal after discount, before tax)
-            $itemSubtotal = $item['qty'] * $item['unit_price'];
-            $itemAmount = $itemSubtotal - ($item['discount_amount'] ?? 0);
+        if ($isEditMode) {
+            // Update existing quotation
+            $existingQuotation->update([
+                'case_id' => $validated['case_id'],
+                'quotation_date' => $validated['quotation_date'],
+                'valid_until' => $validated['valid_until'] ?? Carbon::parse($validated['quotation_date'])->addDays(30)->toDateString(),
+                'payment_terms' => $validated['payment_terms'] ?? null,
+                'remark' => $validated['remark'] ?? null,
+                'customer_name' => $validated['customer_name'] ?? null,
+                'customer_phone' => $validated['customer_phone'] ?? null,
+                'customer_email' => $validated['customer_email'] ?? null,
+                'customer_address' => $validated['customer_address'] ?? null,
+                'subtotal' => $subtotal,
+                'discount_total' => $discountTotal,
+                'tax_total' => $taxTotal,
+                'total' => $total,
+            ]);
 
-            QuotationItem::create([
-                'quotation_id' => $quotation->id,
-                'description' => $item['description'] ?? '',
-                'qty' => $item['qty'],
-                'uom' => $item['uom'],
-                'unit_price' => $item['unit_price'],
-                'discount_amount' => $item['discount_amount'] ?? 0,
-                'tax_percent' => $item['tax_percent'] ?? 0,
-                'amount' => $itemAmount,
+            // Delete existing items
+            $existingQuotation->items()->delete();
+            $quotation = $existingQuotation;
+        } else {
+            // Create new quotation
+            $quotation = Quotation::create([
+                'case_id' => $validated['case_id'],
+                'quotation_no' => $quotationNo,
+                'quotation_date' => $validated['quotation_date'],
+                'valid_until' => $validated['valid_until'] ?? Carbon::parse($validated['quotation_date'])->addDays(30)->toDateString(),
+                'payment_terms' => $validated['payment_terms'] ?? null,
+                'remark' => $validated['remark'] ?? null,
+                'customer_name' => $validated['customer_name'] ?? null,
+                'customer_phone' => $validated['customer_phone'] ?? null,
+                'customer_email' => $validated['customer_email'] ?? null,
+                'customer_address' => $validated['customer_address'] ?? null,
+                'subtotal' => $subtotal,
+                'discount_total' => $discountTotal,
+                'tax_total' => $taxTotal,
+                'total' => $total,
+                'firm_id' => $firmId,
             ]);
         }
 
-        // Log quotation creation
+        foreach ($validated['items'] as $item) {
+            if ($item['type'] === 'title') {
+                // Create title item
+                QuotationItem::create([
+                    'quotation_id' => $quotation->id,
+                    'item_type' => 'title',
+                    'title_text' => $item['title_text'] ?? '',
+                    'description' => '',
+                    'qty' => 0,
+                    'uom' => 'lot',
+                    'unit_price' => 0,
+                    'discount_amount' => 0,
+                    'tax_percent' => 0,
+                    'amount' => 0,
+                ]);
+            } else {
+                // Calculate item amount (subtotal after discount, before tax)
+                $itemSubtotal = ($item['qty'] ?? 0) * ($item['unit_price'] ?? 0);
+                $itemAmount = $itemSubtotal - ($item['discount_amount'] ?? 0);
+
+                QuotationItem::create([
+                    'quotation_id' => $quotation->id,
+                    'item_type' => 'item',
+                    'title_text' => '',
+                    'description' => $item['description'] ?? '',
+                    'qty' => $item['qty'] ?? 0,
+                    'uom' => $item['uom'] ?? 'lot',
+                    'unit_price' => $item['unit_price'] ?? 0,
+                    'discount_amount' => $item['discount_amount'] ?? 0,
+                    'tax_percent' => $item['tax_percent'] ?? 0,
+                    'amount' => $itemAmount,
+                ]);
+            }
+        }
+
+        // Log quotation creation or update
         activity()
             ->performedOn($quotation)
             ->causedBy(auth()->user())
@@ -172,27 +264,70 @@ class QuotationController extends Controller
                 'total_amount' => $total,
                 'items_count' => count($validated['items'])
             ])
-            ->log("Quotation {$quotation->quotation_no} created");
+            ->log("Quotation {$quotation->quotation_no} " . ($isEditMode ? 'updated' : 'created'));
 
-        return redirect()->route('quotation.show', $quotation->id)->with('success', 'Quotation created');
+        // Return with appropriate flash message
+        $flashMessage = $isEditMode
+            ? "Successfully Updated Quotation {$quotation->quotation_no}"
+            : 'Quotation created';
+
+        return redirect()->route('quotation.show', $quotation->id)->with('success', $flashMessage);
     }
 
     public function show($id)
     {
-        $quotation = Quotation::with('items', 'case')->findOrFail($id);
+        // Find quotation with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can access any quotation
+            $quotation = Quotation::withoutFirmScope()
+                ->with('items', 'case')
+                ->findOrFail($id);
+        } else {
+            // Regular users can only access quotations from their firm (HasFirmScope trait handles this)
+            $quotation = Quotation::with('items', 'case')->findOrFail($id);
+        }
+
         return view('quotation-show', compact('quotation'));
     }
 
     public function print($id)
     {
-        $quotation = Quotation::with('items', 'case')->findOrFail($id);
-        $firmSettings = FirmSetting::getFirmSettings();
+        // Find quotation with firm scope validation
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            // Super Admin can print any quotation
+            $quotation = Quotation::withoutFirmScope()
+                ->with('items', 'case')
+                ->findOrFail($id);
+        } else {
+            // Regular users can only print quotations from their firm (HasFirmScope trait handles this)
+            $quotation = Quotation::with('items', 'case')->findOrFail($id);
+        }
+
+        // Get firm settings for current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+        $firm = Firm::find($firmId);
+
+        $firmSettings = (object) [
+            'firm_name' => $firm ? $firm->name : 'Naeelah Saleh & Associates',
+            'registration_number' => $firm ? $firm->registration_number : 'LLP0012345',
+            'address' => $firm ? $firm->address : 'No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia',
+            'phone_number' => $firm ? $firm->phone : '+6019-3186436',
+            'email' => $firm ? $firm->email : 'info@naaelahsaleh.my',
+            'tax_registration_number' => $firm && isset($firm->settings['tax_registration_number'])
+                ? $firm->settings['tax_registration_number']
+                : 'W24-2507-32000179'
+        ];
 
         // Calculate page numbers based on items count
         $itemsPerPage = 15; // Estimate items per page (adjust based on PDF layout)
         $totalItems = $quotation->items->count();
         $totalPages = max(1, ceil($totalItems / $itemsPerPage));
-        
+
         // Log quotation print
         activity()
             ->performedOn($quotation)
@@ -209,26 +344,72 @@ class QuotationController extends Controller
 
     public function destroy($id)
     {
-        $quotation = Quotation::with('items')->findOrFail($id);
+        try {
+            // Find quotation with firm scope validation
+            $user = auth()->user();
 
-        // Log quotation deletion before deleting
-        activity()
-            ->performedOn($quotation)
-            ->causedBy(auth()->user())
-            ->withProperties([
-                'ip' => request()->ip(),
-                'quotation_no' => $quotation->quotation_no,
-                'total_amount' => $quotation->total,
-                'status' => $quotation->status
-            ])
-            ->log("Quotation {$quotation->quotation_no} deleted");
+            if ($user->hasRole('Super Administrator')) {
+                // Super Admin can delete any quotation
+                $quotation = Quotation::withoutFirmScope()
+                    ->with('items')
+                    ->find($id);
+            } else {
+                // Regular users can only delete quotations from their firm (HasFirmScope trait handles this)
+                $quotation = Quotation::with('items')->find($id);
+            }
 
-        // Simple delete with cascade of items
-        foreach ($quotation->items as $item) {
-            $item->delete();
+            // Check if quotation exists
+            if (!$quotation) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Quotation with ID {$id} not found or you don't have permission to delete it."
+                ], 404);
+            }
+
+            // Check if quotation can be deleted (only pending status)
+            if ($quotation->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Only quotations with 'Pending' status can be deleted. Current status: {$quotation->status}"
+                ], 422);
+            }
+
+            // Store quotation info for logging
+            $quotationNo = $quotation->quotation_no;
+            $quotationTotal = $quotation->total;
+            $quotationStatus = $quotation->status;
+
+            // Log quotation deletion before deleting
+            activity()
+                ->performedOn($quotation)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'quotation_no' => $quotationNo,
+                    'total_amount' => $quotationTotal,
+                    'status' => $quotationStatus
+                ])
+                ->log("Quotation {$quotationNo} deleted");
+
+            // Delete items first, then quotation
+            foreach ($quotation->items as $item) {
+                $item->delete();
+            }
+            $quotation->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Quotation {$quotationNo} has been successfully deleted."
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error deleting quotation: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while deleting the quotation: ' . $e->getMessage()
+            ], 500);
         }
-        $quotation->delete();
-        return response()->json(['ok' => true]);
     }
 
     public function accept($id)

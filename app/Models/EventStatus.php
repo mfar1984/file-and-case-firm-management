@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasFirmScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EventStatus extends Model
 {
-    use HasFactory;
+    use HasFactory, HasFirmScope;
 
     protected $fillable = [
         'name',
@@ -16,6 +18,7 @@ class EventStatus extends Model
         'icon',
         'status',
         'sort_order',
+        'firm_id',
     ];
 
     protected $casts = [
@@ -49,5 +52,13 @@ class EventStatus extends Model
     public function isActive()
     {
         return $this->status === 'active';
+    }
+
+    /**
+     * Get the firm that owns this event status
+     */
+    public function firm(): BelongsTo
+    {
+        return $this->belongsTo(Firm::class);
     }
 }

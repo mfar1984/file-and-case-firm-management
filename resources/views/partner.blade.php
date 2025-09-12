@@ -114,7 +114,13 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center text-xs text-gray-500 py-6">No partners yet. Click Add Partner to create one.</td>
+                            <td colspan="8" class="py-8 text-center text-gray-500">
+                                <div class="flex flex-col items-center">
+                                    <span class="material-icons text-gray-400 text-4xl mb-2">business</span>
+                                    <p class="text-sm text-gray-500">No partners available</p>
+                                    <p class="text-xs text-gray-400">Add partners to manage legal collaborations</p>
+                                </div>
+                            </td>
                         </tr>
                         @endforelse
                     </tbody>

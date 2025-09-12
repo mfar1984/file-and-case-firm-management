@@ -20,91 +20,132 @@
         </div>
         
         <div class="p-4 md:p-6">
-            <form class="space-y-6">
+            <!-- Success Message -->
+            @if (session('status') === 'profile-updated')
+                <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <span class="material-icons text-green-400 text-sm">check_circle</span>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-xs font-medium text-green-800">Profile updated successfully!</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Error Messages -->
+            @if ($errors->any())
+                <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <span class="material-icons text-red-400 text-sm">error</span>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-xs font-medium text-red-800">There were some errors with your submission:</h3>
+                            <ul class="mt-2 text-xs text-red-700 list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('profile.update') }}" class="space-y-6">
+                @csrf
+                @method('PATCH')
                 <!-- Profile Information Section -->
                 <div class="bg-gray-50 p-4 rounded-lg">
                     <h3 class="text-sm font-semibold text-gray-700 mb-4">Profile Information</h3>
                     <div class="grid grid-cols-1 gap-4">
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Full Name *</label>
-                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter your full name" value="{{ old('name', $user->name) }}" required>
+                            <input type="text" name="name" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 @error('name') border-red-300 @enderror" placeholder="Enter your full name" value="{{ old('name', $user->name) }}" required autocomplete="name">
+                            @error('name')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Email Address *</label>
-                            <input type="email" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter your email address" value="{{ old('email', $user->email) }}" required>
+                            <input type="email" name="email" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 @error('email') border-red-300 @enderror" placeholder="Enter your email address" value="{{ old('email', $user->email) }}" required autocomplete="email">
+                            @error('email')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Phone Number</label>
-                            <input type="tel" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter your phone number">
+                            <input type="tel" name="phone" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 @error('phone') border-red-300 @enderror" placeholder="Enter your phone number" value="{{ old('phone', $user->phone) }}" autocomplete="tel">
+                            @error('phone')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-2">Address</label>
-                            <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter your address"></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Security Settings Section -->
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h3 class="text-sm font-semibold text-gray-700 mb-4">Security Settings</h3>
-                    <div class="grid grid-cols-1 gap-4">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-2">Current Password</label>
-                            <input type="password" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter current password">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-2">New Password</label>
-                            <input type="password" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter new password">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-2">Confirm New Password</label>
-                            <input type="password" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Confirm new password">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Account Preferences Section -->
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h3 class="text-sm font-semibold text-gray-700 mb-4">Account Preferences</h3>
-                    <div class="grid grid-cols-1 gap-4">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-2">Language</label>
-                            <select class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="en">English</option>
-                                <option value="ms">Bahasa Malaysia</option>
-                                <option value="zh">中文</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-2">Time Zone</label>
-                            <select class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="Asia/Kuala_Lumpur">Asia/Kuala Lumpur (GMT+8)</option>
-                                <option value="UTC">UTC</option>
-                                <option value="America/New_York">America/New_York</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-2">Notification Settings</label>
-                            <select class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="all">All Notifications</option>
-                                <option value="important">Important Only</option>
-                                <option value="none">No Notifications</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Additional Information Section -->
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h3 class="text-sm font-semibold text-gray-700 mb-4">Additional Information</h3>
-                    <div class="grid grid-cols-1 gap-4">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-2">Bio</label>
-                            <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tell us about yourself..."></textarea>
+                            <label class="block text-xs font-medium text-gray-700 mb-2">Department</label>
+                            <input type="text" name="department" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 @error('department') border-red-300 @enderror" placeholder="Enter your department" value="{{ old('department', $user->department) }}" autocomplete="organization-title">
+                            @error('department')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Notes</label>
-                            <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Any additional notes or comments..."></textarea>
+                            <textarea name="notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 @error('notes') border-red-300 @enderror" placeholder="Any additional notes...">{{ old('notes', $user->notes) }}</textarea>
+                            @error('notes')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Password Update Section -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-4">Update Password</h3>
+                    <p class="text-xs text-gray-600 mb-4">Leave blank if you don't want to change your password.</p>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-2">Current Password</label>
+                            <input type="password" name="current_password" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 @error('current_password') border-red-300 @enderror" placeholder="Enter current password" autocomplete="current-password">
+                            @error('current_password')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-2">New Password</label>
+                            <input type="password" name="password" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 @error('password') border-red-300 @enderror" placeholder="Enter new password" autocomplete="new-password">
+                            @error('password')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-2">Confirm New Password</label>
+                            <input type="password" name="password_confirmation" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Confirm new password" autocomplete="new-password">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Information Section -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-4">Account Information</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-2">Username</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs bg-gray-100" value="{{ $user->username ?? 'Not set' }}" readonly>
+                            <p class="mt-1 text-xs text-gray-500">Username cannot be changed</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-2">Firm</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs bg-gray-100" value="{{ $user->firm->name ?? 'Not assigned' }}" readonly>
+                            <p class="mt-1 text-xs text-gray-500">Firm assignment managed by administrator</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-2">Role</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs bg-gray-100" value="{{ $user->roles->pluck('name')->join(', ') ?: 'No role assigned' }}" readonly>
+                            <p class="mt-1 text-xs text-gray-500">Role managed by administrator</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-2">Last Login</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs bg-gray-100" value="{{ $user->last_login_at ? $user->last_login_at->format('d/m/Y H:i') : 'Never' }}" readonly>
                         </div>
                     </div>
                 </div>

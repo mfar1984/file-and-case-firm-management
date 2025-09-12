@@ -143,8 +143,9 @@
                             <td colspan="8" class="py-8 px-4 text-center text-gray-500">
                                 <div class="flex flex-col items-center">
                                     <span class="material-icons text-4xl text-gray-300 mb-2">receipt_long</span>
-                                    <p class="text-sm">No tax invoices found</p>
-                                    <p class="text-xs text-gray-400 mt-1">Create your first tax invoice to get started</p>
+                                    <p class="text-sm">No tax invoices available</p>
+                                    <p class="text-xs text-gray-400 mt-1">Create tax invoices to manage client billing</p>
+                                    <a href="{{ route('tax-invoice.create') }}" class="text-blue-600 hover:text-blue-800 text-xs mt-2">Create your first tax invoice</a>
                                 </div>
                             </td>
                         </tr>
@@ -314,8 +315,9 @@
             <div class="text-center text-gray-500 py-8">
                 <div class="flex flex-col items-center">
                     <span class="material-icons text-4xl text-gray-300 mb-2">receipt_long</span>
-                    <p class="text-sm">No tax invoices found</p>
-                    <p class="text-xs text-gray-400 mt-1">Create your first tax invoice to get started</p>
+                    <p class="text-sm">No tax invoices available</p>
+                    <p class="text-xs text-gray-400 mt-1">Create tax invoices to manage client billing</p>
+                    <a href="{{ route('tax-invoice.create') }}" class="text-blue-600 hover:text-blue-800 text-xs mt-2 block">Create your first tax invoice</a>
                 </div>
             </div>
             @endforelse

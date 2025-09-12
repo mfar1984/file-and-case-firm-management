@@ -44,6 +44,15 @@ Route::get('/calendar/events', [App\Http\Controllers\CalendarController::class, 
 Route::post('/calendar/events', [App\Http\Controllers\CalendarController::class, 'store'])->name('calendar.store');
 Route::put('/calendar/events/{event}', [App\Http\Controllers\CalendarController::class, 'update'])->name('calendar.update');
 Route::delete('/calendar/events/{event}', [App\Http\Controllers\CalendarController::class, 'destroy'])->name('calendar.destroy');
+
+// Notification routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{notification}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/mark-all-read', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+    Route::delete('/notifications/{notification}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
+    Route::get('/notifications/stats', [App\Http\Controllers\NotificationController::class, 'stats'])->name('notifications.stats');
+});
 Route::get('/case', [CaseController::class, 'index'])->name('case.index');
 Route::get('/case/create', [CaseController::class, 'create'])->name('case.create');
 Route::post('/case', [CaseController::class, 'store'])->name('case.store');
@@ -188,9 +197,9 @@ Route::middleware(['auth'])->group(function () {
     
     // Weather Settings Routes
     Route::get('/settings/weather', [App\Http\Controllers\WeatherSettingsController::class, 'index'])->name('settings.weather');
-    Route::post('/settings/weather', [App\Http\Controllers\WeatherSettingsController::class, 'store'])->name('settings.weather.store')->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class]);
-    Route::post('/settings/weather/test', [App\Http\Controllers\WeatherSettingsController::class, 'testApi'])->name('settings.weather.test')->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class]);
-    Route::get('/settings/weather/get', [App\Http\Controllers\WeatherSettingsController::class, 'getSettings'])->name('settings.weather.get');
+    Route::get('/settings/weather/get', [App\Http\Controllers\WeatherSettingsController::class, 'get'])->name('settings.weather.get');
+    Route::post('/settings/weather', [App\Http\Controllers\WeatherSettingsController::class, 'store'])->name('settings.weather.store');
+    Route::post('/settings/weather/test', [App\Http\Controllers\WeatherSettingsController::class, 'testApi'])->name('settings.weather.test');
 });
 
 // Webhook Routes (CSRF excluded)
@@ -208,6 +217,22 @@ Route::middleware(['auth', 'permission:manage-roles'])->group(function () {
     Route::delete('/settings/role/{id}', [App\Http\Controllers\RoleController::class, 'destroy'])->name('settings.role.destroy');
     Route::get('/settings/role/{id}/users', [App\Http\Controllers\RoleController::class, 'getRoleUsers'])->name('settings.role.users');
     Route::get('/settings/permissions', [App\Http\Controllers\RoleController::class, 'getPermissions'])->name('settings.permissions');
+});
+
+// Firm Management Routes (Super Administrator only)
+Route::middleware(['auth'])->group(function () {
+    Route::resource('settings/firms', App\Http\Controllers\Settings\FirmController::class)->names([
+        'index' => 'settings.firms.index',
+        'create' => 'settings.firms.create',
+        'store' => 'settings.firms.store',
+        'show' => 'settings.firms.show',
+        'edit' => 'settings.firms.edit',
+        'update' => 'settings.firms.update',
+        'destroy' => 'settings.firms.destroy',
+    ]);
+
+    // Firm switching route for Super Administrator
+    Route::post('/firm/switch', [App\Http\Controllers\Settings\FirmController::class, 'switchFirm'])->name('firm.switch');
 });
 
 // User Management Routes

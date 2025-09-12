@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\HasFirmScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Voucher extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, HasFirmScope;
 
     protected $fillable = [
         'voucher_no',
@@ -27,6 +29,7 @@ class Voucher extends Model
         'total_amount',
         'total_words',
         'status',
+        'firm_id',
     ];
 
     protected $casts = [
@@ -45,9 +48,28 @@ class Voucher extends Model
     {
         $year = date('Y');
         $prefix = 'PV-' . $year . '-';
-        $max = static::whereYear('created_at', $year)
-            ->where('voucher_no', 'like', $prefix.'%')
-            ->max('voucher_no');
+
+        // Get firm context for voucher number generation
+        $user = auth()->user();
+        $firmId = null;
+
+        if ($user) {
+            if ($user->hasRole('Super Administrator') && session('current_firm_id')) {
+                $firmId = session('current_firm_id');
+            } else {
+                $firmId = $user->firm_id;
+            }
+        }
+
+        // Generate voucher number based on firm context
+        $query = static::whereYear('created_at', $year)
+            ->where('voucher_no', 'like', $prefix.'%');
+
+        if ($firmId) {
+            $query->where('firm_id', $firmId);
+        }
+
+        $max = $query->max('voucher_no');
 
         $nextSeq = 1;
         if ($max) {
@@ -93,6 +115,8 @@ class Voucher extends Model
             default => ucfirst($this->payment_method),
         };
     }
+
+
 }
 
 

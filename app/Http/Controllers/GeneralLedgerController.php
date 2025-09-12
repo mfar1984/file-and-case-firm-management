@@ -8,6 +8,7 @@ use App\Models\Receipt;
 use App\Models\Bill;
 use App\Models\Voucher;
 use App\Models\ExpenseCategory;
+use App\Models\Firm;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -32,8 +33,9 @@ class GeneralLedgerController extends Controller
             $reportDate = $request->get('report_date', $dates['report_date']);
         }
 
-        // Always generate ledger data
-        $ledgerData = $this->generateLedgerData($reportDate, $fromDate, $toDate);
+        // Always generate ledger data with user context for firm scope
+        $user = auth()->user();
+        $ledgerData = $this->generateLedgerData($reportDate, $fromDate, $toDate, $user);
 
         // Extract accounts for compatibility
         $accounts = collect($ledgerData)->map(function ($account) {
@@ -43,6 +45,18 @@ class GeneralLedgerController extends Controller
                 'transactions' => $account['transactions'] ?? []
             ];
         })->toArray();
+
+        // Log general ledger access
+        activity()
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'from_date' => $fromDate,
+                'to_date' => $toDate,
+                'date_preset' => $datePreset,
+                'accounts_count' => count($accounts)
+            ])
+            ->log("General Ledger accessed for period {$fromDate} to {$toDate}");
 
         return view('general-ledger', compact('reportDate', 'fromDate', 'toDate', 'ledgerData', 'datePreset', 'accounts'));
     }
@@ -60,7 +74,8 @@ class GeneralLedgerController extends Controller
             $reportDate = $request->get('report_date', $dates['report_date']);
         }
 
-        $ledgerData = $this->generateLedgerData($reportDate, $fromDate, $toDate);
+        $user = auth()->user();
+        $ledgerData = $this->generateLedgerData($reportDate, $fromDate, $toDate, $user);
         $accounts = collect($ledgerData)->map(function ($account) {
             return [
                 'name' => $account['name'] ?? 'Unknown Account',
@@ -70,13 +85,19 @@ class GeneralLedgerController extends Controller
         })->toArray();
 
         // Get firm settings for header
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+        $firm = Firm::find($firmId);
+
         $firmSettings = (object) [
-            'firm_name' => 'Naeelah Saleh & Associates',
-            'registration_number' => 'LLP0012345',
-            'address' => 'No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia',
-            'phone_number' => '+6019-3186436',
-            'email' => 'info@naaelahsaleh.my',
-            'tax_registration_number' => 'W24-2507-32000179'
+            'firm_name' => $firm ? $firm->name : 'Naeelah Saleh & Associates',
+            'registration_number' => $firm ? $firm->registration_number : 'LLP0012345',
+            'address' => $firm ? $firm->address : 'No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia',
+            'phone_number' => $firm ? $firm->phone : '+6019-3186436',
+            'email' => $firm ? $firm->email : 'info@naaelahsaleh.my',
+            'tax_registration_number' => $firm && isset($firm->settings['tax_registration_number'])
+                ? $firm->settings['tax_registration_number']
+                : 'W24-2507-32000179'
         ];
 
         $reportTitle = 'General Ledger';
@@ -92,6 +113,18 @@ class GeneralLedgerController extends Controller
 
         // Generate filename with date range
         $filename = 'General_Ledger_' . date('Y-m-d', strtotime($fromDate)) . '_to_' . date('Y-m-d', strtotime($toDate)) . '.pdf';
+
+        // Log general ledger print
+        activity()
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'from_date' => $fromDate,
+                'to_date' => $toDate,
+                'action' => 'print',
+                'filename' => $filename
+            ])
+            ->log("General Ledger printed for period {$fromDate} to {$toDate}");
 
         return $pdf->download($filename);
     }
@@ -202,22 +235,50 @@ class GeneralLedgerController extends Controller
         }
     }
 
-    private function generateLedgerData($reportDate, $fromDate, $toDate)
+    private function generateLedgerData($reportDate, $fromDate, $toDate, $user = null)
     {
         $ledgerData = [];
 
-        // Get active expense categories for proper grouping
-        $activeCategories = ExpenseCategory::active()->ordered()->get();
+        // Get active expense categories for proper grouping with firm scope
+        if ($user && $user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $activeCategories = ExpenseCategory::forFirm(session('current_firm_id'))->active()->ordered()->get();
+            } else {
+                $activeCategories = ExpenseCategory::withoutFirmScope()->active()->ordered()->get();
+            }
+        } else {
+            $activeCategories = ExpenseCategory::active()->ordered()->get();
+        }
         $categoryMap = $activeCategories->pluck('name', 'name')->toArray();
 
-        // 1. Cash/Bank Accounts from Opening Balances
-        $openingBalances = OpeningBalance::active()->orderBy('bank_code')->get();
+        // 1. Cash/Bank Accounts from Opening Balances with firm scope
+        if ($user && $user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $openingBalances = OpeningBalance::forFirm(session('current_firm_id'))->active()->orderBy('bank_code')->get();
+            } else {
+                $openingBalances = OpeningBalance::withoutFirmScope()->active()->orderBy('bank_code')->get();
+            }
+        } else {
+            $openingBalances = OpeningBalance::active()->orderBy('bank_code')->get();
+        }
 
         foreach ($openingBalances as $balance) {
-            // Calculate actual transactions for this account
-            $receipts = Receipt::whereBetween('receipt_date', [$fromDate, $toDate])->sum('amount_paid');
-            $bills = Bill::whereBetween('bill_date', [$fromDate, $toDate])->sum('total_amount');
-            $vouchers = Voucher::whereBetween('payment_date', [$fromDate, $toDate])->sum('total_amount');
+            // Calculate actual transactions for this account with firm scope
+            if ($user && $user->hasRole('Super Administrator')) {
+                if (session('current_firm_id')) {
+                    $receipts = Receipt::forFirm(session('current_firm_id'))->whereBetween('receipt_date', [$fromDate, $toDate])->sum('amount_paid');
+                    $bills = Bill::forFirm(session('current_firm_id'))->whereBetween('bill_date', [$fromDate, $toDate])->sum('total_amount');
+                    $vouchers = Voucher::forFirm(session('current_firm_id'))->whereBetween('payment_date', [$fromDate, $toDate])->sum('total_amount');
+                } else {
+                    $receipts = Receipt::withoutFirmScope()->whereBetween('receipt_date', [$fromDate, $toDate])->sum('amount_paid');
+                    $bills = Bill::withoutFirmScope()->whereBetween('bill_date', [$fromDate, $toDate])->sum('total_amount');
+                    $vouchers = Voucher::withoutFirmScope()->whereBetween('payment_date', [$fromDate, $toDate])->sum('total_amount');
+                }
+            } else {
+                $receipts = Receipt::whereBetween('receipt_date', [$fromDate, $toDate])->sum('amount_paid');
+                $bills = Bill::whereBetween('bill_date', [$fromDate, $toDate])->sum('total_amount');
+                $vouchers = Voucher::whereBetween('payment_date', [$fromDate, $toDate])->sum('total_amount');
+            }
 
             $debitTransactions = $receipts; // Money in
             $creditTransactions = $bills + $vouchers; // Money out
@@ -257,11 +318,30 @@ class GeneralLedgerController extends Controller
 
     private function addExpenseAccounts(&$ledgerData, $fromDate, $toDate, $categoryMap)
     {
-        // Bills by category
-        $bills = Bill::whereBetween('bill_date', [$fromDate, $toDate])
-            ->selectRaw('category, SUM(total_amount) as total')
-            ->groupBy('category')
-            ->get();
+        // Get user context for firm scope
+        $user = auth()->user();
+
+        // Bills by category with firm scope
+        if ($user && $user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $bills = Bill::forFirm(session('current_firm_id'))
+                    ->whereBetween('bill_date', [$fromDate, $toDate])
+                    ->selectRaw('category, SUM(total_amount) as total')
+                    ->groupBy('category')
+                    ->get();
+            } else {
+                $bills = Bill::withoutFirmScope()
+                    ->whereBetween('bill_date', [$fromDate, $toDate])
+                    ->selectRaw('category, SUM(total_amount) as total')
+                    ->groupBy('category')
+                    ->get();
+            }
+        } else {
+            $bills = Bill::whereBetween('bill_date', [$fromDate, $toDate])
+                ->selectRaw('category, SUM(total_amount) as total')
+                ->groupBy('category')
+                ->get();
+        }
 
         foreach ($bills as $bill) {
             $category = $bill->category && isset($categoryMap[$bill->category])
@@ -279,23 +359,38 @@ class GeneralLedgerController extends Controller
             ];
         }
 
-        // Vouchers by category
-        $vouchers = Voucher::whereBetween('payment_date', [$fromDate, $toDate])
-            ->with(['items'])
-            ->get();
+        // Vouchers by category with firm scope
+        if ($user && $user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $vouchers = Voucher::forFirm(session('current_firm_id'))
+                    ->whereBetween('payment_date', [$fromDate, $toDate])
+                    ->with(['items'])
+                    ->get();
+            } else {
+                $vouchers = Voucher::withoutFirmScope()
+                    ->whereBetween('payment_date', [$fromDate, $toDate])
+                    ->with(['items'])
+                    ->get();
+            }
+        } else {
+            $vouchers = Voucher::whereBetween('payment_date', [$fromDate, $toDate])
+                ->with(['items'])
+                ->get();
+        }
 
         $voucherCategories = [];
         foreach ($vouchers as $voucher) {
-            foreach ($voucher->items as $item) {
-                $category = $item->category && isset($categoryMap[$item->category])
-                    ? $item->category
-                    : 'Other';
+            // Use first item category as voucher-level category (consistent with voucher index display)
+            $firstItemCategory = $voucher->items->first()->category ?? null;
+            $category = $firstItemCategory && isset($categoryMap[$firstItemCategory])
+                ? $firstItemCategory
+                : 'Other';
 
-                if (!isset($voucherCategories[$category])) {
-                    $voucherCategories[$category] = 0;
-                }
-                $voucherCategories[$category] += $item->total_amount;
+            if (!isset($voucherCategories[$category])) {
+                $voucherCategories[$category] = 0;
             }
+            // Use voucher total amount (not individual item amounts)
+            $voucherCategories[$category] += $voucher->total_amount;
         }
 
         foreach ($voucherCategories as $category => $amount) {

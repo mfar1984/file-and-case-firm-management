@@ -9,6 +9,7 @@ use App\Models\Voucher;
 use App\Models\VoucherItem;
 use App\Models\ExpenseCategory;
 use App\Models\OpeningBalance;
+use App\Models\Firm;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -45,7 +46,21 @@ class TrialBalanceController extends Controller
         $totalDebit = collect($accounts)->sum('debit');
         $totalCredit = collect($accounts)->sum('credit');
         $isBalanced = abs($totalDebit - $totalCredit) < 0.01;
-        
+
+        // Log trial balance access
+        activity()
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'total_debit' => $totalDebit,
+                'total_credit' => $totalCredit,
+                'is_balanced' => $isBalanced,
+                'accounts_count' => count($accounts)
+            ])
+            ->log("Trial Balance accessed for period {$startDate} to {$endDate}");
+
         return view('trial-balance', compact(
             'accounts',
             'totalDebit',
@@ -222,13 +237,19 @@ class TrialBalanceController extends Controller
         $isBalanced = abs($difference) < 0.01;
 
         // Get firm settings for header
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+        $firm = Firm::find($firmId);
+
         $firmSettings = (object) [
-            'firm_name' => 'Naeelah Saleh & Associates',
-            'registration_number' => 'LLP0012345',
-            'address' => 'No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia',
-            'phone_number' => '+6019-3186436',
-            'email' => 'info@naaelahsaleh.my',
-            'tax_registration_number' => 'W24-2507-32000179'
+            'firm_name' => $firm ? $firm->name : 'Naeelah Saleh & Associates',
+            'registration_number' => $firm ? $firm->registration_number : 'LLP0012345',
+            'address' => $firm ? $firm->address : 'No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia',
+            'phone_number' => $firm ? $firm->phone : '+6019-3186436',
+            'email' => $firm ? $firm->email : 'info@naaelahsaleh.my',
+            'tax_registration_number' => $firm && isset($firm->settings['tax_registration_number'])
+                ? $firm->settings['tax_registration_number']
+                : 'W24-2507-32000179'
         ];
 
         $reportTitle = 'Trial Balance';
@@ -244,6 +265,19 @@ class TrialBalanceController extends Controller
 
         // Generate filename with date range
         $filename = 'Trial_Balance_' . date('Y-m-d', strtotime($startDate)) . '_to_' . date('Y-m-d', strtotime($endDate)) . '.pdf';
+
+        // Log trial balance print
+        activity()
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'action' => 'print',
+                'filename' => $filename,
+                'is_balanced' => $isBalanced
+            ])
+            ->log("Trial Balance printed for period {$startDate} to {$endDate}");
 
         return $pdf->download($filename);
     }

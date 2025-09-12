@@ -137,7 +137,14 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="py-8 px-4 text-center text-gray-500">No quotations found</td>
+                            <td colspan="8" class="py-8 px-4 text-center text-gray-500">
+                                <div class="flex flex-col items-center">
+                                    <span class="material-icons text-gray-400 text-4xl mb-2">description</span>
+                                    <p class="text-sm text-gray-500">No quotations available</p>
+                                    <p class="text-xs text-gray-400">Create quotations to manage client proposals</p>
+                                    <a href="{{ route('quotation.create') }}" class="text-blue-600 hover:text-blue-800 text-xs mt-2">Create your first quotation</a>
+                                </div>
+                            </td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -307,7 +314,12 @@
                 </div>
             </div>
             @empty
-            <div class="text-center text-gray-500 py-8">No quotations found</div>
+            <div class="text-center py-8">
+                <span class="material-icons text-gray-400 text-4xl mb-2">description</span>
+                <p class="text-sm text-gray-500">No quotations available</p>
+                <p class="text-xs text-gray-400">Create quotations to manage client proposals</p>
+                <a href="{{ route('quotation.create') }}" class="text-blue-600 hover:text-blue-800 text-xs mt-2 block">Create your first quotation</a>
+            </div>
             @endforelse
             </div>
         </div>

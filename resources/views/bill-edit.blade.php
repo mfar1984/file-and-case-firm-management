@@ -171,11 +171,76 @@ input[type='number'] {
                 </div>
             </div>
 
-            <!-- Item Entry Section -->
-            <div class="mb-8">
+            <!-- Bill Items Section -->
+            <div class="mb-8" x-data="{
+                items: [
+                    @if($bill->items->count() > 0)
+                        @foreach($bill->items as $item)
+                        {
+                            description: '{{ $item->description }}',
+                            category: '{{ $item->category }}',
+                            qty: {{ $item->qty }},
+                            uom: '{{ $item->uom }}',
+                            unit_price: {{ $item->unit_price }},
+                            discount_percent: {{ $item->discount_percent ?? 0 }},
+                            tax_percent: {{ $item->tax_percent ?? 0 }}
+                        }{{ !$loop->last ? ',' : '' }}
+                        @endforeach
+                    @else
+                        {
+                            description: '',
+                            category: '',
+                            qty: 1,
+                            uom: 'unit',
+                            unit_price: 0,
+                            discount_percent: 0,
+                            tax_percent: 0
+                        }
+                    @endif
+                ],
+                totalAmount() {
+                    return this.items.reduce((sum, item) => {
+                        const lineTotal = item.qty * item.unit_price;
+                        const discountAmount = lineTotal * (item.discount_percent / 100);
+                        const afterDiscount = lineTotal - discountAmount;
+                        const taxAmount = afterDiscount * (item.tax_percent / 100);
+                        return sum + afterDiscount + taxAmount;
+                    }, 0);
+                },
+                addItem() {
+                    this.items.push({
+                        description: '',
+                        category: '',
+                        qty: 1,
+                        uom: 'unit',
+                        unit_price: 0,
+                        discount_percent: 0,
+                        tax_percent: 0
+                    });
+                },
+                removeItem(index) {
+                    if (this.items.length > 1) {
+                        this.items.splice(index, 1);
+                    }
+                },
+                generateHiddenInputs() {
+                    const container = document.getElementById('hiddenItemsContainer');
+                    container.innerHTML = '';
+                    this.items.forEach((item, index) => {
+                        const fields = ['description', 'category', 'qty', 'uom', 'unit_price', 'discount_percent', 'tax_percent'];
+                        fields.forEach(field => {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = `items[${index}][${field}]`;
+                            input.value = item[field] || '';
+                            container.appendChild(input);
+                        });
+                    });
+                }
+            }" x-init="$watch('items', () => { generateHiddenInputs(); }, {deep: true}); generateHiddenInputs();">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-sm font-semibold text-gray-800">Bill Items</h3>
-                    <button type="button" id="addItem" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-sm text-xs">
+                    <button type="button" @click="addItem()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-sm text-xs">
                         <span class="material-icons text-xs mr-1">add</span>
                         Add Item
                     </button>
@@ -197,102 +262,128 @@ input[type='number'] {
                             </tr>
                         </thead>
                         <tbody class="bg-white" id="itemsContainer">
-                            @foreach($bill->items as $index => $item)
-                            <tr class="item-row">
-                                <td class="px-4 py-3 align-middle">
-                                    <textarea name="items[{{ $index }}][description]" class="w-full px-3 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y align-middle" placeholder="Description" rows="1" required>{{ old('items.'.$index.'.description', $item->description) }}</textarea>
-                                </td>
-                                <td class="px-1 mx-1 py-3 text-center">
-                                    <select name="items[{{ $index }}][category]" class="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                        <option value="">Select</option>
-                                        @foreach($expenseCategories as $category)
-                                            <option value="{{ $category->name }}" {{ old('items.'.$index.'.category', $item->category) == $category->name ? 'selected' : '' }}>
-                                                {{ $category->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </td>
-                                <td class="px-1 mx-1 py-3 text-center">
-                                    <input type="number" name="items[{{ $index }}][qty]" value="{{ old('items.'.$index.'.qty', $item->qty) }}" step="0.01" min="0.01" class="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500" required>
-                                </td>
-                                <td class="px-1 mx-1 py-3 text-center">
-                                    <input type="text" name="items[{{ $index }}][uom]" value="{{ old('items.'.$index.'.uom', $item->uom) }}" class="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500" required>
-                                </td>
-                                <td class="px-1 mx-1 py-3 text-center">
-                                    <input type="number" name="items[{{ $index }}][unit_price]" value="{{ old('items.'.$index.'.unit_price', $item->unit_price) }}" step="0.01" min="0" class="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500" required>
-                                </td>
-                                <td class="px-1 mx-1 py-3 text-center">
-                                    <input type="number" name="items[{{ $index }}][discount_percent]" value="{{ old('items.'.$index.'.discount_percent', $item->discount_percent) }}" step="0.01" min="0" max="100" class="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                </td>
-                                <td class="px-1 mx-1 py-3 text-center">
-                                    <input type="number" name="items[{{ $index }}][tax_percent]" value="{{ old('items.'.$index.'.tax_percent', $item->tax_percent) }}" step="0.01" min="0" max="100" class="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    <button type="button" class="remove-item text-red-600 hover:text-red-800 text-lg" title="Delete Row">❌</button>
-                                </td>
-                            </tr>
-                            @endforeach
+                            <template x-for="(item, index) in items" :key="index">
+                                <tr class="item-row">
+                                    <td class="px-4 py-3 align-middle">
+                                        <textarea :name="`items[${index}][description]`" x-model="item.description" class="w-full px-3 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y align-middle" placeholder="Description" rows="1" required></textarea>
+                                    </td>
+                                    <td class="px-1 mx-1 py-3 text-center">
+                                        <select :name="`items[${index}][category]`" x-model="item.category" class="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                            <option value="">Select</option>
+                                            @foreach($expenseCategories as $category)
+                                                <option value="{{ $category->name }}">{{ $category->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td class="px-1 mx-1 py-3 text-center">
+                                        <input type="number" :name="`items[${index}][qty]`" x-model.number="item.qty" step="0.01" min="0.01" class="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500" required>
+                                    </td>
+                                    <td class="px-1 mx-1 py-3 text-center">
+                                        <select :name="`items[${index}][uom]`" x-model="item.uom" class="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500" required>
+                                            <option value="unit">Unit</option>
+                                            <option value="hour">Hour</option>
+                                            <option value="day">Day</option>
+                                            <option value="month">Month</option>
+                                            <option value="lot">Lot</option>
+                                            <option value="piece">Piece</option>
+                                            <option value="set">Set</option>
+                                        </select>
+                                    </td>
+                                    <td class="px-1 mx-1 py-3 text-center">
+                                        <input type="number" :name="`items[${index}][unit_price]`" x-model.number="item.unit_price" step="0.01" min="0" class="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500" required>
+                                    </td>
+                                    <td class="px-1 mx-1 py-3 text-center">
+                                        <input type="number" :name="`items[${index}][discount_percent]`" x-model.number="item.discount_percent" step="0.01" min="0" max="100" class="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    </td>
+                                    <td class="px-1 mx-1 py-3 text-center">
+                                        <input type="number" :name="`items[${index}][tax_percent]`" x-model.number="item.tax_percent" step="0.01" min="0" max="100" class="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <button type="button" @click="removeItem(index)" class="text-red-600 hover:text-red-800 text-lg" title="Delete Row">❌</button>
+                                    </td>
+                                </tr>
+                            </template>
                         </tbody>
                     </table>
                 </div>
 
                 <!-- Mobile Card View for Items -->
                 <div class="md:hidden space-y-4" id="mobileItemsContainer">
-                    @foreach($bill->items as $index => $item)
-                    <div class="item-row bg-white border border-gray-200 rounded-lg p-4 space-y-3">
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm font-medium text-gray-800">Item {{ $index + 1 }}</span>
-                            <button type="button" class="remove-item text-red-600 hover:text-red-800 text-lg" title="Delete Row">❌</button>
-                        </div>
+                    <template x-for="(item, index) in items" :key="index">
+                        <div class="item-row bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-800" x-text="`Item ${index + 1}`"></span>
+                                <button type="button" @click="removeItem(index)" class="text-red-600 hover:text-red-800 text-lg" title="Delete Row">❌</button>
+                            </div>
 
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
-                            <textarea name="items[{{ $index }}][description]" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y" placeholder="Description" rows="2" required>{{ old('items.'.$index.'.description', $item->description) }}</textarea>
-                        </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                                <textarea :name="`items[${index}][description]`" x-model="item.description" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y" placeholder="Description" rows="2" required></textarea>
+                            </div>
 
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Category</label>
-                                <select name="items[{{ $index }}][category]" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                    <option value="">Select Category</option>
-                                    @foreach($expenseCategories as $category)
-                                        <option value="{{ $category->name }}" {{ old('items.'.$index.'.category', $item->category) == $category->name ? 'selected' : '' }}>
-                                            {{ $category->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Category</label>
+                                    <select :name="`items[${index}][category]`" x-model="item.category" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                        <option value="">Select Category</option>
+                                        @foreach($expenseCategories as $category)
+                                            <option value="{{ $category->name }}">{{ $category->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Qty</label>
+                                    <input type="number" :name="`items[${index}][qty]`" x-model.number="item.qty" step="0.01" min="0.01" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" required>
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Qty</label>
-                                <input type="number" name="items[{{ $index }}][qty]" value="{{ old('items.'.$index.'.qty', $item->qty) }}" step="0.01" min="0.01" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" required>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">UOM *</label>
+                                    <select :name="`items[${index}][uom]`" x-model="item.uom" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" required>
+                                        <option value="unit">Unit</option>
+                                        <option value="hour">Hour</option>
+                                        <option value="day">Day</option>
+                                        <option value="month">Month</option>
+                                        <option value="lot">Lot</option>
+                                        <option value="piece">Piece</option>
+                                        <option value="set">Set</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price (RM)</label>
+                                    <input type="number" :name="`items[${index}][unit_price]`" x-model.number="item.unit_price" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" required>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Discount (%)</label>
+                                    <input type="number" :name="`items[${index}][discount_percent]`" x-model.number="item.discount_percent" step="0.01" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Tax (%)</label>
+                                    <input type="number" :name="`items[${index}][tax_percent]`" x-model.number="item.tax_percent" step="0.01" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
                             </div>
                         </div>
+                    </template>
+                </div>
 
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">UOM</label>
-                                <input type="text" name="items[{{ $index }}][uom]" value="{{ old('items.'.$index.'.uom', $item->uom) }}" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" required>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price (RM)</label>
-                                <input type="number" name="items[{{ $index }}][unit_price]" value="{{ old('items.'.$index.'.unit_price', $item->unit_price) }}" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" required>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Discount (%)</label>
-                                <input type="number" name="items[{{ $index }}][discount_percent]" value="{{ old('items.'.$index.'.discount_percent', $item->discount_percent) }}" step="0.01" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Tax (%)</label>
-                                <input type="number" name="items[{{ $index }}][tax_percent]" value="{{ old('items.'.$index.'.tax_percent', $item->tax_percent) }}" step="0.01" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
-                            </div>
+                <!-- Summary Section -->
+                <div class="border-t border-gray-200 mt-6 mb-4"></div>
+                <div class="flex justify-end">
+                    <div class="w-full md:w-64 space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="font-medium text-gray-700">Total Amount:</span>
+                            <span class="text-gray-900 font-semibold" x-text="'RM ' + totalAmount().toFixed(2)"></span>
                         </div>
                     </div>
-                    @endforeach
                 </div>
             </div>
+
+            <!-- Hidden inputs for items -->
+            <div id="hiddenItemsContainer"></div>
 
             <div class="flex justify-end space-x-4">
                 <a href="{{ route('bill.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-sm text-xs font-medium">
@@ -306,126 +397,5 @@ input[type='number'] {
     </div>
 </div>
 
-<script>
-let itemIndex = {{ count($bill->items) }};
 
-// Generate category options for dynamic items
-function getCategoryOptions() {
-    let options = '<option value="">Select</option>';
-    @foreach($expenseCategories as $category)
-        options += '<option value="{{ $category->name }}">{{ $category->name }}</option>';
-    @endforeach
-    return options;
-}
-
-function getCategoryOptionsForMobile() {
-    let options = '<option value="">Select Category</option>';
-    @foreach($expenseCategories as $category)
-        options += '<option value="{{ $category->name }}">{{ $category->name }}</option>';
-    @endforeach
-    return options;
-}
-
-document.getElementById('addItem').addEventListener('click', function() {
-    const desktopContainer = document.getElementById('itemsContainer');
-    const mobileContainer = document.getElementById('mobileItemsContainer');
-
-    // Desktop table row
-    const desktopRowHtml = `
-        <tr class="item-row">
-            <td class="px-4 py-3 align-middle">
-                <textarea name="items[${itemIndex}][description]" class="w-full px-3 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y align-middle" placeholder="Description" rows="1" required></textarea>
-            </td>
-            <td class="px-1 mx-1 py-3 text-center">
-                <select name="items[${itemIndex}][category]" class="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    ${getCategoryOptions()}
-                </select>
-            </td>
-            <td class="px-1 mx-1 py-3 text-center">
-                <input type="number" name="items[${itemIndex}][qty]" value="1" step="0.01" min="0.01" class="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500" required>
-            </td>
-            <td class="px-1 mx-1 py-3 text-center">
-                <input type="text" name="items[${itemIndex}][uom]" value="lot" class="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500" required>
-            </td>
-            <td class="px-1 mx-1 py-3 text-center">
-                <input type="number" name="items[${itemIndex}][unit_price]" value="0" step="0.01" min="0" class="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500" required>
-            </td>
-            <td class="px-1 mx-1 py-3 text-center">
-                <input type="number" name="items[${itemIndex}][discount_percent]" value="0" step="0.01" min="0" max="100" class="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500">
-            </td>
-            <td class="px-1 mx-1 py-3 text-center">
-                <input type="number" name="items[${itemIndex}][tax_percent]" value="0" step="0.01" min="0" max="100" class="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500">
-            </td>
-            <td class="px-4 py-3 text-center">
-                <button type="button" class="remove-item text-red-600 hover:text-red-800 text-lg" title="Delete Row">❌</button>
-            </td>
-        </tr>
-    `;
-
-    // Mobile card
-    const mobileCardHtml = `
-        <div class="item-row bg-white border border-gray-200 rounded-lg p-4 space-y-3">
-            <div class="flex items-center justify-between">
-                <span class="text-sm font-medium text-gray-800">Item ${itemIndex + 1}</span>
-                <button type="button" class="remove-item text-red-600 hover:text-red-800 text-lg" title="Delete Row">❌</button>
-            </div>
-
-            <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
-                <textarea name="items[${itemIndex}][description]" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y" placeholder="Description" rows="2" required></textarea>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Category</label>
-                    <select name="items[${itemIndex}][category]" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
-                        ${getCategoryOptionsForMobile()}
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Qty</label>
-                    <input type="number" name="items[${itemIndex}][qty]" value="1" step="0.01" min="0.01" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" required>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">UOM</label>
-                    <input type="text" name="items[${itemIndex}][uom]" value="lot" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" required>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price (RM)</label>
-                    <input type="number" name="items[${itemIndex}][unit_price]" value="0" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" required>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Discount (%)</label>
-                    <input type="number" name="items[${itemIndex}][discount_percent]" value="0" step="0.01" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Tax (%)</label>
-                    <input type="number" name="items[${itemIndex}][tax_percent]" value="0" step="0.01" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
-                </div>
-            </div>
-        </div>
-    `;
-
-    desktopContainer.insertAdjacentHTML('beforeend', desktopRowHtml);
-    mobileContainer.insertAdjacentHTML('beforeend', mobileCardHtml);
-    itemIndex++;
-});
-
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('remove-item') || e.target.closest('.remove-item')) {
-        const itemRow = e.target.closest('.item-row');
-        if (document.querySelectorAll('.item-row').length > 1) {
-            itemRow.remove();
-        } else {
-            alert('At least one item is required.');
-        }
-    }
-});
-</script>
 @endsection

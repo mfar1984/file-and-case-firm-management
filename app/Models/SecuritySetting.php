@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasFirmScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SecuritySetting extends Model
 {
-    use HasFactory;
+    use HasFactory, HasFirmScope;
 
     protected $fillable = [
         'two_factor_auth',
@@ -20,7 +22,8 @@ class SecuritySetting extends Model
         'session_timeout_minutes',
         'ip_whitelist_enabled',
         'ip_whitelist',
-        'audit_log_enabled'
+        'audit_log_enabled',
+        'firm_id'
     ];
 
     protected $casts = [
@@ -33,11 +36,23 @@ class SecuritySetting extends Model
     ];
 
     /**
-     * Get the first (and only) security settings record
+     * Get security settings for current firm context
      */
     public static function getSecuritySettings()
     {
-        return static::first() ?? static::create([
+        // Get current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+
+        if ($firmId) {
+            $settings = static::where('firm_id', $firmId)->first();
+            if ($settings) {
+                return $settings;
+            }
+        }
+
+        // Create default settings for current firm
+        return static::create([
             'two_factor_auth' => false,
             'password_expiry' => false,
             'password_expiry_days' => 90,
@@ -48,7 +63,16 @@ class SecuritySetting extends Model
             'session_timeout_minutes' => 120,
             'ip_whitelist_enabled' => false,
             'ip_whitelist' => null,
-            'audit_log_enabled' => true
+            'audit_log_enabled' => true,
+            'firm_id' => $firmId
         ]);
+    }
+
+    /**
+     * Get the firm that owns this setting
+     */
+    public function firm(): BelongsTo
+    {
+        return $this->belongsTo(Firm::class);
     }
 }

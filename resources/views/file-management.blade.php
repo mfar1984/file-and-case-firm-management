@@ -171,8 +171,9 @@
                 </div>
             @else
                 <div class="text-center py-8">
-                    <span class="material-icons text-gray-400 text-4xl mb-2">folder_open</span>
-                    <p class="text-gray-500 text-sm">No files found. Upload your first file above.</p>
+                    <span class="material-icons text-gray-400 text-4xl mb-2">folder</span>
+                    <p class="text-sm text-gray-500">No files available</p>
+                    <p class="text-xs text-gray-400">Upload files to manage case documents</p>
                 </div>
             @endif
         </div>
@@ -293,8 +294,9 @@
                 @endforeach
             @else
                 <div class="text-center py-8">
-                    <span class="material-icons text-gray-400 text-4xl mb-2">folder_open</span>
-                    <p class="text-gray-500 text-sm">No files found. Upload your first file above.</p>
+                    <span class="material-icons text-gray-400 text-4xl mb-2">folder</span>
+                    <p class="text-sm text-gray-500">No files available</p>
+                    <p class="text-xs text-gray-400">Upload files to manage case documents</p>
                 </div>
             @endif
         </div>

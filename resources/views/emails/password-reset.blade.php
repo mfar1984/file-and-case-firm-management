@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Password Reset - Naeelah Firm</title>
+    <title>Password Reset - {{ $firmName ?? 'Naeelah Firm' }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -59,7 +59,7 @@
 <body>
     <div class="header">
         <h1>Password Reset</h1>
-        <p>Naeelah Firm</p>
+        <p>{{ $firmName ?? 'Naeelah Firm' }}</p>
     </div>
     
     <div class="content">
@@ -82,12 +82,12 @@
         <p>If you did not request this password reset, please contact the administrator immediately.</p>
         
         <p>Best regards,<br>
-        <strong>Naeelah Firm Team</strong></p>
+        <strong>{{ $firmName ?? 'Naeelah Firm' }} Team</strong></p>
     </div>
     
     <div class="footer">
         <p>This is an automated message. Please do not reply to this email.</p>
-        <p>&copy; {{ date('Y') }} Naeelah Firm. All rights reserved.</p>
+        <p>&copy; {{ date('Y') }} {{ $firmName ?? 'Naeelah Firm' }}. All rights reserved.</p>
     </div>
 </body>
 </html> 

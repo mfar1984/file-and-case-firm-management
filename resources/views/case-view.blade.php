@@ -1638,6 +1638,16 @@ function autoFillCurrentCase() {
     alpine.timelineData.case_number = {{ Js::from($case->case_number ?? "") }};
     alpine.timelineData.court_location = {{ Js::from($case->court_location ?? "") }};
 
+    // Set filing date from case creation date
+    @if($case->created_at)
+        alpine.timelineData.filing_date = {{ Js::from($case->created_at->format('Y-m-d')) }};
+    @endif
+
+    // Set location from court location if available
+    @if($case->court_location)
+        alpine.timelineData.location = {{ Js::from($case->court_location) }};
+    @endif
+
     // Set parties notified
     @if($case->parties->count() > 0)
         alpine.timelineData.parties_notified = {{ $case->parties->first()->id }};
@@ -1652,6 +1662,8 @@ function autoFillCurrentCase() {
     @if($case->judge_name)
         alpine.timelineData.judge_name = {{ Js::from($case->judge_name) }};
     @endif
+
+    console.log('Auto-filled case data:', alpine.timelineData);
 
     // Show success message
     alert('Current case data has been auto-filled!');

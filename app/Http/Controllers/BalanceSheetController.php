@@ -15,22 +15,36 @@ class BalanceSheetController extends Controller
     {
         // Get date for balance sheet (default to today)
         $asOfDate = $request->get('as_of_date', Carbon::now()->format('Y-m-d'));
-        
-        // Calculate Assets
-        $assets = $this->calculateAssets($asOfDate);
-        
-        // Calculate Liabilities
-        $liabilities = $this->calculateLiabilities($asOfDate);
-        
-        // Calculate Equity
-        $equity = $this->calculateEquity($asOfDate);
+        $user = auth()->user();
+
+        // Calculate Assets with firm scope
+        $assets = $this->calculateAssets($asOfDate, $user);
+
+        // Calculate Liabilities with firm scope
+        $liabilities = $this->calculateLiabilities($asOfDate, $user);
+
+        // Calculate Equity with firm scope
+        $equity = $this->calculateEquity($asOfDate, $user);
         
         // Verify Balance Sheet equation: Assets = Liabilities + Equity
         $totalAssets = collect($assets)->sum('amount');
         $totalLiabilities = collect($liabilities)->sum('amount');
         $totalEquity = collect($equity)->sum('amount');
         $isBalanced = abs($totalAssets - ($totalLiabilities + $totalEquity)) < 0.01;
-        
+
+        // Log balance sheet access
+        activity()
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'as_of_date' => $asOfDate,
+                'total_assets' => $totalAssets,
+                'total_liabilities' => $totalLiabilities,
+                'total_equity' => $totalEquity,
+                'is_balanced' => $isBalanced
+            ])
+            ->log("Balance Sheet accessed as of {$asOfDate}");
+
         return view('balance-sheet', compact(
             'assets',
             'liabilities',
@@ -43,24 +57,34 @@ class BalanceSheetController extends Controller
         ));
     }
     
-    private function calculateAssets($asOfDate)
+    private function calculateAssets($asOfDate, $user = null)
     {
         $assets = [];
-        
+
         // Current Assets
-        
-        // 1. Cash and Bank Balances
-        $totalOpeningBalance = OpeningBalance::where('status', 1)->sum('debit_myr');
 
-        // Add receipts (money in) up to as_of_date
-        $receipts = Receipt::where('receipt_date', '<=', $asOfDate)->sum('amount_paid');
-
-        // Subtract bills and vouchers (money out) up to as_of_date
-        $bills = Bill::where('bill_date', '<=', $asOfDate)->sum('total_amount');
-        $vouchers = Voucher::where('payment_date', '<=', $asOfDate)->sum('total_amount');
+        // 1. Cash and Bank Balances with firm scope
+        if ($user && $user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $totalOpeningBalance = OpeningBalance::forFirm(session('current_firm_id'))->where('status', 1)->sum('debit_myr');
+                $receipts = Receipt::forFirm(session('current_firm_id'))->where('receipt_date', '<=', $asOfDate)->sum('amount_paid');
+                $bills = Bill::forFirm(session('current_firm_id'))->where('bill_date', '<=', $asOfDate)->sum('total_amount');
+                $vouchers = Voucher::forFirm(session('current_firm_id'))->where('payment_date', '<=', $asOfDate)->sum('total_amount');
+            } else {
+                $totalOpeningBalance = OpeningBalance::withoutFirmScope()->where('status', 1)->sum('debit_myr');
+                $receipts = Receipt::withoutFirmScope()->where('receipt_date', '<=', $asOfDate)->sum('amount_paid');
+                $bills = Bill::withoutFirmScope()->where('bill_date', '<=', $asOfDate)->sum('total_amount');
+                $vouchers = Voucher::withoutFirmScope()->where('payment_date', '<=', $asOfDate)->sum('total_amount');
+            }
+        } else {
+            $totalOpeningBalance = OpeningBalance::where('status', 1)->sum('debit_myr');
+            $receipts = Receipt::where('receipt_date', '<=', $asOfDate)->sum('amount_paid');
+            $bills = Bill::where('bill_date', '<=', $asOfDate)->sum('total_amount');
+            $vouchers = Voucher::where('payment_date', '<=', $asOfDate)->sum('total_amount');
+        }
 
         $totalCashBank = $totalOpeningBalance + $receipts - $bills - $vouchers;
-        
+
         $assets[] = [
             'category' => 'Current Assets',
             'account' => 'Cash and Bank Balances',

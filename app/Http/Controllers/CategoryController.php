@@ -14,12 +14,33 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $caseTypes = CaseType::orderBy('code')->get();
-        $caseStatuses = CaseStatus::orderBy('name')->get();
-        $eventStatuses = EventStatus::active()->ordered()->get();
-        $fileTypes = \App\Models\FileType::orderBy('code')->get();
-        $specializations = \App\Models\Specialization::orderBy('specialist_name')->get();
-        $expenseCategories = ExpenseCategory::ordered()->get();
+        // Apply firm scope filtering
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $caseTypes = CaseType::forFirm(session('current_firm_id'))->orderBy('code')->get();
+                $caseStatuses = CaseStatus::forFirm(session('current_firm_id'))->orderBy('name')->get();
+                $eventStatuses = EventStatus::forFirm(session('current_firm_id'))->active()->ordered()->get();
+                $fileTypes = \App\Models\FileType::forFirm(session('current_firm_id'))->orderBy('code')->get();
+                $specializations = \App\Models\Specialization::forFirm(session('current_firm_id'))->orderBy('specialist_name')->get();
+                $expenseCategories = ExpenseCategory::forFirm(session('current_firm_id'))->ordered()->get();
+            } else {
+                $caseTypes = CaseType::withoutFirmScope()->orderBy('code')->get();
+                $caseStatuses = CaseStatus::withoutFirmScope()->orderBy('name')->get();
+                $eventStatuses = EventStatus::withoutFirmScope()->active()->ordered()->get();
+                $fileTypes = \App\Models\FileType::withoutFirmScope()->orderBy('code')->get();
+                $specializations = \App\Models\Specialization::withoutFirmScope()->orderBy('specialist_name')->get();
+                $expenseCategories = ExpenseCategory::withoutFirmScope()->ordered()->get();
+            }
+        } else {
+            $caseTypes = CaseType::orderBy('code')->get();
+            $caseStatuses = CaseStatus::orderBy('name')->get();
+            $eventStatuses = EventStatus::active()->ordered()->get();
+            $fileTypes = \App\Models\FileType::orderBy('code')->get();
+            $specializations = \App\Models\Specialization::orderBy('specialist_name')->get();
+            $expenseCategories = ExpenseCategory::ordered()->get();
+        }
 
         return view('settings.category', compact('caseTypes', 'caseStatuses', 'eventStatuses', 'fileTypes', 'specializations', 'expenseCategories'));
     }
@@ -27,8 +48,12 @@ class CategoryController extends Controller
     // Case Type Methods
     public function storeType(Request $request)
     {
+        // Get current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+
         $validator = Validator::make($request->all(), [
-            'code' => 'required|string|max:10|unique:case_types,code',
+            'code' => 'required|string|max:10|unique:case_types,code,NULL,id,firm_id,' . $firmId,
             'description' => 'required|string|max:255',
             'status' => 'required|in:active,inactive',
         ]);
@@ -52,6 +77,17 @@ class CategoryController extends Controller
 
             DB::commit();
 
+            // Log case type creation
+            activity()
+                ->performedOn($caseType)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'code' => $caseType->code,
+                    'description' => $caseType->description
+                ])
+                ->log("Case type {$caseType->code} created");
+
             return response()->json([
                 'success' => true,
                 'message' => 'Case type created successfully',
@@ -69,8 +105,12 @@ class CategoryController extends Controller
 
     public function updateType(Request $request, $id)
     {
+        // Get current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+
         $validator = Validator::make($request->all(), [
-            'code' => 'required|string|max:10|unique:case_types,code,' . $id,
+            'code' => 'required|string|max:10|unique:case_types,code,' . $id . ',id,firm_id,' . $firmId,
             'description' => 'required|string|max:255',
             'status' => 'required|in:active,inactive',
         ]);
@@ -94,6 +134,17 @@ class CategoryController extends Controller
             ]);
 
             DB::commit();
+
+            // Log case type update
+            activity()
+                ->performedOn($caseType)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'code' => $caseType->code,
+                    'description' => $caseType->description
+                ])
+                ->log("Case type {$caseType->code} updated");
 
             return response()->json([
                 'success' => true,
@@ -120,6 +171,16 @@ class CategoryController extends Controller
 
             DB::commit();
 
+            // Log case type deletion
+            activity()
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'code' => $caseType->code,
+                    'description' => $caseType->description
+                ])
+                ->log("Case type {$caseType->code} deleted");
+
             return response()->json([
                 'success' => true,
                 'message' => 'Case type deleted successfully'
@@ -137,8 +198,12 @@ class CategoryController extends Controller
     // Case Status Methods
     public function storeStatus(Request $request)
     {
+        // Get current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:case_statuses,name',
+            'name' => 'required|string|max:255|unique:case_statuses,name,NULL,id,firm_id,' . $firmId,
             'description' => 'required|string',
             'color' => 'required|string|max:20',
             'status' => 'required|in:active,inactive',
@@ -164,6 +229,18 @@ class CategoryController extends Controller
 
             DB::commit();
 
+            // Log case status creation
+            activity()
+                ->performedOn($caseStatus)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'name' => $caseStatus->name,
+                    'description' => $caseStatus->description,
+                    'color' => $caseStatus->color
+                ])
+                ->log("Case status {$caseStatus->name} created");
+
             return response()->json([
                 'success' => true,
                 'message' => 'Case status created successfully',
@@ -181,8 +258,12 @@ class CategoryController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
+        // Get current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:case_statuses,name,' . $id,
+            'name' => 'required|string|max:255|unique:case_statuses,name,' . $id . ',id,firm_id,' . $firmId,
             'description' => 'required|string',
             'color' => 'required|string|max:20',
             'status' => 'required|in:active,inactive',
@@ -209,6 +290,18 @@ class CategoryController extends Controller
 
             DB::commit();
 
+            // Log case status update
+            activity()
+                ->performedOn($caseStatus)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'name' => $caseStatus->name,
+                    'description' => $caseStatus->description,
+                    'color' => $caseStatus->color
+                ])
+                ->log("Case status {$caseStatus->name} updated");
+
             return response()->json([
                 'success' => true,
                 'message' => 'Case status updated successfully',
@@ -234,6 +327,17 @@ class CategoryController extends Controller
 
             DB::commit();
 
+            // Log case status deletion
+            activity()
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'name' => $caseStatus->name,
+                    'description' => $caseStatus->description,
+                    'color' => $caseStatus->color
+                ])
+                ->log("Case status {$caseStatus->name} deleted");
+
             return response()->json([
                 'success' => true,
                 'message' => 'Case status deleted successfully'
@@ -251,8 +355,12 @@ class CategoryController extends Controller
     // File Type Methods
     public function storeFileType(Request $request)
     {
+        // Get current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+
         $request->validate([
-            'code' => 'required|string|max:20|unique:file_types,code',
+            'code' => 'required|string|max:20|unique:file_types,code,NULL,id,firm_id,' . $firmId,
             'description' => 'required|string|max:255',
             'status' => 'required|in:active,inactive',
         ]);
@@ -279,8 +387,12 @@ class CategoryController extends Controller
 
     public function updateFileType(Request $request, $id)
     {
+        // Get current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+
         $request->validate([
-            'code' => 'required|string|max:20|unique:file_types,code,' . $id,
+            'code' => 'required|string|max:20|unique:file_types,code,' . $id . ',id,firm_id,' . $firmId,
             'description' => 'required|string|max:255',
             'status' => 'required|in:active,inactive',
         ]);
@@ -292,12 +404,34 @@ class CategoryController extends Controller
             'status' => $request->status,
         ]);
 
+        // Log file type update
+        activity()
+            ->performedOn($fileType)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'code' => $fileType->code,
+                'description' => $fileType->description
+            ])
+            ->log("File type {$fileType->code} updated");
+
         return response()->json(['success' => true, 'message' => 'File type updated successfully', 'data' => $fileType]);
     }
 
     public function destroyFileType($id)
     {
         $fileType = \App\Models\FileType::findOrFail($id);
+
+        // Log file type deletion
+        activity()
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'code' => $fileType->code,
+                'description' => $fileType->description
+            ])
+            ->log("File type {$fileType->code} deleted");
+
         $fileType->delete();
         return response()->json(['success' => true, 'message' => 'File type deleted successfully']);
     }
@@ -305,32 +439,75 @@ class CategoryController extends Controller
     // Specialization Methods
     public function storeSpecialization(Request $request)
     {
+        // Get current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+
         $request->validate([
-            'specialist_name' => 'required|string|max:255|unique:specializations,specialist_name',
+            'specialist_name' => 'required|string|max:255|unique:specializations,specialist_name,NULL,id,firm_id,' . $firmId,
             'description' => 'nullable|string',
             'status' => 'required|in:active,inactive'
         ]);
 
         $specialization = \App\Models\Specialization::create($request->all());
+
+        // Log specialization creation
+        activity()
+            ->performedOn($specialization)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'specialist_name' => $specialization->specialist_name,
+                'description' => $specialization->description
+            ])
+            ->log("Specialization {$specialization->specialist_name} created");
+
         return response()->json(['success' => true, 'message' => 'Specialization created successfully', 'data' => $specialization]);
     }
 
     public function updateSpecialization(Request $request, $id)
     {
+        // Get current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+
         $request->validate([
-            'specialist_name' => 'required|string|max:255|unique:specializations,specialist_name,' . $id,
+            'specialist_name' => 'required|string|max:255|unique:specializations,specialist_name,' . $id . ',id,firm_id,' . $firmId,
             'description' => 'nullable|string',
             'status' => 'required|in:active,inactive'
         ]);
 
         $specialization = \App\Models\Specialization::findOrFail($id);
         $specialization->update($request->all());
+
+        // Log specialization update
+        activity()
+            ->performedOn($specialization)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'specialist_name' => $specialization->specialist_name,
+                'description' => $specialization->description
+            ])
+            ->log("Specialization {$specialization->specialist_name} updated");
+
         return response()->json(['success' => true, 'message' => 'Specialization updated successfully', 'data' => $specialization]);
     }
 
     public function destroySpecialization($id)
     {
         $specialization = \App\Models\Specialization::findOrFail($id);
+
+        // Log specialization deletion
+        activity()
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'specialist_name' => $specialization->specialist_name,
+                'description' => $specialization->description
+            ])
+            ->log("Specialization {$specialization->specialist_name} deleted");
+
         $specialization->delete();
         return response()->json(['success' => true, 'message' => 'Specialization deleted successfully']);
     }
@@ -338,8 +515,12 @@ class CategoryController extends Controller
     // Event Status Methods
     public function storeEventStatus(Request $request)
     {
+        // Get current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:50|unique:event_statuses,name',
+            'name' => 'required|string|max:50|unique:event_statuses,name,NULL,id,firm_id,' . $firmId,
             'description' => 'nullable|string|max:255',
             'background_color' => 'required|string|max:50',
             'icon' => 'required|string|max:50',
@@ -369,6 +550,19 @@ class CategoryController extends Controller
 
             DB::commit();
 
+            // Log event status creation
+            activity()
+                ->performedOn($eventStatus)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'name' => $eventStatus->name,
+                    'description' => $eventStatus->description,
+                    'background_color' => $eventStatus->background_color,
+                    'icon' => $eventStatus->icon
+                ])
+                ->log("Event status {$eventStatus->name} created");
+
             return response()->json([
                 'success' => true,
                 'message' => 'Event status created successfully',
@@ -385,8 +579,12 @@ class CategoryController extends Controller
 
     public function updateEventStatus(Request $request, $id)
     {
+        // Get current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:50|unique:event_statuses,name,' . $id,
+            'name' => 'required|string|max:50|unique:event_statuses,name,' . $id . ',id,firm_id,' . $firmId,
             'description' => 'nullable|string|max:255',
             'background_color' => 'required|string|max:50',
             'icon' => 'required|string|max:50',
@@ -416,6 +614,19 @@ class CategoryController extends Controller
             ]);
 
             DB::commit();
+
+            // Log event status update
+            activity()
+                ->performedOn($eventStatus)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'name' => $eventStatus->name,
+                    'description' => $eventStatus->description,
+                    'background_color' => $eventStatus->background_color,
+                    'icon' => $eventStatus->icon
+                ])
+                ->log("Event status {$eventStatus->name} updated");
 
             return response()->json([
                 'success' => true,
@@ -484,6 +695,17 @@ class CategoryController extends Controller
 
             DB::commit();
 
+            // Log expense category creation
+            activity()
+                ->performedOn($expenseCategory)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'name' => $expenseCategory->name,
+                    'description' => $expenseCategory->description
+                ])
+                ->log("Expense category {$expenseCategory->name} created");
+
             return response()->json([
                 'success' => true,
                 'message' => 'Expense category created successfully',
@@ -521,6 +743,17 @@ class CategoryController extends Controller
             ]);
 
             DB::commit();
+
+            // Log expense category update
+            activity()
+                ->performedOn($expenseCategory)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'name' => $expenseCategory->name,
+                    'description' => $expenseCategory->description
+                ])
+                ->log("Expense category {$expenseCategory->name} updated");
 
             return response()->json([
                 'success' => true,
