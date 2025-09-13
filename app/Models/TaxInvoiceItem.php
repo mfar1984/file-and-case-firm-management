@@ -11,12 +11,15 @@ class TaxInvoiceItem extends Model
 
     protected $fillable = [
         'tax_invoice_id',
+        'item_type',
+        'title_text',
         'description',
         'qty',
         'uom',
         'unit_price',
         'discount_percent',
         'tax_percent',
+        'tax_category_id',
         'amount',
     ];
 
@@ -32,4 +35,6 @@ class TaxInvoiceItem extends Model
     {
         return $this->belongsTo(TaxInvoice::class);
     }
+
+
 }

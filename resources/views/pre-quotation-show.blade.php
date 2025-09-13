@@ -5,9 +5,174 @@
 @endsection
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <div class="flex justify-between items-center mb-6">
+<style>
+    .quotation-print-style {
+        font-family: 'Poppins', sans-serif;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #333;
+    }
+    .company-header {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+    .company-logo {
+        width: 80px;
+        height: 80px;
+        margin-right: 20px;
+        flex-shrink: 0;
+    }
+    .company-info {
+        flex: 1;
+    }
+    .company-info h2 {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #333;
+    }
+    .company-info p {
+        font-size: 12px;
+        margin-bottom: 4px;
+        color: #666;
+    }
+    .contact-label {
+        display: inline-block;
+        width: 70px;
+        color: #333;
+    }
+    .contact-separator {
+        margin: 0 8px;
+        color: #333;
+    }
+    .contact-value {
+        color: #666;
+    }
+    .document-title {
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin: 20px 0;
+        color: #333;
+    }
+    .customer-info {
+        float: left;
+        width: 50%;
+        margin-bottom: 20px;
+    }
+    .customer-info h3 {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #333;
+    }
+    .customer-info p, .quotation-meta p {
+        font-size: 12px;
+        margin-bottom: 4px;
+        color: #666;
+    }
+    .quotation-meta {
+        float: right;
+        text-align: left;
+        margin-bottom: 4px;
+        margin-right: 0;
+        width: auto;
+    }
+    .quotation-meta p strong {
+        color: #333;
+    }
+    .quotation-label {
+        display: inline-block;
+        width: 100px;
+        color: #333;
+    }
+    .quotation-separator {
+        margin: 0 8px;
+        color: #333;
+    }
+    .quotation-value {
+        color: #666;
+    }
+    .customer-contact-label {
+        display: inline-block;
+        width: 80px;
+        color: #333;
+    }
+    .customer-contact-separator {
+        margin: 0 8px;
+        color: #333;
+    }
+    .customer-contact-value {
+        color: #666;
+    }
+    .clear {
+        clear: both;
+    }
+    .summary-section {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+    .amount-words {
+        flex: 1;
+        margin-right: 40px;
+    }
+    .amount-words p {
+        font-size: 12px;
+        color: #333;
+        margin-bottom: 8px;
+    }
+    .summary-table {
+        border-collapse: collapse;
+        min-width: 200px;
+    }
+    .summary-table td {
+        padding: 8px 12px;
+        font-size: 12px;
+        color: #333;
+    }
+    .summary-label {
+        text-align: right;
+        font-weight: bold;
+        border: none;
+    }
+    .summary-value {
+        text-align: right;
+        border: 1px solid #000;
+        min-width: 80px;
+    }
+    .footer-section {
+        margin-top: 40px;
+    }
+    .reminder-text {
+        font-size: 12px;
+        color: #333;
+        margin-bottom: 30px;
+        line-height: 1.4;
+    }
+    .signature-section {
+        margin-top: 60px;
+    }
+    .signature-line {
+        width: 150px;
+        border-top: 1px solid #000;
+        margin-bottom: 8px;
+    }
+    .signature-label {
+        font-size: 12px;
+        font-weight: bold;
+        color: #333;
+    }
+</style>
+
+<div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto">
+    <div class="bg-white rounded shadow-md border border-gray-300">
+        <div class="p-4 md:p-6 border-b border-gray-200">
+            <div class="flex justify-between items-center">
             <div class="flex items-center">
                 <span class="material-icons mr-2 text-blue-600">visibility</span>
                 <h1 class="text-lg md:text-xl font-bold text-gray-800 text-[14px]">Pre-Quotation {{ $preQuotation->quotation_no }}</h1>
@@ -17,82 +182,88 @@
                     <span class="material-icons mr-1 text-sm">print</span>
                     Print
                 </a>
-                <a href="{{ route('pre-quotation.edit', $preQuotation->id) }}" class="flex items-center text-xs text-green-600 hover:text-green-800">
-                    <span class="material-icons mr-1 text-sm">edit</span>
-                    Edit
-                </a>
-
                 <a href="{{ route('pre-quotation.index') }}" class="text-xs text-blue-600">Back</a>
+            </div>
             </div>
         </div>
 
         <!-- Content -->
-        <div>
+        <div class="p-4 md:p-6">
+        <div class="quotation-print-style">
             <!-- Header Section -->
-            <div class="mb-8">
-                <div class="flex items-start">
-                    <div class="w-24 h-24 mr-6">
-                        <img src="{{ asset('images/logo.png') }}" alt="Company Logo" class="w-full h-full object-contain">
-                    </div>
-                    <div class="flex-1">
-                        <h2 class="text-lg font-bold">Naeelah Saleh & Associates (LLP0012345)</h2>
-                        <p class="text-sm text-gray-600">No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia</p>
-                        <p class="text-sm text-gray-600">Phone No.: +603-1234-5678</p>
-                        <p class="text-sm text-gray-600">Email: admin@naeelahsaleh.com.my</p>
-                    </div>
+            <div class="company-header">
+                <div class="company-logo">
+                    <img src="{{ asset('images/logo.png') }}" alt="Company Logo" style="width: 100%; height: 100%; object-fit: contain;">
                 </div>
-
-                <div class="text-center mt-6">
-                    <h1 class="text-2xl font-bold">Pre-Quotation</h1>
-                </div>
-
-                <div class="grid grid-cols-2 gap-8 mt-6">
-                    <div class="customer-info">
-                        <p class="font-bold text-lg">{{ $preQuotation->full_name ?? 'Customer Name' }}</p>
-                        <p class="text-sm text-gray-600">{{ $preQuotation->customer_address ?? 'Customer Address' }}</p>
-                        <p class="text-sm text-gray-600">Phone No.: {{ $preQuotation->customer_phone ?? 'Phone Number' }}</p>
-                        <p class="text-sm text-gray-600">Email: {{ $preQuotation->customer_email ?? 'Email' }}</p>
-                    </div>
-                    <div class="quotation-meta text-right">
-                        <p class="text-sm"><strong>No.:</strong> {{ $preQuotation->quotation_no }}</p>
-                        <p class="text-sm"><strong>Payment Terms:</strong> {{ $preQuotation->payment_terms ?? 'Net 30 days' }}</p>
-                        <p class="text-sm"><strong>Date:</strong> {{ optional($preQuotation->quotation_date)->format('d/m/Y') ?? '04/09/2025' }}</p>
-                        @if($preQuotation->valid_until)
-                        <p class="text-sm"><strong>Valid Until:</strong> {{ $preQuotation->valid_until->format('d/m/Y') }}</p>
-                        @endif
-                        <p class="text-sm"><strong>Page:</strong> 1 of 1</p>
-                    </div>
+                <div class="company-info">
+                    <h2>{{ $firmSettings->firm_name ?? 'Naeelah Saleh & Associates' }} ({{ $firmSettings->registration_number ?? 'LLP0012345' }})</h2>
+                    <p>{{ $firmSettings->address ?? 'No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia' }}</p>
+                    <p><span class="contact-label">Phone No.</span><span class="contact-separator">:</span><span class="contact-value">{{ $firmSettings->phone_number ?? '+6019-3186436' }}</span></p>
+                    <p><span class="contact-label">Email</span><span class="contact-separator">:</span><span class="contact-value">{{ $firmSettings->email ?? 'info@naaelahsaleh.my' }}</span></p>
+                    <p><span class="contact-label">SST No.</span><span class="contact-separator">:</span><span class="contact-value">{{ $firmSettings->tax_registration_number ?? 'W24-2507-32000179' }}</span></p>
                 </div>
             </div>
 
+            <div class="document-title">
+                Legal Quotation
+            </div>
+
+            <div class="customer-info">
+                <h3>{{ $preQuotation->full_name ?? 'Customer Name' }}</h3>
+                <p>{{ $preQuotation->customer_address ?? 'Customer Address' }}</p>
+                @if($preQuotation->customer_phone)
+                    <p><span class="customer-contact-label">Phone No.</span><span class="customer-contact-separator">:</span><span class="customer-contact-value">{{ $preQuotation->customer_phone }}</span></p>
+                @endif
+                @if($preQuotation->customer_email)
+                    <p><span class="customer-contact-label">Email</span><span class="customer-contact-separator">:</span><span class="customer-contact-value">{{ $preQuotation->customer_email }}</span></p>
+                @endif
+                <p><span class="customer-contact-label">Attn</span><span class="customer-contact-separator">:</span><span class="customer-contact-value">{{ $preQuotation->customer_attn ?? 'Attention' }}</span></p>
+            </div>
+            <div class="quotation-meta">
+                <p><span class="quotation-label">No.</span><span class="quotation-separator">:</span><span class="quotation-value">{{ $preQuotation->quotation_no }}</span></p>
+                <p><span class="quotation-label">Payment Terms</span><span class="quotation-separator">:</span><span class="quotation-value">{{ $preQuotation->payment_terms_display ?? 'Net 30 days' }}</span></p>
+                <p><span class="quotation-label">Date</span><span class="quotation-separator">:</span><span class="quotation-value">{{ optional($preQuotation->quotation_date)->format('d/m/Y') ?? date('d/m/Y') }}</span></p>
+                <p><span class="quotation-label">Page</span><span class="quotation-separator">:</span><span class="quotation-value">1 of 1</span></p>
+            </div>
+            <div class="clear"></div>
+
             <!-- Items Table -->
-            <div class="mb-8">
-                <table class="w-full border-collapse">
+            <div style="margin-bottom: 20px;">
+                <table class="w-full" style="border-collapse: collapse; font-size: 12px;">
                     <thead>
                         <tr>
-                            <th class="px-3 py-2 text-center text-sm w-12" style="font-weight: 900;">ITEM.</th>
-                            <th class="px-3 py-2 text-center text-sm" style="font-weight: 900;">DESCRIPTION</th>
-                            <th class="px-3 py-2 text-center text-sm w-20" style="font-weight: 900;">QTY</th>
-                            <th class="px-3 py-2 text-center text-sm w-20" style="font-weight: 900;">UOM</th>
-                            <th class="px-3 py-2 text-center text-sm w-24" style="font-weight: 900;">PRICE<br>(RM)</th>
-                            <th class="px-3 py-2 text-center text-sm w-20" style="font-weight: 900;">DISC.</th>
-                            <th class="px-3 py-2 text-center text-sm w-24" style="font-weight: 900;">AMOUNT<br>(RM)</th>
+                            <th class="px-3 py-2 text-center text-xs w-12" style="font-weight: 900; border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; border-left: none; border-right: none;">ITEM.</th>
+                            <th class="px-3 py-2 text-center text-xs" style="font-weight: 900; border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; border-left: none; border-right: none;">DESCRIPTION</th>
+                            <th class="px-3 py-2 text-center text-xs w-24" style="font-weight: 900; border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; border-left: none; border-right: none;">PRICE<br>(RM)</th>
+                            <th class="px-3 py-2 text-center text-xs w-20" style="font-weight: 900; border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; border-left: none; border-right: none;">DISC.</th>
+                            <th class="px-3 py-2 text-center text-xs w-24" style="font-weight: 900; border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; border-left: none; border-right: none;">AMOUNT<br>(RM)</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @php
+                            $itemCounter = 1; // Counter for regular items only
+                        @endphp
                         @forelse($preQuotation->items as $index => $item)
-                            <tr>
-                                <td class="px-3 py-2 text-sm">{{ $index + 1 }}.</td>
-                                <td class="px-3 py-2 text-sm">{{ $item->description }}</td>
-                                <td class="px-3 py-2 text-sm text-right">{{ number_format($item->qty, 2) }}</td>
-                                <td class="px-3 py-2 text-sm">{{ $item->uom }}</td>
-                                <td class="px-3 py-2 text-sm text-right">{{ number_format($item->unit_price, 2) }}</td>
-                                <td class="px-3 py-2 text-sm text-right">{{ number_format($item->discount_percent ?? 0, 2) }}%</td>
-                                <td class="px-3 py-2 text-sm text-right">{{ number_format($item->amount, 2) }}</td>
-                            </tr>
+                            @if(($item->item_type ?? 'item') === 'title')
+                                <!-- Title Row -->
+                                <tr style="background-color: #fef3c7;">
+                                    <td colspan="5" class="px-3 py-2 text-sm font-semibold text-gray-800">
+                                        {{ $item->title_text }}
+                                    </td>
+                                </tr>
+                            @else
+                                <!-- Regular Item Row -->
+                                <tr>
+                                    <td class="px-3 py-2 text-sm text-center">{{ $itemCounter++ }}</td>
+                                    <td class="px-3 py-2 text-sm">{{ $item->description }}</td>
+                                    <td class="px-3 py-2 text-sm text-right">{{ number_format($item->unit_price, 2) }}</td>
+                                    <td class="px-3 py-2 text-sm text-right">{{ number_format($item->discount_percent ?? 0, 0) }}%</td>
+                                    <td class="px-3 py-2 text-sm text-right">{{ number_format($item->amount, 2) }}</td>
+                                </tr>
+                            @endif
                         @empty
                             <tr>
-                                <td colspan="7" class="px-3 py-2 text-sm text-center">No items found</td>
+                                <td colspan="5" class="px-3 py-2 text-sm text-center">No items found</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -100,53 +271,39 @@
             </div>
 
             <!-- Footer Section -->
-            <div>
-                <div class="grid grid-cols-2 gap-8">
-                    <div class="amount-in-words">
-                        <p class="font-normal" style="font-size: 12px; line-height: 1.2; text-indent: -80px; padding-left: 80px;">Ringgit Malaysia: {{ $preQuotation->total_words ?? 'Amount in Words' }}</p>
-                        <p class="text-sm mt-4"><strong>Note:</strong> {{ $preQuotation->remark ?? '' }}</p>
-                    </div>
-                    <div class="summary-table">
-                        <table class="w-full border-collapse">
-                            <tr>
-                                <td class="py-1 px-2 text-right font-bold text-sm">Subtotal</td>
-                                <td class="py-1 px-2 border border-gray-800 text-right text-sm w-24">{{ number_format($preQuotation->subtotal ?? 0, 2) }}</td>
-                            </tr>
-                            <tr>
-                                <td class="py-1 px-2 text-right font-bold text-sm">Discount</td>
-                                <td class="py-1 px-2 border border-gray-800 text-right text-sm w-24">{{ number_format($preQuotation->discount_total ?? 0, 2) }}</td>
-                            </tr>
-                            <tr>
-                                <td class="py-1 px-2 text-right font-bold text-sm">Tax</td>
-                                <td class="py-1 px-2 border border-gray-800 text-right text-sm w-24">{{ number_format($preQuotation->tax_total ?? 0, 2) }}</td>
-                            </tr>
-                            <tr>
-                                <td class="py-1 px-2 text-right font-bold text-sm">Total</td>
-                                <td class="py-1 px-2 border border-gray-800 bg-gray-200 text-right font-bold text-sm w-24">{{ number_format($preQuotation->total ?? 0, 2) }}</td>
-                            </tr>
-                        </table>
-                    </div>
+            <div class="summary-section">
+                <div class="amount-words">
+                    <p><strong>Ringgit Malaysia:</strong> {{ $preQuotation->total_words ?? 'Amount in Words' }}</p>
                 </div>
-                <div class="mt-8 pt-4 border-t border-gray-800 w-48">
-                    <p class="text-sm font-bold">Authorised Signature</p>
+                <div>
+                    <table class="summary-table">
+                        <tr>
+                            <td class="summary-label">Subtotal</td>
+                            <td class="summary-value">{{ number_format($preQuotation->subtotal ?? 0, 2) }}</td>
+                        </tr>
+                        <tr>
+                            <td class="summary-label">SST</td>
+                            <td class="summary-value">{{ number_format($preQuotation->tax_total ?? 0, 2) }}</td>
+                        </tr>
+                        <tr>
+                            <td class="summary-label">Total</td>
+                            <td class="summary-value" style="font-weight: bold;">{{ number_format($preQuotation->total ?? 0, 2) }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <div class="reminder-text">
+                    <p><strong>Reminder:</strong> Pursuant to the Solicitor's Remuneration Order 2005, interest 8% on the total sum billed will be charges from the expiration of one (1) month of the billing dates</p>
+                </div>
+
+                <div class="signature-section">
+                    <div class="signature-line"></div>
+                    <p class="signature-label">Authorised Signature</p>
                 </div>
             </div>
         </div>
-
-        <!-- Action Buttons (not printed) -->
-        <div class="mt-8 flex space-x-2 print:hidden">
-            <a href="{{ route('pre-quotation.edit', $preQuotation->id) }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-sm text-xs font-medium flex items-center">
-                <span class="material-icons text-xs mr-1">edit</span>
-                Edit Pre-Quotation
-            </a>
-            <form action="{{ route('pre-quotation.destroy', $preQuotation->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this pre-quotation?')">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-sm text-xs font-medium flex items-center">
-                    <span class="material-icons text-xs mr-1">delete</span>
-                    Delete
-                </button>
-            </form>
         </div>
     </div>
 </div>

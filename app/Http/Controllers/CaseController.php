@@ -83,9 +83,20 @@ class CaseController extends Controller
     {
         // Find case with firm scope validation
         $user = auth()->user();
+        $currentFirmId = session('current_firm_id');
 
-        if ($user->hasRole('Super Administrator')) {
-            // Super Admin can access any case
+        if ($user->hasRole('Super Administrator') && $currentFirmId) {
+            // Super Admin with firm context - respect firm scope
+            $case = CourtCase::forFirm($currentFirmId)
+                ->with(['parties', 'partners.partner', 'caseType', 'caseStatus', 'createdBy', 'files.fileType', 'timeline.createdBy'])
+                ->findOrFail($id);
+            // Get firm-scoped data for Super Admin
+            $caseTypes = \App\Models\CaseType::forFirm($currentFirmId)->active()->orderBy('description')->get();
+            $eventStatuses = EventStatus::forFirm($currentFirmId)->active()->ordered()->get();
+            $allCases = CourtCase::forFirm($currentFirmId)->orderBy('case_number')->pluck('case_number', 'id');
+            $courtLocations = CourtCase::forFirm($currentFirmId)->distinct()->pluck('court_location')->filter();
+        } elseif ($user->hasRole('Super Administrator') && !$currentFirmId) {
+            // Super Admin without firm context - can access any case (for system management)
             $case = CourtCase::withoutFirmScope()
                 ->with(['parties', 'partners.partner', 'caseType', 'caseStatus', 'createdBy', 'files.fileType', 'timeline.createdBy'])
                 ->findOrFail($id);
@@ -113,15 +124,48 @@ class CaseController extends Controller
 
     public function edit($id)
     {
-        $case = CourtCase::with([
-            'parties',
-            'partners.partner',
-            'caseType',
-            'caseStatus',
-            'files.fileType',
-            'taxInvoices',
-            'receipts',
-        ])->findOrFail($id);
+        // Find case with firm scope validation
+        $user = auth()->user();
+        $currentFirmId = session('current_firm_id');
+
+        if ($user->hasRole('Super Administrator') && $currentFirmId) {
+            // Super Admin with firm context - respect firm scope
+            $case = CourtCase::forFirm($currentFirmId)
+                ->with([
+                    'parties',
+                    'partners.partner',
+                    'caseType',
+                    'caseStatus',
+                    'files.fileType',
+                    'taxInvoices',
+                    'receipts',
+                ])
+                ->findOrFail($id);
+        } elseif ($user->hasRole('Super Administrator') && !$currentFirmId) {
+            // Super Admin without firm context - can edit any case (for system management)
+            $case = CourtCase::withoutFirmScope()
+                ->with([
+                    'parties',
+                    'partners.partner',
+                    'caseType',
+                    'caseStatus',
+                    'files.fileType',
+                    'taxInvoices',
+                    'receipts',
+                ])
+                ->findOrFail($id);
+        } else {
+            // Regular users can only edit cases from their firm (HasFirmScope trait handles this)
+            $case = CourtCase::with([
+                'parties',
+                'partners.partner',
+                'caseType',
+                'caseStatus',
+                'files.fileType',
+                'taxInvoices',
+                'receipts',
+            ])->findOrFail($id);
+        }
 
         // Get partners with proper firm scope filtering
         $user = auth()->user();
@@ -495,9 +539,13 @@ class CaseController extends Controller
         try {
             // Find case with firm scope validation
             $user = auth()->user();
+            $currentFirmId = session('current_firm_id');
 
-            if ($user->hasRole('Super Administrator')) {
-                // Super Admin can change status for any case
+            if ($user->hasRole('Super Administrator') && $currentFirmId) {
+                // Super Admin with firm context - respect firm scope
+                $case = CourtCase::forFirm($currentFirmId)->findOrFail($id);
+            } elseif ($user->hasRole('Super Administrator') && !$currentFirmId) {
+                // Super Admin without firm context - can change status for any case (for system management)
                 $case = CourtCase::withoutFirmScope()->findOrFail($id);
             } else {
                 // Regular users can only change status for cases from their firm (HasFirmScope trait handles this)
@@ -541,9 +589,13 @@ class CaseController extends Controller
         try {
             // Find case with firm scope validation
             $user = auth()->user();
+            $currentFirmId = session('current_firm_id');
 
-            if ($user->hasRole('Super Administrator')) {
-                // Super Admin can add timeline to any case
+            if ($user->hasRole('Super Administrator') && $currentFirmId) {
+                // Super Admin with firm context - respect firm scope
+                $case = CourtCase::forFirm($currentFirmId)->findOrFail($id);
+            } elseif ($user->hasRole('Super Administrator') && !$currentFirmId) {
+                // Super Admin without firm context - can add timeline to any case (for system management)
                 $case = CourtCase::withoutFirmScope()->findOrFail($id);
             } else {
                 // Regular users can only add timeline to cases from their firm (HasFirmScope trait handles this)
@@ -685,9 +737,13 @@ class CaseController extends Controller
         try {
             // Find case with firm scope validation
             $user = auth()->user();
+            $currentFirmId = session('current_firm_id');
 
-            if ($user->hasRole('Super Administrator')) {
-                // Super Admin can update timeline for any case
+            if ($user->hasRole('Super Administrator') && $currentFirmId) {
+                // Super Admin with firm context - respect firm scope
+                $case = CourtCase::forFirm($currentFirmId)->findOrFail($id);
+            } elseif ($user->hasRole('Super Administrator') && !$currentFirmId) {
+                // Super Admin without firm context - can update timeline for any case (for system management)
                 $case = CourtCase::withoutFirmScope()->findOrFail($id);
             } else {
                 // Regular users can only update timeline for cases from their firm (HasFirmScope trait handles this)
@@ -866,9 +922,15 @@ class CaseController extends Controller
         try {
             // Find case with firm scope validation
             $user = auth()->user();
+            $currentFirmId = session('current_firm_id');
 
-            if ($user->hasRole('Super Administrator')) {
-                // Super Admin can delete any case
+            if ($user->hasRole('Super Administrator') && $currentFirmId) {
+                // Super Admin with firm context - respect firm scope
+                $case = CourtCase::forFirm($currentFirmId)
+                    ->with(['parties', 'partners', 'files', 'timeline'])
+                    ->findOrFail($id);
+            } elseif ($user->hasRole('Super Administrator') && !$currentFirmId) {
+                // Super Admin without firm context - can delete any case (for system management)
                 $case = CourtCase::withoutFirmScope()
                     ->with(['parties', 'partners', 'files', 'timeline'])
                     ->findOrFail($id);
@@ -935,9 +997,13 @@ class CaseController extends Controller
     {
         // Find case with firm scope validation
         $user = auth()->user();
+        $currentFirmId = session('current_firm_id');
 
-        if ($user->hasRole('Super Administrator')) {
-            // Super Admin can update any case
+        if ($user->hasRole('Super Administrator') && $currentFirmId) {
+            // Super Admin with firm context - respect firm scope
+            $case = CourtCase::forFirm($currentFirmId)->findOrFail($id);
+        } elseif ($user->hasRole('Super Administrator') && !$currentFirmId) {
+            // Super Admin without firm context - can update any case (for system management)
             $case = CourtCase::withoutFirmScope()->findOrFail($id);
         } else {
             // Regular users can only update cases from their firm (HasFirmScope trait handles this)

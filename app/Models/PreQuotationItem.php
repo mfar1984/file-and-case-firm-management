@@ -11,12 +11,15 @@ class PreQuotationItem extends Model
 
     protected $fillable = [
         'pre_quotation_id',
+        'item_type',
+        'title_text',
         'description',
         'qty',
         'uom',
         'unit_price',
         'discount_percent',
         'tax_percent',
+        'tax_category_id',
         'amount',
     ];
 
@@ -31,5 +34,10 @@ class PreQuotationItem extends Model
     public function preQuotation()
     {
         return $this->belongsTo(PreQuotation::class);
+    }
+
+    public function taxCategory()
+    {
+        return $this->belongsTo(TaxCategory::class);
     }
 }

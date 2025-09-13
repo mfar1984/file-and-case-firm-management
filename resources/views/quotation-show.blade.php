@@ -5,9 +5,188 @@
 @endsection
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <div class="flex justify-between items-center mb-6">
+<style>
+    .quotation-print-style {
+        font-family: 'Poppins', sans-serif;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #333;
+    }
+    .company-header {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+    .company-logo {
+        width: 80px;
+        height: 80px;
+        margin-right: 20px;
+        flex-shrink: 0;
+    }
+    .company-info {
+        flex: 1;
+    }
+    .company-info h2 {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #333;
+    }
+    .company-info p {
+        font-size: 12px;
+        margin-bottom: 4px;
+        color: #666;
+    }
+    .contact-label {
+        display: inline-block;
+        width: 70px;
+        color: #333;
+    }
+    .contact-separator {
+        margin: 0 8px;
+        color: #333;
+    }
+    .contact-value {
+        color: #666;
+    }
+    .contact-label {
+        display: inline-block;
+        width: 70px;
+        color: #333;
+    }
+    .contact-separator {
+        margin: 0 8px;
+        color: #333;
+    }
+    .contact-value {
+        color: #666;
+    }
+    .quotation-title {
+        text-align: center;
+        margin: 30px 0;
+    }
+    .quotation-title h1 {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+    }
+    .quotation-details {
+        overflow: auto;
+        margin-bottom: 30px;
+        clear: both;
+    }
+    .customer-info {
+        width: 48%;
+        float: left;
+        margin-bottom: 4px;
+    }
+    .customer-info h3 {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #333;
+    }
+    .customer-info p, .quotation-meta p {
+        font-size: 12px;
+        margin-bottom: 4px;
+        color: #666;
+    }
+    .quotation-meta {
+        float: right;
+        text-align: left;
+        margin-bottom: 4px;
+        margin-right: 0;
+        width: auto;
+    }
+    .quotation-meta p strong {
+        color: #333;
+    }
+    .quotation-label {
+        display: inline-block;
+        width: 100px;
+        color: #333;
+    }
+    .quotation-separator {
+        margin: 0 8px;
+        color: #333;
+    }
+    .quotation-value {
+        color: #666;
+    }
+    .customer-contact-label {
+        display: inline-block;
+        width: 80px;
+        color: #333;
+    }
+    .customer-contact-separator {
+        margin: 0 8px;
+        color: #333;
+    }
+    .customer-contact-value {
+        color: #666;
+    }
+    .summary-section {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+    .amount-words {
+        flex: 1;
+        margin-right: 40px;
+    }
+    .amount-words p {
+        font-size: 12px;
+        color: #333;
+        margin-bottom: 8px;
+    }
+    .summary-table {
+        border-collapse: collapse;
+        min-width: 200px;
+    }
+    .summary-table td {
+        padding: 8px 12px;
+        font-size: 12px;
+        color: #333;
+    }
+    .summary-label {
+        text-align: right;
+        font-weight: bold;
+        border: none;
+    }
+    .summary-value {
+        text-align: right;
+        border: 1px solid #000;
+        min-width: 80px;
+    }
+    .footer-section {
+        margin-top: 40px;
+    }
+    .reminder-text {
+        font-size: 12px;
+        color: #333;
+        margin-bottom: 30px;
+        line-height: 1.4;
+    }
+    .signature-section {
+        margin-top: 60px;
+    }
+    .signature-line {
+        width: 150px;
+        border-top: 1px solid #000;
+        margin-bottom: 8px;
+    }
+    .signature-label {
+        font-size: 12px;
+        font-weight: bold;
+        color: #333;
+    }
+</style>
+
+<div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto">
+    <div class="bg-white rounded shadow-md border border-gray-300">
+        <div class="p-4 md:p-6 border-b border-gray-200">
+            <div class="flex justify-between items-center">
             <div class="flex items-center">
                 <span class="material-icons mr-2 text-blue-600">visibility</span>
                 <h1 class="text-lg md:text-xl font-bold text-gray-800 text-[14px]">Quotation {{ $quotation->quotation_no }}</h1>
@@ -21,53 +200,60 @@
             </div>
         </div>
 
-        <!-- Content -->
-        <div>
+        <!-- Content with Print Style -->
+        <div class="quotation-print-style p-4 md:p-6">
             <!-- Header Section -->
-            <div class="mb-8">
-                <div class="flex items-start">
-                    <div class="w-24 h-24 mr-6">
-                        <img src="{{ asset('images/logo.png') }}" alt="Company Logo" class="w-full h-full object-contain">
-                    </div>
-                    <div class="flex-1">
-                        <h2 class="text-lg font-bold">Naeelah Saleh & Associates (LLP0012345)</h2>
-                        <p class="text-sm text-gray-600">No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia</p>
-                        <p class="text-sm text-gray-600">Phone No.: +603-1234-5678</p>
-                        <p class="text-sm text-gray-600">Email: admin@naeelahsaleh.com.my</p>
-                    </div>
+            <div class="company-header">
+                <div class="company-logo">
+                    <img src="{{ asset('images/logo.png') }}" alt="Company Logo" class="w-full h-full object-contain">
                 </div>
-                
-                <div class="text-center mt-6">
-                    <h1 class="text-2xl font-bold">Sales Quotation</h1>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-8 mt-6">
-                    <div class="customer-info">
-                        <p class="font-bold text-lg">{{ $quotation->customer_name ?? 'Customer Name' }}</p>
-                        <p class="text-sm text-gray-600">{{ $quotation->customer_address ?? 'Customer Address' }}</p>
-                        <p class="text-sm text-gray-600">Phone No.: {{ $quotation->customer_phone ?? 'Phone Number' }}</p>
-                        <p class="text-sm text-gray-600">Fax No.: {{ $quotation->customer_fax ?? 'Fax Number' }}</p>
-                        <p class="text-sm text-gray-600">Attn: {{ $quotation->customer_attn ?? 'Attention' }}</p>
-                    </div>
-                    <div class="quotation-meta text-right">
-                        <p class="text-sm"><strong>No.:</strong> {{ $quotation->quotation_no }}</p>
-                        <p class="text-sm"><strong>Payment Terms:</strong> {{ $quotation->payment_terms_display ?? 'CIA' }}</p>
-                        <p class="text-sm"><strong>Date:</strong> {{ optional($quotation->quotation_date)->format('d/m/Y') ?? '27/08/2025' }}</p>
-                        <p class="text-sm"><strong>Page:</strong> 1 of 1</p>
-                    </div>
+                <div class="company-info">
+                    @php
+                        $firmSettings = \App\Models\FirmSetting::getFirmSettings();
+                    @endphp
+                    <h2>{{ $firmSettings->firm_name ?? 'Naeelah Saleh & Associates' }} ({{ $firmSettings->registration_number ?? 'LLP0012345' }})</h2>
+                    <p>{{ $firmSettings->address ?? 'No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia' }}</p>
+                    <p><span class="contact-label">Phone No.</span><span class="contact-separator">:</span><span class="contact-value">{{ $firmSettings->phone_number ?? '+6019-3186436' }}</span></p>
+                    <p><span class="contact-label">Email</span><span class="contact-separator">:</span><span class="contact-value">{{ $firmSettings->email ?? 'info@naaelahsaleh.my' }}</span></p>
+                    @if($firmSettings->tax_registration_number ?? 'W24-2507-32000179')
+                        <p><span class="contact-label">SST No.</span><span class="contact-separator">:</span><span class="contact-value">{{ $firmSettings->tax_registration_number ?? 'W24-2507-32000179' }}</span></p>
+                    @endif
                 </div>
             </div>
+
+            <div class="quotation-title">
+                <h1>Legal Quotation</h1>
+            </div>
+
+            <div class="quotation-details">
+                <div class="customer-info">
+                    <h3>{{ $quotation->customer_name ?? 'Customer Name' }}</h3>
+                    <p>{{ $quotation->customer_address ?? 'Customer Address' }}</p>
+                    <p><span class="customer-contact-label">Phone No.</span><span class="customer-contact-separator">:</span><span class="customer-contact-value">{{ $quotation->customer_phone ?? 'Phone Number' }}</span></p>
+                    @if($quotation->customer_fax)
+                        <p><span class="customer-contact-label">Fax No.</span><span class="customer-contact-separator">:</span><span class="customer-contact-value">{{ $quotation->customer_fax }}</span></p>
+                    @endif
+                    <p><span class="customer-contact-label">Attn</span><span class="customer-contact-separator">:</span><span class="customer-contact-value">{{ $quotation->customer_attn ?? 'Attention' }}</span></p>
+                </div>
+                <div class="quotation-meta">
+                    <p><span class="quotation-label">No.</span><span class="quotation-separator">:</span><span class="quotation-value">{{ $quotation->quotation_no }}</span></p>
+                    <p><span class="quotation-label">Payment Terms</span><span class="quotation-separator">:</span><span class="quotation-value">{{ $quotation->payment_terms_display ?? 'Net 30 days' }}</span></p>
+                    <p><span class="quotation-label">Date</span><span class="quotation-separator">:</span><span class="quotation-value">{{ optional($quotation->quotation_date)->format('d/m/Y') ?? date('d/m/Y') }}</span></p>
+                    <p><span class="quotation-label">Page</span><span class="quotation-separator">:</span><span class="quotation-value">1 of 1</span></p>
+                </div>
+            </div>
+            <div style="clear: both;"></div>
 
             <!-- Items Table -->
             <div class="mb-8">
                 <table class="w-full border-collapse">
                     <thead>
                         <tr>
-                            <th class="px-3 py-2 text-center text-sm w-12" style="font-weight: 900;">ITEM.</th>
-                            <th class="px-3 py-2 text-center text-sm" style="font-weight: 900;">DESCRIPTION</th>
-                            <th class="px-3 py-2 text-center text-sm w-24" style="font-weight: 900;">PRICE<br>(RM)</th>
-                            <th class="px-3 py-2 text-center text-sm w-20" style="font-weight: 900;">DISC.</th>
-                            <th class="px-3 py-2 text-center text-sm w-24" style="font-weight: 900;">AMOUNT<br>(RM)</th>
+                            <th class="px-3 py-2 text-center text-xs w-12" style="font-weight: 900; border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; border-left: none; border-right: none;">ITEM.</th>
+                            <th class="px-3 py-2 text-center text-xs" style="font-weight: 900; border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; border-left: none; border-right: none;">DESCRIPTION</th>
+                            <th class="px-3 py-2 text-center text-xs w-24" style="font-weight: 900; border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; border-left: none; border-right: none;">PRICE<br>(RM)</th>
+                            <th class="px-3 py-2 text-center text-xs w-20" style="font-weight: 900; border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; border-left: none; border-right: none;">DISC.</th>
+                            <th class="px-3 py-2 text-center text-xs w-24" style="font-weight: 900; border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; border-left: none; border-right: none;">AMOUNT<br>(RM)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -111,31 +297,57 @@
             </div>
 
             <!-- Footer Section -->
-            <div>
-                <div class="grid grid-cols-2 gap-8">
-                    <div class="amount-in-words">
-                        <p class="font-normal" style="font-size: 12px; line-height: 1.2; text-indent: -80px; padding-left: 80px;">Ringgit Malaysia: {{ $quotation->total_words ?? 'Amount in Words' }}</p>
-                        <p class="text-sm mt-4"><strong>Note:</strong> {{ $quotation->remark ?? '' }}</p>
-                    </div>
-                    <div class="summary-table">
-                        <table class="w-full border-collapse">
-                            <tr>
-                                <td class="py-1 px-2 text-right font-bold text-sm">Subtotal</td>
-                                <td class="py-1 px-2 border border-gray-800 text-right text-sm w-24">{{ number_format($quotation->subtotal ?? 0, 2) }}</td>
-                            </tr>
-                            <tr>
-                                <td class="py-1 px-2 text-right font-bold text-sm">Tax</td>
-                                <td class="py-1 px-2 border border-gray-800 text-right text-sm w-24">{{ number_format($quotation->tax_total ?? 0, 2) }}</td>
-                            </tr>
-                            <tr>
-                                <td class="py-1 px-2 text-right font-bold text-sm">Total</td>
-                                <td class="py-1 px-2 border border-gray-800 bg-gray-200 text-right font-bold text-sm w-24">{{ number_format($quotation->total ?? 0, 2) }}</td>
-                            </tr>
-                        </table>
-                    </div>
+            <div class="summary-section">
+                <div class="amount-words">
+                    <p><strong>Ringgit Malaysia:</strong> {{ $quotation->total_words ?? 'Amount in Words' }}</p>
                 </div>
-                <div class="mt-8 pt-4 border-t border-gray-800 w-48">
-                    <p class="text-sm font-bold">Authorised Signature</p>
+                <div>
+                    <table class="summary-table">
+                        <tr>
+                            <td class="summary-label">Subtotal</td>
+                            <td class="summary-value">{{ number_format($quotation->subtotal ?? 0, 2) }}</td>
+                        </tr>
+                        @php
+                            $taxCategories = $quotation->items->where('tax_category_id', '!=', null)->pluck('taxCategory')->filter()->unique('id');
+                        @endphp
+                        @if($taxCategories->count() > 0)
+                            @foreach($taxCategories as $taxCategory)
+                                <tr>
+                                    <td class="summary-label">{{ $taxCategory->name }}</td>
+                                    <td class="summary-value">
+                                        @php
+                                            $categoryTaxTotal = $quotation->items->where('tax_category_id', $taxCategory->id)->sum(function($item) {
+                                                $itemSubtotal = $item->qty * $item->unit_price;
+                                                $itemAfterDiscount = $itemSubtotal - $item->discount_amount;
+                                                return $itemAfterDiscount * ($item->tax_percent / 100);
+                                            });
+                                        @endphp
+                                        {{ number_format($categoryTaxTotal, 2) }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @else
+                            <tr>
+                                <td class="summary-label">SST</td>
+                                <td class="summary-value">{{ number_format($quotation->tax_total ?? 0, 2) }}</td>
+                            </tr>
+                        @endif
+                        <tr>
+                            <td class="summary-label">Total</td>
+                            <td class="summary-value" style="font-weight: bold;">{{ number_format($quotation->total ?? 0, 2) }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <div class="reminder-text">
+                    <p><strong>Reminder:</strong> Pursuant to the Solicitor's Remuneration Order 2005, interest 8% on the total sum billed will be charges from the expiration of one (1) month of the billing dates</p>
+                </div>
+
+                <div class="signature-section">
+                    <div class="signature-line"></div>
+                    <p class="signature-label">Authorised Signature</p>
                 </div>
             </div>
         </div>

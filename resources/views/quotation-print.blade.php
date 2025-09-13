@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Sales Quotation - {{ $quotation->quotation_no ?? 'Q-00005' }}</title>
+    <title>Legal Quotation - {{ $quotation->quotation_no ?? 'Q-00005' }}</title>
     <style>
         /*
          * GLOBAL STYLES
@@ -649,10 +649,31 @@
                             <td class="summary-label-bordered">Subtotal</td>
                             <td class="summary-value-bordered">{{ number_format($quotation->subtotal ?? 0, 2) }}</td>
                         </tr>
-                        <tr>
-                            <td class="summary-label-bordered">Tax</td>
-                            <td class="summary-value-bordered">{{ number_format($quotation->tax_total ?? 0, 2) }}</td>
-                        </tr>
+                        @php
+                            $taxCategories = $quotation->items->where('tax_category_id', '!=', null)->pluck('taxCategory')->filter()->unique('id');
+                        @endphp
+                        @if($taxCategories->count() > 0)
+                            @foreach($taxCategories as $taxCategory)
+                                <tr>
+                                    <td class="summary-label-bordered">{{ $taxCategory->name }}</td>
+                                    <td class="summary-value-bordered">
+                                        @php
+                                            $categoryTaxTotal = $quotation->items->where('tax_category_id', $taxCategory->id)->sum(function($item) {
+                                                $itemSubtotal = $item->qty * $item->unit_price;
+                                                $itemAfterDiscount = $itemSubtotal - $item->discount_amount;
+                                                return $itemAfterDiscount * ($item->tax_percent / 100);
+                                            });
+                                        @endphp
+                                        {{ number_format($categoryTaxTotal, 2) }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @else
+                            <tr>
+                                <td class="summary-label-bordered">SST</td>
+                                <td class="summary-value-bordered">{{ number_format($quotation->tax_total ?? 0, 2) }}</td>
+                            </tr>
+                        @endif
                         <tr>
                             <td class="summary-label-bordered">Total</td>
                             <td class="summary-value-bordered total-row">{{ number_format($quotation->total ?? 0, 2) }}</td>

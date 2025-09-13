@@ -187,9 +187,15 @@ class ClientController extends Controller
     {
         // Find client with firm scope validation
         $user = auth()->user();
+        $currentFirmId = session('current_firm_id');
 
-        if ($user->hasRole('Super Administrator')) {
-            // Super Admin can access any client
+        if ($user->hasRole('Super Administrator') && $currentFirmId) {
+            // Super Admin with firm context - respect firm scope
+            $client = Client::forFirm($currentFirmId)
+                ->with(['addresses', 'user'])
+                ->findOrFail($id);
+        } elseif ($user->hasRole('Super Administrator') && !$currentFirmId) {
+            // Super Admin without firm context - can access any client (for system management)
             $client = Client::withoutFirmScope()
                 ->with(['addresses', 'user'])
                 ->findOrFail($id);
@@ -205,9 +211,16 @@ class ClientController extends Controller
     {
         // Find client with firm scope validation
         $user = auth()->user();
+        $currentFirmId = session('current_firm_id');
 
-        if ($user->hasRole('Super Administrator')) {
-            // Super Admin can edit any client
+        if ($user->hasRole('Super Administrator') && $currentFirmId) {
+            // Super Admin with firm context - respect firm scope
+            $client = Client::forFirm($currentFirmId)
+                ->with(['addresses', 'user'])
+                ->findOrFail($id);
+            $firms = Firm::where('id', $currentFirmId)->get();
+        } elseif ($user->hasRole('Super Administrator') && !$currentFirmId) {
+            // Super Admin without firm context - can edit any client (for system management)
             $client = Client::withoutFirmScope()
                 ->with(['addresses', 'user'])
                 ->findOrFail($id);

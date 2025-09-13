@@ -42,9 +42,30 @@ class PreQuotationController extends Controller
 
     public function create(Request $request)
     {
+        // Get tax categories for dropdown - ensure proper firm filtering
+        $user = auth()->user();
+        if ($user->hasRole('Super Administrator')) {
+            // For Super Admin, use session firm_id or default to user's firm
+            $firmId = session('current_firm_id') ?? $user->firm_id;
+            $taxCategories = \App\Models\TaxCategory::withoutFirmScope()
+                ->where('firm_id', $firmId)
+                ->where('status', 'active')
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get();
+        } else {
+            // For regular users, use HasFirmScope automatic filtering
+            $taxCategories = \App\Models\TaxCategory::active()->ordered()->get();
+        }
+
+        // Deduplicate by name + rate combination
+        $taxCategories = $taxCategories->unique(function ($item) {
+            return $item->name . '_' . $item->tax_rate;
+        })->values();
+
         // No case options needed for pre-quotation
         // All fields are optional
-        return view('pre-quotation-create');
+        return view('pre-quotation-create', compact('taxCategories'));
     }
 
     public function store(Request $request)
@@ -60,12 +81,15 @@ class PreQuotationController extends Controller
             'customer_address' => 'nullable|string',
             'remark' => 'nullable|string',
             'items' => 'required|array|min:1',
+            'items.*.item_type' => 'nullable|in:item,title',
+            'items.*.title_text' => 'nullable|string',
             'items.*.description' => 'nullable|string',
-            'items.*.qty' => 'required|numeric|min:0',
+            'items.*.qty' => 'nullable|numeric|min:0',
             'items.*.uom' => 'nullable|string',
-            'items.*.unit_price' => 'required|numeric|min:0',
+            'items.*.unit_price' => 'nullable|numeric|min:0',
             'items.*.discount_percent' => 'nullable|numeric|min:0|max:100',
             'items.*.tax_percent' => 'nullable|numeric|min:0|max:100',
+            'items.*.tax_category_id' => 'nullable|exists:tax_categories,id',
         ]);
 
         // Generate quotation number
@@ -79,6 +103,11 @@ class PreQuotationController extends Controller
         $taxTotal = 0;
 
         foreach ($request->items as $item) {
+            // Skip title items for calculation
+            if (($item['item_type'] ?? 'item') === 'title') {
+                continue;
+            }
+
             $qty = (float)$item['qty'];
             $unitPrice = (float)$item['unit_price'];
             $discountPercent = (float)($item['discount_percent'] ?? 0);
@@ -121,27 +150,48 @@ class PreQuotationController extends Controller
 
         // Create items
         foreach ($request->items as $item) {
-            $qty = (float)$item['qty'];
-            $unitPrice = (float)$item['unit_price'];
-            $discountPercent = (float)($item['discount_percent'] ?? 0);
-            $taxPercent = (float)($item['tax_percent'] ?? 0);
+            if (($item['item_type'] ?? 'item') === 'title') {
+                // Create title item
+                PreQuotationItem::create([
+                    'pre_quotation_id' => $preQuotation->id,
+                    'item_type' => 'title',
+                    'title_text' => $item['title_text'] ?? '',
+                    'description' => '',
+                    'qty' => 0,
+                    'uom' => 'lot',
+                    'unit_price' => 0,
+                    'discount_percent' => 0,
+                    'tax_percent' => 0,
+                    'tax_category_id' => null,
+                    'amount' => 0,
+                ]);
+            } else {
+                // Create regular item
+                $qty = (float)$item['qty'];
+                $unitPrice = (float)$item['unit_price'];
+                $discountPercent = (float)($item['discount_percent'] ?? 0);
+                $taxPercent = (float)($item['tax_percent'] ?? 0);
 
-            $lineTotal = $qty * $unitPrice;
-            $discountAmount = $lineTotal * ($discountPercent / 100);
-            $afterDiscount = $lineTotal - $discountAmount;
-            $taxAmount = $afterDiscount * ($taxPercent / 100);
-            $amount = $afterDiscount + $taxAmount;
+                $lineTotal = $qty * $unitPrice;
+                $discountAmount = $lineTotal * ($discountPercent / 100);
+                $afterDiscount = $lineTotal - $discountAmount;
+                $taxAmount = $afterDiscount * ($taxPercent / 100);
+                $amount = $afterDiscount + $taxAmount;
 
-            PreQuotationItem::create([
-                'pre_quotation_id' => $preQuotation->id,
-                'description' => $item['description'],
-                'qty' => $qty,
-                'uom' => $item['uom'] ?? 'lot',
-                'unit_price' => $unitPrice,
-                'discount_percent' => $discountPercent,
-                'tax_percent' => $taxPercent,
-                'amount' => $amount,
-            ]);
+                PreQuotationItem::create([
+                    'pre_quotation_id' => $preQuotation->id,
+                    'item_type' => 'item',
+                    'title_text' => '',
+                    'description' => $item['description'],
+                    'qty' => $qty,
+                    'uom' => $item['uom'] ?? 'lot',
+                    'unit_price' => $unitPrice,
+                    'discount_percent' => $discountPercent,
+                    'tax_percent' => $taxPercent,
+                    'tax_category_id' => $item['tax_category_id'] ?? null,
+                    'amount' => $amount,
+                ]);
+            }
         }
 
         // Log pre-quotation creation
@@ -216,7 +266,27 @@ class PreQuotationController extends Controller
             $preQuotation = PreQuotation::with(['items'])->findOrFail($id);
         }
 
-        return view('pre-quotation-create', compact('preQuotation'));
+        // Get tax categories for dropdown - ensure proper firm filtering
+        if ($user->hasRole('Super Administrator')) {
+            // For Super Admin, use session firm_id or default to user's firm
+            $firmId = session('current_firm_id') ?? $user->firm_id;
+            $taxCategories = \App\Models\TaxCategory::withoutFirmScope()
+                ->where('firm_id', $firmId)
+                ->where('status', 'active')
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get();
+        } else {
+            // For regular users, use HasFirmScope automatic filtering
+            $taxCategories = \App\Models\TaxCategory::active()->ordered()->get();
+        }
+
+        // Deduplicate by name + rate combination
+        $taxCategories = $taxCategories->unique(function ($item) {
+            return $item->name . '_' . $item->tax_rate;
+        })->values();
+
+        return view('pre-quotation-create', compact('preQuotation', 'taxCategories'));
     }
 
     public function update(Request $request, $id)
@@ -234,12 +304,15 @@ class PreQuotationController extends Controller
             'customer_address' => 'nullable|string',
             'remark' => 'nullable|string',
             'items' => 'required|array|min:1',
+            'items.*.item_type' => 'nullable|in:item,title',
+            'items.*.title_text' => 'nullable|string',
             'items.*.description' => 'nullable|string',
-            'items.*.qty' => 'required|numeric|min:0',
+            'items.*.qty' => 'nullable|numeric|min:0',
             'items.*.uom' => 'nullable|string',
-            'items.*.unit_price' => 'required|numeric|min:0',
+            'items.*.unit_price' => 'nullable|numeric|min:0',
             'items.*.discount_percent' => 'nullable|numeric|min:0|max:100',
             'items.*.tax_percent' => 'nullable|numeric|min:0|max:100',
+            'items.*.tax_category_id' => 'nullable|exists:tax_categories,id',
         ]);
 
         // Calculate totals
@@ -248,6 +321,11 @@ class PreQuotationController extends Controller
         $taxTotal = 0;
 
         foreach ($request->items as $item) {
+            // Skip title items for calculation
+            if (($item['item_type'] ?? 'item') === 'title') {
+                continue;
+            }
+
             $qty = (float)$item['qty'];
             $unitPrice = (float)$item['unit_price'];
             $discountPercent = (float)($item['discount_percent'] ?? 0);
@@ -290,27 +368,48 @@ class PreQuotationController extends Controller
         $preQuotation->items()->delete();
 
         foreach ($request->items as $item) {
-            $qty = (float)$item['qty'];
-            $unitPrice = (float)$item['unit_price'];
-            $discountPercent = (float)($item['discount_percent'] ?? 0);
-            $taxPercent = (float)($item['tax_percent'] ?? 0);
+            if (($item['item_type'] ?? 'item') === 'title') {
+                // Create title item
+                PreQuotationItem::create([
+                    'pre_quotation_id' => $preQuotation->id,
+                    'item_type' => 'title',
+                    'title_text' => $item['title_text'] ?? '',
+                    'description' => '',
+                    'qty' => 0,
+                    'uom' => 'lot',
+                    'unit_price' => 0,
+                    'discount_percent' => 0,
+                    'tax_percent' => 0,
+                    'tax_category_id' => null,
+                    'amount' => 0,
+                ]);
+            } else {
+                // Create regular item
+                $qty = (float)$item['qty'];
+                $unitPrice = (float)$item['unit_price'];
+                $discountPercent = (float)($item['discount_percent'] ?? 0);
+                $taxPercent = (float)($item['tax_percent'] ?? 0);
 
-            $lineTotal = $qty * $unitPrice;
-            $discountAmount = $lineTotal * ($discountPercent / 100);
-            $afterDiscount = $lineTotal - $discountAmount;
-            $taxAmount = $afterDiscount * ($taxPercent / 100);
-            $amount = $afterDiscount + $taxAmount;
+                $lineTotal = $qty * $unitPrice;
+                $discountAmount = $lineTotal * ($discountPercent / 100);
+                $afterDiscount = $lineTotal - $discountAmount;
+                $taxAmount = $afterDiscount * ($taxPercent / 100);
+                $amount = $afterDiscount + $taxAmount;
 
-            PreQuotationItem::create([
-                'pre_quotation_id' => $preQuotation->id,
-                'description' => $item['description'],
-                'qty' => $qty,
-                'uom' => $item['uom'] ?? 'lot',
-                'unit_price' => $unitPrice,
-                'discount_percent' => $discountPercent,
-                'tax_percent' => $taxPercent,
-                'amount' => $amount,
-            ]);
+                PreQuotationItem::create([
+                    'pre_quotation_id' => $preQuotation->id,
+                    'item_type' => 'item',
+                    'title_text' => '',
+                    'description' => $item['description'],
+                    'qty' => $qty,
+                    'uom' => $item['uom'] ?? 'lot',
+                    'unit_price' => $unitPrice,
+                    'discount_percent' => $discountPercent,
+                    'tax_percent' => $taxPercent,
+                    'tax_category_id' => $item['tax_category_id'] ?? null,
+                    'amount' => $amount,
+                ]);
+            }
         }
 
         return redirect()->route('pre-quotation.show', $preQuotation->id)->with('success', 'Pre-quotation updated successfully!');

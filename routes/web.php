@@ -99,6 +99,9 @@ Route::get('/quotation/create', [App\Http\Controllers\QuotationController::class
 Route::post('/quotation', [App\Http\Controllers\QuotationController::class, 'store'])->name('quotation.store');
 Route::get('/quotation/{id}', [App\Http\Controllers\QuotationController::class, 'show'])->name('quotation.show');
 Route::get('/quotation/{id}/print', [App\Http\Controllers\QuotationController::class, 'print'])->name('quotation.print');
+
+
+
 Route::delete('/quotation/{id}', [App\Http\Controllers\QuotationController::class, 'destroy'])->name('quotation.destroy');
 Route::patch('/quotation/{id}/accept', [App\Http\Controllers\QuotationController::class, 'accept'])->name('quotation.accept');
 Route::patch('/quotation/{id}/reject', [App\Http\Controllers\QuotationController::class, 'reject'])->name('quotation.reject');
@@ -253,6 +256,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/category/type', [App\Http\Controllers\CategoryController::class, 'storeType'])->name('settings.category.type.store');
     Route::put('/settings/category/type/{id}', [App\Http\Controllers\CategoryController::class, 'updateType'])->name('settings.category.type.update');
     Route::delete('/settings/category/type/{id}', [App\Http\Controllers\CategoryController::class, 'destroyType'])->name('settings.category.type.destroy');
+
+    // Tax Categories
+    Route::post('/settings/category/tax-category', [App\Http\Controllers\CategoryController::class, 'storeTaxCategory'])->name('settings.category.tax-category.store');
+    Route::put('/settings/category/tax-category/{id}', [App\Http\Controllers\CategoryController::class, 'updateTaxCategory'])->name('settings.category.tax-category.update');
+    Route::delete('/settings/category/tax-category/{id}', [App\Http\Controllers\CategoryController::class, 'destroyTaxCategory'])->name('settings.category.tax-category.destroy');
+
     Route::post('/settings/category/status', [App\Http\Controllers\CategoryController::class, 'storeStatus'])->name('settings.category.status.store');
     Route::put('/settings/category/status/{id}', [App\Http\Controllers\CategoryController::class, 'updateStatus'])->name('settings.category.status.update');
     Route::delete('/settings/category/status/{id}', [App\Http\Controllers\CategoryController::class, 'destroyStatus'])->name('settings.category.status.destroy');

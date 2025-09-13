@@ -71,9 +71,15 @@ class BillController extends Controller
     {
         // Find bill with firm scope validation
         $user = auth()->user();
+        $currentFirmId = session('current_firm_id');
 
-        if ($user->hasRole('Super Administrator')) {
-            // Super Admin can access any bill
+        if ($user->hasRole('Super Administrator') && $currentFirmId) {
+            // Super Admin with firm context - respect firm scope
+            $bill = Bill::forFirm($currentFirmId)
+                ->with(['items'])
+                ->findOrFail($id);
+        } elseif ($user->hasRole('Super Administrator') && !$currentFirmId) {
+            // Super Admin without firm context - can access any bill (for system management)
             $bill = Bill::withoutFirmScope()
                 ->with(['items'])
                 ->findOrFail($id);

@@ -62,10 +62,24 @@ class TaxInvoiceController extends Controller
             $quotations = Quotation::latest()->take(50)->get(['id', 'quotation_no']);
         }
         
-        // Prefill from quotation if provided
+        // Prefill from quotation if provided with proper firm scope
         $qFrom = null;
         if ($request->filled('from_quotation')) {
-            $qFrom = Quotation::with(['items', 'case.parties'])->find($request->integer('from_quotation'));
+            if ($user->hasRole('Super Administrator')) {
+                // Super Admin can access quotations from session firm or all firms
+                if (session('current_firm_id')) {
+                    $qFrom = Quotation::forFirm(session('current_firm_id'))
+                        ->with(['items', 'case.parties'])
+                        ->find($request->integer('from_quotation'));
+                } else {
+                    $qFrom = Quotation::withoutFirmScope()
+                        ->with(['items', 'case.parties'])
+                        ->find($request->integer('from_quotation'));
+                }
+            } else {
+                // Regular users can only access quotations from their firm (HasFirmScope trait handles this)
+                $qFrom = Quotation::with(['items', 'case.parties'])->find($request->integer('from_quotation'));
+            }
         }
 
         // Get case options if case_id is provided
@@ -77,29 +91,58 @@ class TaxInvoiceController extends Controller
         // Prepare default items
         $defaultItems = [
             [
-                'description' => 'Legal Services',
+                'type' => 'item',
+                'title_text' => '',
+                'description' => '',
                 'qty' => 1,
                 'uom' => 'lot',
-                'price' => 1000,
+                'price' => 0,
                 'disc' => 0,
-                'tax' => 6
+                'tax' => 0,
+                'tax_category_id' => null
             ]
         ];
 
         // Prepare items from quotation if available
-        $items = $qFrom && $qFrom->items ? 
+        $items = $qFrom && $qFrom->items ?
             $qFrom->items->map(function($i) {
                 return [
+                    'type' => $i->item_type ?? 'item',
+                    'title_text' => $i->title_text ?? '',
                     'description' => $i->description,
                     'qty' => (float) $i->qty,
                     'uom' => $i->uom,
                     'price' => (float) $i->unit_price,
-                    'disc' => (float) ($i->discount_percent ?? 0),
+                    'disc' => (float) ($i->discount_amount ?? $i->discount_percent ?? 0),
                     'tax' => (float) ($i->tax_percent ?? 0),
+                    'tax_category_id' => $i->tax_category_id ?? null,
                 ];
             })->toArray() : $defaultItems;
 
-        return view('tax-invoice-create', compact('quotations', 'qFrom', 'caseOptions', 'items'));
+        // Get tax categories with proper firm filtering
+        $user = auth()->user();
+        if ($user->hasRole('Super Administrator')) {
+            // For Super Admin, use session firm_id or default to user's firm
+            $firmId = session('current_firm_id') ?? $user->firm_id;
+            $taxCategories = \App\Models\TaxCategory::withoutFirmScope()
+                ->where('firm_id', $firmId)
+                ->where('status', 'active')
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get();
+        } else {
+            // For regular users, use HasFirmScope automatic filtering
+            $taxCategories = \App\Models\TaxCategory::active()->ordered()->get();
+        }
+
+        // Deduplicate by name + rate combination
+        $taxCategories = $taxCategories->unique(function ($item) {
+            return $item->name . '_' . $item->tax_rate;
+        })->values();
+
+
+
+        return view('tax-invoice-create', compact('quotations', 'qFrom', 'caseOptions', 'items', 'taxCategories'));
     }
 
     public function store(Request $request)
@@ -118,13 +161,16 @@ class TaxInvoiceController extends Controller
             'contact_person' => 'nullable|string|max:255',
             'contact_phone' => 'nullable|string|max:100',
             'items' => 'required|array|min:1',
+            'items.*.item_type' => 'nullable|string|in:item,title',
+            'items.*.title_text' => 'nullable|string|max:500',
             'items.*.description' => 'nullable|string',
-            'items.*.qty' => 'required|numeric|min:0.01',
-            'items.*.uom' => 'required|string|max:32',
-            'items.*.unit_price' => 'required|numeric|min:0',
+            'items.*.qty' => 'nullable|numeric|min:0',
+            'items.*.uom' => 'nullable|string|max:32',
+            'items.*.unit_price' => 'nullable|numeric|min:0',
             'items.*.discount_percent' => 'nullable|numeric|min:0|max:100',
             'items.*.tax_percent' => 'nullable|numeric|min:0|max:100',
-            'items.*.amount' => 'required|numeric|min:0',
+            'items.*.tax_category_id' => 'nullable|exists:tax_categories,id',
+            'items.*.amount' => 'nullable|numeric|min:0',
         ]);
 
         try {
@@ -200,16 +246,39 @@ class TaxInvoiceController extends Controller
 
             // Create invoice items
             foreach ($validated['items'] as $item) {
-                TaxInvoiceItem::create([
-                    'tax_invoice_id' => $taxInvoice->id,
-                    'description' => $item['description'] ?? '',
-                    'qty' => $item['qty'],
-                    'uom' => $item['uom'],
-                    'unit_price' => $item['unit_price'],
-                    'discount_percent' => $item['discount_percent'] ?? 0,
-                    'tax_percent' => $item['tax_percent'] ?? 0,
-                    'amount' => $item['amount'],
-                ]);
+                $itemType = $item['item_type'] ?? 'item';
+
+                if ($itemType === 'title') {
+                    // Create title item
+                    TaxInvoiceItem::create([
+                        'tax_invoice_id' => $taxInvoice->id,
+                        'item_type' => 'title',
+                        'title_text' => $item['title_text'] ?? '',
+                        'description' => '',
+                        'qty' => 0,
+                        'uom' => 'lot',
+                        'unit_price' => 0,
+                        'discount_percent' => 0,
+                        'tax_percent' => 0,
+                        'tax_category_id' => null,
+                        'amount' => 0,
+                    ]);
+                } else {
+                    // Create regular item
+                    TaxInvoiceItem::create([
+                        'tax_invoice_id' => $taxInvoice->id,
+                        'item_type' => 'item',
+                        'title_text' => '',
+                        'description' => $item['description'] ?? '',
+                        'qty' => $item['qty'] ?? 0,
+                        'uom' => $item['uom'] ?? 'lot',
+                        'unit_price' => $item['unit_price'] ?? 0,
+                        'discount_percent' => $item['discount_percent'] ?? 0,
+                        'tax_percent' => $item['tax_percent'] ?? 0,
+                        'tax_category_id' => $item['tax_category_id'] ?? null,
+                        'amount' => $item['amount'] ?? 0,
+                    ]);
+                }
             }
 
             // Update quotation status to 'converted' if this invoice is created from a quotation
@@ -247,9 +316,15 @@ class TaxInvoiceController extends Controller
     {
         // Find tax invoice with firm scope validation
         $user = auth()->user();
+        $currentFirmId = session('current_firm_id');
 
-        if ($user->hasRole('Super Administrator')) {
-            // Super Admin can access any tax invoice
+        if ($user->hasRole('Super Administrator') && $currentFirmId) {
+            // Super Admin with firm context - respect firm scope
+            $taxInvoice = TaxInvoice::forFirm($currentFirmId)
+                ->with(['items', 'case', 'quotation'])
+                ->findOrFail($id);
+        } elseif ($user->hasRole('Super Administrator') && !$currentFirmId) {
+            // Super Admin without firm context - can access any tax invoice (for system management)
             $taxInvoice = TaxInvoice::withoutFirmScope()
                 ->with(['items', 'case', 'quotation'])
                 ->findOrFail($id);
@@ -318,16 +393,40 @@ class TaxInvoiceController extends Controller
         // Prepare items for Alpine.js
         $items = $taxInvoice->items->map(function($i) {
             return [
-                'description' => $i->description,
+                'type' => $i->item_type ?? 'item',  // ✅ Use 'type' not 'item_type'
+                'title_text' => $i->title_text ?? '',
+                'description' => $i->description ?? '',
                 'qty' => (float) $i->qty,
-                'uom' => $i->uom,
+                'uom' => $i->uom ?? 'lot',
                 'price' => (float) $i->unit_price,
                 'disc' => (float) ($i->discount_percent ?? 0),
                 'tax' => (float) ($i->tax_percent ?? 0),
+                'tax_category_id' => $i->tax_category_id ?? null,
             ];
         })->toArray();
 
-        return view('tax-invoice-edit', compact('taxInvoice', 'quotations', 'items'));
+        // Get tax categories with proper firm filtering
+        $user = auth()->user();
+        if ($user->hasRole('Super Administrator')) {
+            // For Super Admin, use session firm_id or default to user's firm
+            $firmId = session('current_firm_id') ?? $user->firm_id;
+            $taxCategories = \App\Models\TaxCategory::withoutFirmScope()
+                ->where('firm_id', $firmId)
+                ->where('status', 'active')
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get();
+        } else {
+            // For regular users, use HasFirmScope automatic filtering
+            $taxCategories = \App\Models\TaxCategory::active()->ordered()->get();
+        }
+
+        // Deduplicate by name + rate combination
+        $taxCategories = $taxCategories->unique(function ($item) {
+            return $item->name . '_' . $item->tax_rate;
+        })->values();
+
+        return view('tax-invoice-edit', compact('taxInvoice', 'quotations', 'items', 'taxCategories'));
     }
 
     public function update(Request $request, $id)
@@ -357,13 +456,16 @@ class TaxInvoiceController extends Controller
             'contact_person' => 'nullable|string|max:255',
             'contact_phone' => 'nullable|string|max:100',
             'items' => 'required|array|min:1',
+            'items.*.item_type' => 'nullable|string|in:item,title',
+            'items.*.title_text' => 'nullable|string|max:500',
             'items.*.description' => 'nullable|string',
-            'items.*.qty' => 'required|numeric|min:0.01',
-            'items.*.uom' => 'required|string|max:32',
-            'items.*.unit_price' => 'required|numeric|min:0',
+            'items.*.qty' => 'nullable|numeric|min:0',
+            'items.*.uom' => 'nullable|string|max:32',
+            'items.*.unit_price' => 'nullable|numeric|min:0',
             'items.*.discount_percent' => 'nullable|numeric|min:0|max:100',
             'items.*.tax_percent' => 'nullable|numeric|min:0|max:100',
-            'items.*.amount' => 'required|numeric|min:0',
+            'items.*.tax_category_id' => 'nullable|exists:tax_categories,id',
+            'items.*.amount' => 'nullable|numeric|min:0',
         ]);
 
         try {
@@ -404,16 +506,39 @@ class TaxInvoiceController extends Controller
             $taxInvoice->items()->delete();
             
             foreach ($validated['items'] as $item) {
-                TaxInvoiceItem::create([
-                    'tax_invoice_id' => $taxInvoice->id,
-                    'description' => $item['description'] ?? '',
-                    'qty' => $item['qty'],
-                    'uom' => $item['uom'],
-                    'unit_price' => $item['unit_price'],
-                    'discount_percent' => $item['discount_percent'] ?? 0,
-                    'tax_percent' => $item['tax_percent'] ?? 0,
-                    'amount' => $item['amount'],
-                ]);
+                $itemType = $item['item_type'] ?? 'item';
+
+                if ($itemType === 'title') {
+                    // Create title item
+                    TaxInvoiceItem::create([
+                        'tax_invoice_id' => $taxInvoice->id,
+                        'item_type' => 'title',
+                        'title_text' => $item['title_text'] ?? '',
+                        'description' => '',
+                        'qty' => 0,
+                        'uom' => 'lot',
+                        'unit_price' => 0,
+                        'discount_percent' => 0,
+                        'tax_percent' => 0,
+                        'tax_category_id' => null,
+                        'amount' => 0,
+                    ]);
+                } else {
+                    // Create regular item
+                    TaxInvoiceItem::create([
+                        'tax_invoice_id' => $taxInvoice->id,
+                        'item_type' => 'item',
+                        'title_text' => '',
+                        'description' => $item['description'] ?? '',
+                        'qty' => $item['qty'] ?? 0,
+                        'uom' => $item['uom'] ?? 'lot',
+                        'unit_price' => $item['unit_price'] ?? 0,
+                        'discount_percent' => $item['discount_percent'] ?? 0,
+                        'tax_percent' => $item['tax_percent'] ?? 0,
+                        'tax_category_id' => $item['tax_category_id'] ?? null,
+                        'amount' => $item['amount'] ?? 0,
+                    ]);
+                }
             }
 
             DB::commit();

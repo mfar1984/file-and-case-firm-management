@@ -130,10 +130,12 @@ input[type='number'] {
                 'price' => (float)$i->unit_price,
                 'disc' => (float)($i->discount_amount ?? 0),
                 'tax' => (float)($i->tax_percent ?? 0),
+                'tax_category_id' => $i->tax_category_id ?? null,
             ];
         })->values()
-        : [[ 'type' => 'item', 'title_text' => '', 'description' => '', 'qty' => 1, 'uom' => 'lot', 'price' => 0, 'disc' => 0, 'tax' => 6 ]]
+        : [[ 'type' => 'item', 'title_text' => '', 'description' => '', 'qty' => 1, 'uom' => 'lot', 'price' => 0, 'disc' => 0, 'tax' => 0, 'tax_category_id' => null ]]
     ),
+    taxCategories: @js($taxCategories),
     amount(item) {
         if (item.type === 'title') return 0;
         let subtotal = item.qty * item.price;
@@ -151,14 +153,39 @@ input[type='number'] {
     totalTax() {
         return this.items.filter(item => item.type !== 'title').reduce((sum, item) => sum + this.itemTax(item), 0);
     },
+    getTaxCategories() {
+        // Get unique tax categories used in items
+        const usedCategories = [];
+        this.items.filter(item => item.type !== 'title' && item.tax_category_id).forEach(item => {
+            const taxCategory = this.taxCategories.find(tc => tc.id == item.tax_category_id);
+            if (taxCategory && !usedCategories.find(uc => uc.id === taxCategory.id)) {
+                usedCategories.push(taxCategory);
+            }
+        });
+        return usedCategories;
+    },
+    getTaxTotal(categoryId) {
+        return this.items.filter(item => item.type !== 'title' && item.tax_category_id == categoryId)
+            .reduce((sum, item) => sum + this.itemTax(item), 0);
+    },
     grandTotal() {
         return this.subtotal() + this.totalTax();
     },
+    updateTaxRate(item) {
+        if (item.tax_category_id) {
+            const taxCategory = this.taxCategories.find(tc => tc.id == item.tax_category_id);
+            if (taxCategory) {
+                item.tax = parseFloat(taxCategory.tax_rate);
+            }
+        } else {
+            item.tax = 0;
+        }
+    },
     addRow() {
-        this.items.push({ type: 'item', title_text: '', description: '', qty: 1, uom: 'lot', price: 0, disc: 0, tax: 6 });
+        this.items.push({ type: 'item', title_text: '', description: '', qty: 1, uom: 'lot', price: 0, disc: 0, tax: 0, tax_category_id: null });
     },
     insertRow() {
-        this.items.unshift({ type: 'item', title_text: '', description: '', qty: 1, uom: 'lot', price: 0, disc: 0, tax: 6 });
+        this.items.unshift({ type: 'item', title_text: '', description: '', qty: 1, uom: 'lot', price: 0, disc: 0, tax: 0, tax_category_id: null });
     },
     addTitle() {
         this.items.push({ type: 'title', title_text: '', description: '', qty: 0, uom: 'lot', price: 0, disc: 0, tax: 0 });
@@ -260,10 +287,11 @@ input[type='number'] {
                                     </template>
                                     <template x-if="item.type !== 'title'">
                                         <td class="px-1 mx-1 py-3 text-center">
-                                            <select x-model.number="item.tax" class="w-16 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-left">
-                                                <option value="0">0%</option>
-                                                <option value="6">6%</option>
-                                                <option value="10">10%</option>
+                                            <select x-model.number="item.tax_category_id" @change="updateTaxRate(item)" class="w-16 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-left">
+                                                <option value="">No Tax</option>
+                                                @foreach($taxCategories as $taxCategory)
+                                                    <option value="{{ $taxCategory->id }}" data-tax-rate="{{ $taxCategory->tax_rate }}">{{ $taxCategory->name }} ({{ $taxCategory->tax_rate }}%)</option>
+                                                @endforeach
                                             </select>
                                         </td>
                                     </template>
@@ -344,11 +372,12 @@ input[type='number'] {
                                             <input type="number" min="0" step="0.01" x-model.number="item.disc" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="0.00">
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-medium text-gray-700 mb-1">Tax %</label>
-                                            <select x-model.number="item.tax" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                                <option value="0">0%</option>
-                                                <option value="6">6%</option>
-                                                <option value="10">10%</option>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Tax Category</label>
+                                            <select x-model.number="item.tax_category_id" @change="updateTaxRate(item)" class="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                                <option value="">No Tax</option>
+                                                @foreach($taxCategories as $taxCategory)
+                                                    <option value="{{ $taxCategory->id }}" data-tax-rate="{{ $taxCategory->tax_rate }}">{{ $taxCategory->name }} ({{ $taxCategory->tax_rate }}%)</option>
+                                                @endforeach
                                             </select>
                                         </div>
                                     </div>
@@ -373,10 +402,20 @@ input[type='number'] {
                             <span class="font-medium text-gray-700">Subtotal:</span>
                             <span class="text-gray-900" x-text="'RM ' + subtotal().toFixed(2)"></span>
                         </div>
-                        <div class="flex justify-between text-sm">
-                            <span class="font-medium text-gray-700">Tax:</span>
-                            <span class="text-gray-900" x-text="'RM ' + totalTax().toFixed(2)"></span>
-                        </div>
+                        <!-- Dynamic Tax Categories -->
+                        <template x-for="taxCategory in getTaxCategories()" :key="taxCategory.id">
+                            <div class="flex justify-between text-sm">
+                                <span class="font-medium text-gray-700" x-text="taxCategory.name + ':'"></span>
+                                <span class="text-gray-900" x-text="'RM ' + getTaxTotal(taxCategory.id).toFixed(2)"></span>
+                            </div>
+                        </template>
+                        <!-- Fallback for when no tax categories are used -->
+                        <template x-if="getTaxCategories().length === 0 && totalTax() > 0">
+                            <div class="flex justify-between text-sm">
+                                <span class="font-medium text-gray-700">SST:</span>
+                                <span class="text-gray-900" x-text="'RM ' + totalTax().toFixed(2)"></span>
+                            </div>
+                        </template>
                         <div class="flex justify-between text-sm border-t border-gray-300 pt-2">
                             <span class="font-medium text-gray-700">Total RM:</span>
                             <span class="text-gray-900 font-semibold" x-text="'RM ' + grandTotal().toFixed(2)"></span>
@@ -539,6 +578,7 @@ window.__prepareQuotationItems = function(form){
                         unit_price: price,
                         discount_amount: Number(it.disc) || 0,
                         tax_percent: Number(it.tax) || 0,
+                        tax_category_id: it.tax_category_id || null,
                         amount: (qty * price) - (Number(it.disc) || 0)
                     };
                 }

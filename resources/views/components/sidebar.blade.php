@@ -1,7 +1,7 @@
 @php
     use App\Helpers\PermissionHelper;
     $caseActive = request()->routeIs('case.index') || request()->routeIs('client.index') || request()->routeIs('partner.index');
-    $accountingActive = request()->routeIs('pre-quotation.index') || request()->routeIs('quotation.index') || request()->routeIs('tax-invoice.index') || request()->routeIs('resit.index') || request()->routeIs('voucher.index') || request()->routeIs('bill.index');
+    $accountingActive = request()->routeIs('pre-quotation.index') || request()->routeIs('quotation.index') || request()->routeIs('tax-invoice.index') || request()->routeIs('receipt.index') || request()->routeIs('voucher.index') || request()->routeIs('bill.index');
     $gLedgerActive = request()->routeIs('general-ledger.index') || request()->routeIs('detail-transaction.index') || request()->routeIs('journal-report.index') || request()->routeIs('balance-sheet.index') || request()->routeIs('profit-loss.index') || request()->routeIs('trial-balance.index');
     $settingsActive = request()->routeIs('settings.global') || request()->routeIs('settings.role') || request()->routeIs('settings.user') || request()->routeIs('settings.category') || request()->routeIs('settings.log') || request()->routeIs('settings.firms.*');
 @endphp

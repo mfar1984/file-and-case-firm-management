@@ -126,20 +126,64 @@
             <!-- Item Entry Section -->
             <div class="mb-8" id="invoiceItems" x-data="{
                 items: @js($items),
+                taxCategories: @js($taxCategories),
+
                 amount(item) {
+                    if (item.type === 'title') return 0;
                     let subtotal = item.qty * item.price;
-                    let afterDisc = subtotal * (1 - item.disc / 100);
-                    let afterTax = afterDisc * (1 + item.tax / 100);
-                    return afterTax;
+                    let afterDisc = subtotal - (item.disc || 0);
+                    return afterDisc; // Return amount before tax
+                },
+                itemTax(item) {
+                    if (item.type === 'title') return 0;
+                    let afterDisc = this.amount(item);
+                    return afterDisc * (item.tax / 100);
                 },
                 subtotal() {
-                    return this.items.reduce((sum, item) => sum + this.amount(item), 0);
+                    return this.items.filter(item => item.type !== 'title').reduce((sum, item) => sum + this.amount(item), 0);
+                },
+                totalTax() {
+                    return this.items.filter(item => item.type !== 'title').reduce((sum, item) => sum + this.itemTax(item), 0);
+                },
+                getTaxCategories() {
+                    // Get unique tax categories used in items
+                    const usedCategories = [];
+                    this.items.filter(item => item.type !== 'title' && item.tax_category_id).forEach(item => {
+                        const taxCategory = this.taxCategories.find(tc => tc.id == item.tax_category_id);
+                        if (taxCategory && !usedCategories.find(uc => uc.id === taxCategory.id)) {
+                            usedCategories.push(taxCategory);
+                        }
+                    });
+                    return usedCategories;
+                },
+                getTaxTotal(categoryId) {
+                    return this.items.filter(item => item.type !== 'title' && item.tax_category_id == categoryId)
+                        .reduce((sum, item) => sum + this.itemTax(item), 0);
+                },
+                grandTotal() {
+                    return this.subtotal() + this.totalTax();
+                },
+                updateTaxRate(item) {
+                    if (item.tax_category_id) {
+                        const taxCategory = this.taxCategories.find(tc => tc.id == item.tax_category_id);
+                        if (taxCategory) {
+                            item.tax = parseFloat(taxCategory.tax_rate);
+                        }
+                    } else {
+                        item.tax = 0;
+                    }
                 },
                 addRow() {
-                    this.items.push({ description: '', qty: 1, uom: 'lot', price: 0, disc: 0, tax: 6 });
+                    this.items.push({ type: 'item', title_text: '', description: '', qty: 1, uom: 'lot', price: 0, disc: 0, tax: 0, tax_category_id: null });
                 },
                 insertRow() {
-                    this.items.unshift({ description: '', qty: 1, uom: 'lot', price: 0, disc: 0, tax: 6 });
+                    this.items.unshift({ type: 'item', title_text: '', description: '', qty: 1, uom: 'lot', price: 0, disc: 0, tax: 0, tax_category_id: null });
+                },
+                addTitle() {
+                    this.items.push({ type: 'title', title_text: '', description: '', qty: 0, uom: '', price: 0, disc: 0, tax: 0, tax_category_id: null });
+                },
+                insertTitle() {
+                    this.items.unshift({ type: 'title', title_text: '', description: '', qty: 0, uom: '', price: 0, disc: 0, tax: 0, tax_category_id: null });
                 },
                 removeRow(idx) {
                     this.items.splice(idx, 1);
@@ -159,6 +203,18 @@
                         </button>
                         <span class="text-purple-600 text-xs font-medium">Insert</span>
                     </div>
+                    <div class="flex flex-col items-center">
+                        <button type="button" @click="addTitle()" class="w-8 h-8 md:w-5 md:h-5 flex items-center justify-center bg-blue-500 text-white rounded-full text-base mb-1 focus:outline-none" title="Add Title">
+                            T
+                        </button>
+                        <span class="text-blue-500 text-xs font-medium">Add</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <button type="button" @click="insertTitle()" class="w-8 h-8 md:w-5 md:h-5 flex items-center justify-center bg-blue-600 text-white rounded-full text-base mb-1 focus:outline-none" title="Insert Title">
+                            T
+                        </button>
+                        <span class="text-blue-600 text-xs font-medium">Insert</span>
+                    </div>
                 </div>
                 
                 <!-- Desktop Table View -->
@@ -169,47 +225,73 @@
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Description</th>
                                 <th class="px-1 mx-1 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Qty</th>
                                 <th class="px-1 mx-1 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">UOM</th>
-                                <th class="px-1 mx-1 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Unit Price</th>
+                                <th class="px-1 mx-1 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Unit Price<br>(RM)</th>
                                 <th class="px-1 mx-1 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Disc.</th>
                                 <th class="px-1 mx-1 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Tax</th>
-                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Amount (RM) *</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Amount<br>(RM) *</th>
                                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Action</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white">
                             <template x-for="(item, idx) in items" :key="idx">
-                                <tr>
-                                    <td class="px-4 py-3 align-middle">
-                                        <textarea x-model="item.description" class="w-full px-3 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y align-middle" placeholder="Description" rows="1"></textarea>
-                                    </td>
-                                    <td class="px-1 mx-1 py-3 text-center">
-                                        <input type="number" min="1" x-model.number="item.qty" class="w-12 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="Qty">
-                                    </td>
-                                    <td class="px-1 mx-1 py-3 text-center">
-                                        <select x-model="item.uom" class="w-16 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-left">
-                                            <option value="lot">lot</option>
-                                            <option value="unit">unit</option>
-                                            <option value="hour">hour</option>
-                                            <option value="day">day</option>
-                                            <option value="week">week</option>
-                                            <option value="month">month</option>
-                                        </select>
-                                    </td>
-                                    <td class="px-1 mx-1 py-3 w-20 text-center">
-                                        <input type="number" min="0" step="0.01" x-model.number="item.price" class="w-20 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="Price">
-                                    </td>
-                                    <td class="px-1 mx-1 py-3 text-center">
-                                        <input type="number" min="0" max="100" x-model.number="item.disc" class="w-12 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="Disc">
-                                    </td>
-                                    <td class="px-1 mx-1 py-3 text-center">
-                                        <select x-model.number="item.tax" class="w-16 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-left">
-                                            <option value="0">0%</option>
-                                            <option value="6">6%</option>
-                                            <option value="10">10%</option>
-                                        </select>
-                                    </td>
-                                    <td class="px-4 py-3 text-center">
-                                        <span class="text-xs font-medium" x-text="'RM ' + amount(item).toFixed(2)"></span>
+                                <tr :class="item.type === 'title' ? 'bg-orange-50' : ''">
+                                    <!-- Title Row -->
+                                    <template x-if="item.type === 'title'">
+                                        <td colspan="7" class="px-4 py-3 align-middle">
+                                            <div class="flex items-center">
+                                                <input type="text" x-model="item.title_text" class="flex-1 px-3 py-1 border border-orange-300 rounded text-xs font-medium focus:outline-none focus:ring-1 focus:ring-orange-500 bg-white" placeholder="Enter title text">
+                                            </div>
+                                        </td>
+                                    </template>
+                                    <!-- Regular Item Row -->
+                                    <template x-if="item.type === 'item'">
+                                        <td class="px-4 py-3 align-middle">
+                                            <textarea x-model="item.description" class="w-full px-3 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y align-middle" placeholder="Description" rows="1"></textarea>
+                                        </td>
+                                    </template>
+                                    <!-- Regular Item Columns -->
+                                    <template x-if="item.type === 'item'">
+                                        <td class="px-1 mx-1 py-3 text-center">
+                                            <input type="number" min="1" x-model.number="item.qty" class="w-12 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="Qty">
+                                        </td>
+                                    </template>
+                                    <template x-if="item.type === 'item'">
+                                        <td class="px-1 mx-1 py-3 text-center">
+                                            <select x-model="item.uom" class="w-16 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-left">
+                                                <option value="lot">lot</option>
+                                                <option value="unit">unit</option>
+                                                <option value="hour">hour</option>
+                                                <option value="day">day</option>
+                                                <option value="week">week</option>
+                                                <option value="month">month</option>
+                                            </select>
+                                        </td>
+                                    </template>
+                                    <template x-if="item.type === 'item'">
+                                        <td class="px-1 mx-1 py-3 w-20 text-center">
+                                            <input type="number" min="0" step="0.01" x-model.number="item.price" class="w-20 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="Price">
+                                        </td>
+                                    </template>
+                                    <template x-if="item.type === 'item'">
+                                        <td class="px-1 mx-1 py-3 text-center">
+                                            <input type="number" min="0" max="100" x-model.number="item.disc" class="w-12 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-center" placeholder="Disc">
+                                        </td>
+                                    </template>
+                                    <template x-if="item.type === 'item'">
+                                        <td class="px-1 mx-1 py-3 text-center">
+                                            <select x-model.number="item.tax_category_id" @change="updateTaxRate(item)" class="w-16 px-1 mx-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-left">
+                                                <option value="">No Tax</option>
+                                                @foreach($taxCategories as $taxCategory)
+                                                    <option value="{{ $taxCategory->id }}" data-tax-rate="{{ $taxCategory->tax_rate }}">{{ $taxCategory->name }} ({{ $taxCategory->tax_rate }}%)</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                    </template>
+                                    <template x-if="item.type === 'item'">
+                                        <td class="px-4 py-3 text-center">
+                                            <span class="text-xs font-medium" x-text="'RM ' + amount(item).toFixed(2)"></span>
+                                        </td>
+                                    </template>
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         <button type="button" @click="removeRow(idx)" class="text-red-600 hover:text-red-700" title="Remove Row">
@@ -225,46 +307,72 @@
                 <!-- Mobile Card View -->
                 <div class="md:hidden space-y-4">
                     <template x-for="(item, idx) in items" :key="idx">
-                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                            <div class="grid grid-cols-2 gap-3 mb-3">
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
-                                    <textarea x-model="item.description" class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="Description" rows="2"></textarea>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Qty</label>
-                                    <input type="number" min="1" x-model.number="item.qty" class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="Qty">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">UOM</label>
-                                    <select x-model="item.uom" class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                        <option value="lot">lot</option>
-                                        <option value="unit">unit</option>
-                                        <option value="hour">hour</option>
-                                        <option value="day">day</option>
-                                        <option value="week">week</option>
-                                        <option value="month">month</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price</label>
-                                    <input type="number" min="0" step="0.01" x-model.number="item.price" class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="Price">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Discount %</label>
-                                    <input type="number" min="0" max="100" x-model.number="item.disc" class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="Disc">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Tax %</label>
-                                    <input type="number" min="0" max="100" x-model.number="item.tax" class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="Tax">
-                                </div>
+                        <div :class="item.type === 'title' ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'" class="border rounded-lg p-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium" :class="item.type === 'title' ? 'text-blue-800' : 'text-gray-800'">
+                                    <span x-show="item.type === 'title'" class="text-xs font-semibold text-blue-700">TITLE</span>
+                                    <span x-show="item.type !== 'title'">Item <span x-text="idx + 1"></span></span>
+                                </span>
+                                <button type="button" @click="removeRow(idx)" class="text-red-600 hover:text-red-800 text-lg" title="Delete Row">❌</button>
                             </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-xs font-medium" x-text="'Amount: RM ' + amount(item).toFixed(2)"></span>
-                                <button type="button" @click="removeRow(idx)" class="text-red-600 hover:text-red-700" title="Remove Row">
-                                    <span class="material-icons text-base">delete</span>
-                                </button>
-                            </div>
+
+                            <!-- Title Item Mobile View -->
+                            <template x-if="item.type === 'title'">
+                                <div>
+                                    <label class="block text-xs font-medium text-blue-700 mb-1">Title Text</label>
+                                    <input type="text" x-model="item.title_text" class="w-full px-3 py-2 border border-blue-300 rounded text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white" placeholder="Enter title text">
+                                </div>
+                            </template>
+
+                            <!-- Regular Item Mobile View -->
+                            <template x-if="item.type === 'item'">
+                                <div>
+                                    <div class="grid grid-cols-2 gap-3 mb-3">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                                            <textarea x-model="item.description" class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="Description" rows="2"></textarea>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Qty</label>
+                                            <input type="number" min="1" x-model.number="item.qty" class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="Qty">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">UOM</label>
+                                            <select x-model="item.uom" class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                                <option value="lot">lot</option>
+                                                <option value="unit">unit</option>
+                                                <option value="hour">hour</option>
+                                                <option value="day">day</option>
+                                                <option value="week">week</option>
+                                                <option value="month">month</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price</label>
+                                            <input type="number" min="0" step="0.01" x-model.number="item.price" class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="Price">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Discount %</label>
+                                            <input type="number" min="0" max="100" x-model.number="item.disc" class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="Disc">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Tax Category</label>
+                                            <select x-model.number="item.tax_category_id" @change="updateTaxRate(item)" class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                                <option value="">No Tax</option>
+                                                @foreach($taxCategories as $taxCategory)
+                                                    <option value="{{ $taxCategory->id }}" data-tax-rate="{{ $taxCategory->tax_rate }}">{{ $taxCategory->name }} ({{ $taxCategory->tax_rate }}%)</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-xs font-medium" x-text="'Amount: RM ' + amount(item).toFixed(2)"></span>
+                                        <button type="button" @click="removeRow(idx)" class="text-red-600 hover:text-red-700" title="Remove Row">
+                                            <span class="material-icons text-base">delete</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </template>
                     
@@ -289,9 +397,23 @@
                             <span class="font-medium text-gray-700">Subtotal:</span>
                             <span class="text-gray-900" x-text="'RM ' + subtotal().toFixed(2)"></span>
                         </div>
-                        <div class="flex justify-between text-sm">
+                        <!-- Dynamic Tax Categories -->
+                        <template x-for="taxCategory in getTaxCategories()" :key="taxCategory.id">
+                            <div class="flex justify-between text-sm">
+                                <span class="font-medium text-gray-700" x-text="taxCategory.name + ':'"></span>
+                                <span class="text-gray-900" x-text="'RM ' + getTaxTotal(taxCategory.id).toFixed(2)"></span>
+                            </div>
+                        </template>
+                        <!-- Fallback for when no tax categories are used -->
+                        <template x-if="getTaxCategories().length === 0 && totalTax() > 0">
+                            <div class="flex justify-between text-sm">
+                                <span class="font-medium text-gray-700">Tax:</span>
+                                <span class="text-gray-900" x-text="'RM ' + totalTax().toFixed(2)"></span>
+                            </div>
+                        </template>
+                        <div class="flex justify-between text-sm border-t border-gray-200 pt-2">
                             <span class="font-medium text-gray-700">Total RM:</span>
-                            <span class="text-gray-900 font-semibold" x-text="'RM ' + subtotal().toFixed(2)"></span>
+                            <span class="text-gray-900 font-semibold" x-text="'RM ' + grandTotal().toFixed(2)"></span>
                         </div>
                     </div>
                 </div>

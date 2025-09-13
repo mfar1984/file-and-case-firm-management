@@ -20,6 +20,7 @@ class CategoryController extends Controller
         if ($user->hasRole('Super Administrator')) {
             if (session('current_firm_id')) {
                 $caseTypes = CaseType::forFirm(session('current_firm_id'))->orderBy('code')->get();
+                $taxCategories = \App\Models\TaxCategory::forFirm(session('current_firm_id'))->ordered()->get();
                 $caseStatuses = CaseStatus::forFirm(session('current_firm_id'))->orderBy('name')->get();
                 $eventStatuses = EventStatus::forFirm(session('current_firm_id'))->active()->ordered()->get();
                 $fileTypes = \App\Models\FileType::forFirm(session('current_firm_id'))->orderBy('code')->get();
@@ -27,6 +28,7 @@ class CategoryController extends Controller
                 $expenseCategories = ExpenseCategory::forFirm(session('current_firm_id'))->ordered()->get();
             } else {
                 $caseTypes = CaseType::withoutFirmScope()->orderBy('code')->get();
+                $taxCategories = \App\Models\TaxCategory::withoutFirmScope()->ordered()->get();
                 $caseStatuses = CaseStatus::withoutFirmScope()->orderBy('name')->get();
                 $eventStatuses = EventStatus::withoutFirmScope()->active()->ordered()->get();
                 $fileTypes = \App\Models\FileType::withoutFirmScope()->orderBy('code')->get();
@@ -35,6 +37,7 @@ class CategoryController extends Controller
             }
         } else {
             $caseTypes = CaseType::orderBy('code')->get();
+            $taxCategories = \App\Models\TaxCategory::ordered()->get();
             $caseStatuses = CaseStatus::orderBy('name')->get();
             $eventStatuses = EventStatus::active()->ordered()->get();
             $fileTypes = \App\Models\FileType::orderBy('code')->get();
@@ -42,7 +45,7 @@ class CategoryController extends Controller
             $expenseCategories = ExpenseCategory::ordered()->get();
         }
 
-        return view('settings.category', compact('caseTypes', 'caseStatuses', 'eventStatuses', 'fileTypes', 'specializations', 'expenseCategories'));
+        return view('settings.category', compact('caseTypes', 'taxCategories', 'caseStatuses', 'eventStatuses', 'fileTypes', 'specializations', 'expenseCategories'));
     }
 
     // Case Type Methods
@@ -793,6 +796,104 @@ class CategoryController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to delete expense category: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Tax Category Methods
+    public function storeTaxCategory(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'tax_rate' => 'required|numeric|min:0|max:100',
+                'sort_order' => 'nullable|integer|min:0',
+                'status' => 'required|in:active,inactive'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validator->errors()->first()
+                ], 422);
+            }
+
+            $firmId = session('current_firm_id') ?? auth()->user()->firm_id;
+
+            $taxCategory = \App\Models\TaxCategory::create([
+                'name' => $request->name,
+                'tax_rate' => $request->tax_rate,
+                'sort_order' => $request->sort_order ?? 0,
+                'status' => $request->status,
+                'firm_id' => $firmId
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Tax category created successfully',
+                'data' => $taxCategory
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create tax category: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateTaxCategory(Request $request, $id)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'tax_rate' => 'required|numeric|min:0|max:100',
+                'sort_order' => 'nullable|integer|min:0',
+                'status' => 'required|in:active,inactive'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validator->errors()->first()
+                ], 422);
+            }
+
+            $taxCategory = \App\Models\TaxCategory::findOrFail($id);
+
+            $taxCategory->update([
+                'name' => $request->name,
+                'tax_rate' => $request->tax_rate,
+                'sort_order' => $request->sort_order ?? 0,
+                'status' => $request->status
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Tax category updated successfully',
+                'data' => $taxCategory
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update tax category: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function destroyTaxCategory($id)
+    {
+        try {
+            $taxCategory = \App\Models\TaxCategory::findOrFail($id);
+            $taxCategory->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Tax category deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete tax category: ' . $e->getMessage()
             ], 500);
         }
     }

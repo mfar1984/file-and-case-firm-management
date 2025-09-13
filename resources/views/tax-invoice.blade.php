@@ -526,10 +526,27 @@ window.__deleteTaxInvoice = function(id, el) {
                 'Accept': 'application/json'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
-                el.closest('tr, div').remove(); // Remove the row/card from the DOM
+                // Find the table row (desktop) or card (mobile)
+                const tableRow = el.closest('tr');
+                const mobileCard = el.closest('div.bg-white.rounded-lg');
+
+                if (tableRow) {
+                    tableRow.remove();
+                } else if (mobileCard) {
+                    mobileCard.remove();
+                } else {
+                    // Fallback: reload the page
+                    window.location.reload();
+                }
+
                 alert(data.message);
             } else {
                 alert('Failed to delete tax invoice: ' + (data.message || 'Unknown error'));
@@ -540,6 +557,7 @@ window.__deleteTaxInvoice = function(id, el) {
             alert('An error occurred while deleting the tax invoice.');
         });
     }
+    return false;
 };
 
 // Status Change Functions

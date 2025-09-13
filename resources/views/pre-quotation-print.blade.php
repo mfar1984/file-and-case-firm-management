@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Pre-Quotation - {{ $preQuotation->quotation_no ?? 'PQ-00001' }}</title>
+    <title>Legal Quotation - {{ $preQuotation->quotation_no ?? 'PQ-00001' }}</title>
     <style>
         /*
          * GLOBAL STYLES
@@ -22,13 +22,65 @@
         /*
          * HEADER
          */
+
+        /* Header repetition using position fixed */
         .header {
-            height: auto;
-            padding-bottom: 1mm;
-            margin-bottom: 1mm;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70mm; /* Kurangkan height untuk compact */
+            background: white;
+            z-index: 1000;
+            padding-bottom: 0.25mm; /* Kurangkan padding */
+            margin-bottom: 0.25mm; /* Kurangkan margin */
+            margin-top: -3mm; /* Naikkan lagi ke atas */
         }
+
+        body {
+            margin-top: 70mm; /* Space for fixed header - adjust to match header height */
+        }
+
         .header-content {
             padding: 0;
+            margin-top: 0;
+        }
+
+        /* CSS Counter for page numbering - DomPDF compatible */
+        @page {
+            margin: 20mm 15mm 20mm 15mm;
+        }
+
+        body {
+            counter-reset: page;
+        }
+
+        @media print {
+            .main-content {
+                page-break-before: auto;
+            }
+            .footer {
+                page-break-inside: avoid; /* Don't break footer content */
+                break-inside: avoid; /* Modern CSS */
+                page-break-before: auto; /* Allow page break when space < 5mm */
+            }
+            .item-table {
+                page-break-after: auto; /* Allow page break after table */
+            }
+            /* Force table repetition for DomPDF */
+            .item-table {
+                page-break-inside: auto !important;
+            }
+            .item-table thead {
+                display: table-header-group !important;
+            }
+            .item-table tbody {
+                display: table-row-group !important;
+            }
+            /* Automatic page break when space is limited */
+            .item-table tbody tr:last-child {
+                page-break-after: auto;
+            }
         }
         .company-info {
             float: left;
@@ -47,54 +99,62 @@
             display: inline-block;
             width: 70pt; /* Fixed width untuk alignment */
             text-align: left;
-            vertical-align: baseline;
+            vertical-align: baseline; /* Ensure consistent vertical alignment */
         }
         .contact-separator {
             display: inline-block;
             width: 5pt; /* Fixed width untuk : dan space */
             text-align: left;
-            vertical-align: baseline;
+            vertical-align: baseline; /* Ensure consistent vertical alignment */
         }
         .contact-value {
             display: inline-block;
-            vertical-align: baseline;
+            vertical-align: baseline; /* Ensure consistent vertical alignment */
         }
         .quotation-label {
             display: inline-block;
             width: 100pt; /* Fixed width untuk alignment quotation meta */
             text-align: left;
-            vertical-align: baseline;
+            vertical-align: baseline; /* Ensure consistent vertical alignment */
         }
         .quotation-separator {
             display: inline-block;
             width: 5pt; /* Fixed width untuk : dan space */
             text-align: left;
-            vertical-align: baseline;
+            vertical-align: baseline; /* Ensure consistent vertical alignment */
         }
         .quotation-value {
             display: inline-block;
-            vertical-align: baseline;
+            vertical-align: baseline; /* Ensure consistent vertical alignment */
+        }
+
+        /* Dynamic page numbering using CSS counter */
+        .page-counter::before {
+            content: counter(page) " of {{ $totalPages ?? '1' }}";
         }
         .quotation-title {
             text-align: center;
-            margin-top: 1mm;
-            margin-bottom: 3mm;
+            margin-top: 0.5mm;
+            margin-bottom: 1.5mm;
             font-size: 12pt;
             font-weight: bold;
-            clear: both;
+            clear: both; /* Clear float for title */
         }
         .quotation-details {
-            overflow: auto;
-            margin-bottom: 2mm !important;
+            overflow: auto; /* Clear floats */
+            margin-bottom: 1mm !important;
         }
-        .customer-info, .quotation-meta {
+        .customer-info {
             width: 48%;
             float: left;
-            margin-bottom: 2mm;
+            margin-bottom: 1mm;
         }
         .quotation-meta {
             float: right;
-            text-align: right;
+            text-align: left;
+            margin-bottom: 1mm;
+            margin-right: 0; /* Paling hujung kanan */
+            width: auto; /* Auto width untuk content */
         }
         .clear {
             clear: both;
@@ -106,8 +166,14 @@
         .item-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 0mm !important;
-            margin-bottom: 10mm;
+            margin-top: 0mm !important; /* Jarak dari detail quotation */
+            margin-bottom: 5mm; /* Kurangkan spacing */
+            page-break-inside: auto; /* Allow page breaks within table */
+        }
+
+        /* Main content wrapper */
+        .main-content {
+            page-break-after: avoid; /* Prevent page break after table */
         }
         .item-table th, .item-table td {
             padding: 4pt 6pt;
@@ -117,23 +183,147 @@
         }
         .item-table th {
             background-color: transparent;
-            font-weight: 900;
+            font-weight: 900 !important;
             color: #374151;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            font-size: 9pt;
-            text-align: center !important;
-            vertical-align: middle !important;
+            font-size: 9pt !important;
+            text-align: center !important; /* Center align header text */
+            vertical-align: middle !important; /* Middle align header text */
             border-top: 1px solid #d1d5db;
             border-bottom: 1px solid #d1d5db;
             border-left: none;
             border-right: none;
         }
+
+        /* Specific styling for item numbers */
+        .item-table td.item-number {
+            font-weight: 400 !important;
+            font-size: 10pt !important;
+            vertical-align: middle !important;
+            text-align: left !important;
+        }
+
+        /* Specific styling for amount values */
+        .item-table td.amount-value {
+            font-weight: 400 !important;
+            font-size: 10pt !important;
+            vertical-align: middle !important;
+            text-align: right !important;
+        }
+
+        /* Specific styling for price and discount values */
+        .item-table td.price-value {
+            font-weight: 400 !important;
+            font-size: 10pt !important;
+            vertical-align: middle !important;
+            text-align: right !important;
+        }
+
+        /* Specific styling for description */
+        .item-table td.description-value {
+            font-weight: 400 !important;
+            font-size: 10pt !important;
+            vertical-align: middle !important;
+            text-align: left !important;
+        }
+        }
+        .item-table thead {
+            display: table-header-group; /* Repeat header on each page */
+        }
+        .item-table tbody {
+            display: table-row-group;
+        }
+
+        /* 3-Section Layout System - Table Section */
+        .item-table {
+            /* Calculate available space: A4(297mm) - Header(75mm) - Footer(30mm) = ~192mm */
+            max-height: 180mm !important; /* Safe limit untuk table section */
+            page-break-before: auto;
+            page-break-after: auto;
+            margin-bottom: 15mm !important; /* Add bottom margin untuk gap */
+        }
+
+        .item-table tbody {
+            /* Limit tbody to trigger page break at item ~16 */
+            max-height: 150mm !important; /* ~16 rows at 9-10mm per row */
+            overflow: visible !important; /* Allow page break flow */
+            padding-bottom: 15mm !important; /* Padding bottom untuk tbody supaya data tidak sampai edge */
+        }
+
+        /* Force page break when tbody reaches limit - REMOVE aggressive break */
+        /* .item-table tbody tr:nth-child(16) ~ tr {
+            page-break-before: always;
+        } */
+
+        /* Better approach - use natural page break with height limits */
+        .item-table tbody tr {
+            page-break-inside: avoid; /* Don't break individual rows */
+        }
+
+        /* Add padding untuk tbody rows supaya tidak sampai edge */
+        .item-table tbody tr:last-child {
+            padding-bottom: 20mm !important; /* Extra padding untuk last row */
+        }
+
+        .item-table tbody tr td {
+            padding-bottom: 3mm !important; /* Individual cell padding bottom */
+        }
+
+        @media print {
+            .item-table {
+                max-height: 180mm !important;
+                page-break-inside: auto !important;
+                margin-bottom: 20mm !important; /* Increase bottom margin untuk print */
+            }
+
+            .item-table tbody {
+                max-height: 150mm !important;
+                page-break-inside: auto !important;
+                padding-bottom: 25mm !important; /* Increase padding bottom untuk tbody supaya data tidak sampai edge */
+            }
+
+            /* Extra padding untuk last row dalam print */
+            .item-table tbody tr:last-child td {
+                padding-bottom: 15mm !important; /* Extra padding untuk last row cells */
+            }
+
+            /* Ensure thead repeats on new pages */
+            .item-table thead {
+                display: table-header-group !important;
+                page-break-after: avoid !important;
+            }
+        }
+        .item-table tbody tr {
+            page-break-inside: avoid; /* Avoid breaking rows */
+        }
+
+        /* Table repetition on page breaks */
+        .item-table {
+            page-break-before: auto;
+            page-break-after: auto;
+            max-height: 180mm !important; /* Limit table height untuk page break */
+        }
+
+        /* Table tbody limit untuk gap dengan footer */
+        .item-table tbody {
+            max-height: 150mm !important; /* Limit tbody height */
+            overflow: hidden !important; /* Hide overflow untuk page break */
+        }
+
+        /* For DomPDF compatibility - ensure content flows properly */
+        .header {
+            page-break-after: avoid; /* Keep header with content */
+        }
+
+        .main-content {
+            page-break-before: avoid; /* Keep content with header */
+        }
         .item-table .text-right {
             text-align: right;
         }
-        
-        /* Column specific styling */
+
+        /* Column specific styling for 5 columns */
         .item-table th:first-child,
         .item-table td:first-child {
             width: 8%;
@@ -141,41 +331,29 @@
             font-weight: 600;
             color: #374151;
         }
-        
+
         .item-table th:nth-child(2),
         .item-table td:nth-child(2) {
-            width: 40%;
+            width: 50%;
         }
-        
+
         .item-table th:nth-child(3),
         .item-table td:nth-child(3) {
-            width: 10%;
-            text-align: center;
-        }
-        
-        .item-table th:nth-child(4),
-        .item-table td:nth-child(4) {
-            width: 10%;
-            text-align: center;
-        }
-        
-        .item-table th:nth-child(5),
-        .item-table td:nth-child(5) {
-            width: 12%;
+            width: 15%;
             text-align: right;
             font-weight: 500;
             color: #1f2937;
         }
-        
-        .item-table th:nth-child(6),
-        .item-table td:nth-child(6) {
-            width: 10%;
+
+        .item-table th:nth-child(4),
+        .item-table td:nth-child(4) {
+            width: 12%;
             text-align: right;
         }
-        
-        .item-table th:nth-child(7),
-        .item-table td:nth-child(7) {
-            width: 10%;
+
+        .item-table th:nth-child(5),
+        .item-table td:nth-child(5) {
+            width: 15%;
             text-align: right;
             font-weight: 500;
             color: #1f2937;
@@ -206,7 +384,49 @@
             }
         }
 
+
         @media print {
+            /* Override any global CSS that might interfere */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+
+            @page {
+                margin: 20mm 15mm 15mm 15mm !important; /* Consistent margins */
+                size: A4 !important;
+            }
+
+            html {
+                height: 100% !important;
+            }
+
+            body {
+                margin: 0 !important;
+                padding: 0 !important;
+                padding-top: 75mm !important; /* Space untuk fixed header */
+                box-sizing: border-box !important;
+            }
+
+            .header {
+                flex-shrink: 0 !important; /* Header won't shrink */
+                /* Header repeats on every page */
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                height: 75mm !important; /* Fixed header height */
+                background: white !important;
+                z-index: 1000 !important;
+                padding: 5mm 15mm 2mm 15mm !important;
+                box-sizing: border-box !important;
+            }
+
+            .main-content {
+                margin-bottom: 5mm !important;
+                padding-bottom: 10mm !important;
+            }
+
             .footer {
                 position: relative !important;
                 width: 100% !important;
@@ -229,6 +449,7 @@
                 margin-top: 2mm !important;
                 margin-bottom: 0 !important;
             }
+
         }
         .footer-content {
             padding: 0 !important; /* Remove ALL padding */
@@ -336,7 +557,7 @@
             <div class="clear"></div>
 
             <div class="quotation-title">
-                Pre-Quotation
+                Legal Quotation
             </div>
 
             <div class="quotation-details">
@@ -362,27 +583,36 @@
                 <tr>
                     <th>ITEM.</th>
                     <th>DESCRIPTION</th>
-                    <th>QTY</th>
-                    <th>UOM</th>
                     <th>PRICE<br>(RM)</th>
                     <th>DISC.</th>
                     <th>AMOUNT<br>(RM)</th>
                 </tr>
             </thead>
             <tbody>
+                @php
+                    $itemCounter = 1; // Counter for regular items only
+                @endphp
                 @forelse($preQuotation->items as $index => $item)
-                    <tr>
-                        <td>{{ $index + 1 }}.</td>
-                        <td>{{ $item->description }}</td>
-                        <td>{{ number_format($item->qty, 2) }}</td>
-                        <td>{{ $item->uom }}</td>
-                        <td class="text-right">{{ number_format($item->unit_price, 2) }}</td>
-                        <td class="text-right">{{ number_format($item->discount_percent ?? 0, 2) }}%</td>
-                        <td class="text-right">{{ number_format($item->amount, 2) }}</td>
-                    </tr>
+                    @if(($item->item_type ?? 'item') === 'title')
+                        <!-- Title Row -->
+                        <tr style="background-color: #fef3c7;">
+                            <td colspan="5" style="text-align: left; font-weight: bold; padding: 8px;">
+                                {{ $item->title_text }}
+                            </td>
+                        </tr>
+                    @else
+                        <!-- Regular Item Row -->
+                        <tr>
+                            <td class="item-number">{{ $itemCounter++ }}</td>
+                            <td class="description-value">{{ $item->description }}</td>
+                            <td class="price-value">{{ number_format($item->unit_price, 2) }}</td>
+                            <td class="price-value">{{ number_format($item->discount_percent ?? 0, 0) }}%</td>
+                            <td class="amount-value">{{ number_format($item->amount, 2) }}</td>
+                        </tr>
+                    @endif
                 @empty
                     <tr>
-                        <td colspan="7" class="text-center">No items found</td>
+                        <td colspan="5" style="text-align: center;">No items found</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -409,11 +639,7 @@
                             <td class="summary-value-bordered">{{ number_format($preQuotation->subtotal ?? 0, 2) }}</td>
                         </tr>
                         <tr>
-                            <td class="summary-label-bordered">Discount</td>
-                            <td class="summary-value-bordered">{{ number_format($preQuotation->discount_total ?? 0, 2) }}</td>
-                        </tr>
-                        <tr>
-                            <td class="summary-label-bordered">Tax</td>
+                            <td class="summary-label-bordered">SST</td>
                             <td class="summary-value-bordered">{{ number_format($preQuotation->tax_total ?? 0, 2) }}</td>
                         </tr>
                         <tr>

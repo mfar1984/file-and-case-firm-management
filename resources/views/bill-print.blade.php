@@ -120,7 +120,8 @@
         .item-table th {
             font-weight: bold;
             text-align: center;
-            background-color: #f5f5f5;
+            border-top: 1pt solid #333;
+            border-bottom: 1pt solid #333;
         }
         .item-table .text-right {
             text-align: right;
@@ -274,8 +275,7 @@
                     <th>QTY</th>
                     <th>UOM</th>
                     <th>PRICE<br>(RM)</th>
-                    <th>DISC.</th>
-                    <th>TAX</th>
+                    <th>SST</th>
                     <th>AMOUNT<br>(RM)</th>
                 </tr>
             </thead>
@@ -287,13 +287,12 @@
                         <td class="text-center">{{ number_format($item->qty, 2) }}</td>
                         <td class="text-center">{{ $item->uom }}</td>
                         <td class="text-right">{{ number_format($item->unit_price, 2) }}</td>
-                        <td class="text-right">{{ number_format($item->discount_percent ?? 0, 1) }}%</td>
                         <td class="text-right">{{ number_format($item->tax_percent ?? 0, 1) }}%</td>
                         <td class="text-right">{{ number_format($item->amount, 2) }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="text-center">No items found</td>
+                        <td colspan="7" class="text-center">No items found</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -326,7 +325,7 @@
                         </tr>
                         @if($bill->tax_total > 0)
                         <tr>
-                            <td style="text-align: right; font-weight: bold;">Tax</td>
+                            <td style="text-align: right; font-weight: bold;">SST</td>
                             <td style="text-align: right;">{{ number_format($bill->tax_total ?? 0, 2) }}</td>
                         </tr>
                         @endif

@@ -428,10 +428,12 @@
 
             <div class="clear"></div>
 
-            <!-- Reminder section after Total -->
+            <!-- Reminder section after Total (only for Tax Invoice receipts) -->
+            @if($receipt->taxInvoice)
             <div class="note-section" style="margin-top: 5mm;">
                 <strong>Reminder:</strong> Pursuant to the Solicitor's Remuneration Order 2005, interest 8% on the total sum billed will be charges from the expiration of one (1) month of the billing dates
             </div>
+            @endif
 
             <!-- Bottom section with signature -->
             <div class="footer-bottom">

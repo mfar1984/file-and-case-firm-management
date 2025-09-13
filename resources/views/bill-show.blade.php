@@ -5,11 +5,148 @@
 @endsection
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <div class="flex justify-between items-center mb-6">
+<style>
+    .quotation-print-style {
+        font-family: 'Poppins', sans-serif;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #333;
+    }
+    .company-header {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+    .company-logo {
+        width: 80px;
+        height: 80px;
+        margin-right: 20px;
+        flex-shrink: 0;
+    }
+    .company-info {
+        flex: 1;
+    }
+    .company-info h2 {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #333;
+    }
+    .company-info p {
+        font-size: 12px;
+        margin-bottom: 4px;
+        color: #666;
+    }
+    .contact-label {
+        display: inline-block;
+        width: 70px;
+        color: #333;
+    }
+    .contact-separator {
+        margin: 0 8px;
+        color: #333;
+    }
+    .contact-value {
+        color: #666;
+    }
+    .document-title {
+        text-align: center;
+        font-size: 24px;
+        font-weight: bold;
+        margin: 30px 0;
+        color: #333;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+    .customer-info {
+        float: left;
+        margin-bottom: 4px;
+    }
+    .customer-info h3 {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #333;
+    }
+    .customer-info p, .quotation-meta p {
+        font-size: 12px;
+        margin-bottom: 4px;
+        color: #666;
+    }
+    .quotation-meta {
+        float: right;
+        text-align: left;
+        margin-bottom: 4px;
+        margin-right: 0;
+        width: auto;
+    }
+    .quotation-meta p strong {
+        color: #333;
+    }
+    .quotation-label {
+        display: inline-block;
+        width: 100px;
+        color: #333;
+    }
+    .quotation-separator {
+        margin: 0 8px;
+        color: #333;
+    }
+    .quotation-value {
+        color: #666;
+    }
+    .customer-contact-label {
+        display: inline-block;
+        width: 80px;
+        color: #333;
+    }
+    .customer-contact-separator {
+        margin: 0 8px;
+        color: #333;
+    }
+    .customer-contact-value {
+        color: #666;
+    }
+    .summary-section {
+        margin-top: 30px;
+        display: flex;
+        justify-content: flex-end;
+    }
+    .summary-table {
+        border-collapse: collapse;
+        margin-left: auto;
+    }
+    .summary-table td {
+        padding: 8px 12px;
+        font-size: 12px;
+        font-weight: bold;
+        color: #333;
+    }
+    .summary-label {
+        text-align: right;
+        font-weight: bold;
+        border: none;
+    }
+    .summary-value {
+        text-align: right;
+        border: 1px solid #000;
+        min-width: 80px;
+    }
+    .footer-section {
+        margin-top: 40px;
+    }
+    .reminder-text {
+        font-size: 12px;
+        color: #333;
+        margin-bottom: 30px;
+        line-height: 1.4;
+    }
+</style>
+<div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto">
+    <div class="bg-white rounded shadow-md border border-gray-300">
+        <div class="px-4 md:px-6 py-4 border-b border-gray-200 flex items-center justify-between">
             <div class="flex items-center">
-                <span class="material-icons mr-2 text-blue-600">visibility</span>
+                <span class="material-icons mr-2 text-blue-600">receipt</span>
                 <h1 class="text-lg md:text-xl font-bold text-gray-800 text-[14px]">Bill {{ $bill->bill_no }}</h1>
             </div>
             <div class="flex items-center space-x-3">
@@ -17,88 +154,82 @@
                     <span class="material-icons mr-1 text-sm">print</span>
                     Print
                 </a>
-                <a href="{{ route('bill.index') }}" class="text-xs text-blue-600">Back</a>
+                <a href="{{ route('bill.index') }}" class="text-xs text-blue-600 hover:underline">Back</a>
             </div>
         </div>
+        <div class="p-4 md:p-6 quotation-print-style">
 
-        <!-- Content -->
-        <div>
-            <!-- Header Section -->
-            <div class="mb-8">
-                <div class="flex items-start">
-                    <div class="w-24 h-24 mr-6">
-                        <img src="{{ asset('images/logo.png') }}" alt="Company Logo" class="w-full h-full object-contain">
-                    </div>
-                    <div class="flex-1">
-                        <h2 class="text-lg font-bold">Naeelah Saleh & Associates (LLP0012345)</h2>
-                        <p class="text-sm text-gray-600">No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia</p>
-                        <p class="text-sm text-gray-600">Phone No.: +603-1234-5678</p>
-                        <p class="text-sm text-gray-600">Email: admin@naeelahsaleh.com.my</p>
-                    </div>
+            <!-- Company Header -->
+            <div class="company-header">
+                <div class="company-logo">
+                    <img src="{{ asset('images/logo.png') }}" alt="Company Logo" class="w-full h-full object-contain">
                 </div>
-
-                <div class="text-center mt-6">
-                    <h1 class="text-2xl font-bold">Bill</h1>
-                </div>
-
-                <div class="grid grid-cols-2 gap-8 mt-6">
-                    <div class="vendor-info">
-                        <p class="font-bold text-lg">{{ $bill->vendor_name }}</p>
-                        @if($bill->vendor_address)
-                        <p class="text-sm text-gray-600">{{ $bill->vendor_address }}</p>
-                        @endif
-                        @if($bill->vendor_phone)
-                        <p class="text-sm text-gray-600">Phone No.: {{ $bill->vendor_phone }}</p>
-                        @endif
-                        @if($bill->vendor_email)
-                        <p class="text-sm text-gray-600">Email: {{ $bill->vendor_email }}</p>
-                        @endif
-                        @if($bill->category)
-                        <p class="text-sm text-gray-600">Category: {{ $bill->category }}</p>
-                        @endif
-                    </div>
-                    <div class="bill-meta text-right">
-                        <p class="text-sm"><strong>No.:</strong> {{ $bill->bill_no }}</p>
-                        <p class="text-sm"><strong>Bill Date:</strong> {{ $bill->bill_date->format('d/m/Y') }}</p>
-                        <p class="text-sm"><strong>Due Date:</strong> {{ $bill->due_date->format('d/m/Y') }}</p>
-                        @if($bill->payment_date)
-                        <p class="text-sm"><strong>Payment Date:</strong> {{ $bill->payment_date->format('d/m/Y') }}</p>
-                        @endif
-                        @if($bill->payment_method)
-                        <p class="text-sm"><strong>Payment Method:</strong> {{ $bill->payment_method_display }}</p>
-                        @endif
-                        @if($bill->payment_reference)
-                        <p class="text-sm"><strong>Payment Ref:</strong> {{ $bill->payment_reference }}</p>
-                        @endif
-                        <p class="text-sm"><strong>Status:</strong>
-                            <span class="inline-block {{ $bill->status_color }} px-2 py-1 rounded-full text-xs">{{ $bill->status_display }}</span>
-                        </p>
-                    </div>
+                <div class="company-info">
+                    @php
+                        $firmSettings = \App\Models\FirmSetting::getFirmSettings();
+                    @endphp
+                    <h2>{{ $firmSettings['firm_name'] ?? 'Naeelah Saleh & Associates' }} ({{ $firmSettings['registration_number'] ?? 'LLP0012345' }})</h2>
+                    <p>{{ $firmSettings['address'] ?? 'No. 123, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia' }}</p>
+                    <p><span class="contact-label">Phone No.</span><span class="contact-separator">:</span><span class="contact-value">{{ $firmSettings['phone_number'] ?? '+603-1234-5678' }}</span></p>
+                    <p><span class="contact-label">Email</span><span class="contact-separator">:</span><span class="contact-value">{{ $firmSettings['email'] ?? 'admin@naeelahsaleh.com.my' }}</span></p>
+                    @if(!empty($firmSettings['website']))
+                        <p><span class="contact-label">Website</span><span class="contact-separator">:</span><span class="contact-value">{{ $firmSettings['website'] }}</span></p>
+                    @endif
                 </div>
             </div>
 
+            <div class="document-title">Bill</div>
 
+            <div style="overflow: auto; margin-bottom: 30px; clear: both;">
+                <div class="customer-info">
+                    <h3>Bill From:</h3>
+                    <p><strong>{{ $bill->vendor_name }}</strong></p>
+                    @if($bill->vendor_address)
+                    <p>{{ $bill->vendor_address }}</p>
+                    @endif
+                    @if($bill->vendor_phone)
+                    <p><span class="customer-contact-label">Phone No.</span><span class="customer-contact-separator">:</span><span class="customer-contact-value">{{ $bill->vendor_phone }}</span></p>
+                    @endif
+                    @if($bill->vendor_email)
+                    <p><span class="customer-contact-label">Email</span><span class="customer-contact-separator">:</span><span class="customer-contact-value">{{ $bill->vendor_email }}</span></p>
+                    @endif
+                    @if($bill->category)
+                    <p><span class="customer-contact-label">Category</span><span class="customer-contact-separator">:</span><span class="customer-contact-value">{{ $bill->category }}</span></p>
+                    @endif
+                </div>
+                <div class="quotation-meta">
+                    <p><span class="quotation-label">Bill No.</span><span class="quotation-separator">:</span><span class="quotation-value">{{ $bill->bill_no }}</span></p>
+                    <p><span class="quotation-label">Bill Date</span><span class="quotation-separator">:</span><span class="quotation-value">{{ $bill->bill_date->format('d/m/Y') }}</span></p>
+                    <p><span class="quotation-label">Due Date</span><span class="quotation-separator">:</span><span class="quotation-value">{{ $bill->due_date->format('d/m/Y') }}</span></p>
+                    @if($bill->payment_date)
+                    <p><span class="quotation-label">Payment Date</span><span class="quotation-separator">:</span><span class="quotation-value">{{ $bill->payment_date->format('d/m/Y') }}</span></p>
+                    @endif
+                    <p><span class="quotation-label">Page</span><span class="quotation-separator">:</span><span class="quotation-value">1 of 1</span></p>
+                </div>
+            </div>
+
+            <div style="clear: both;"></div>
 
             <!-- Items Table -->
             <div class="mb-8">
                 <table class="w-full border-collapse">
                     <thead>
                         <tr>
-                            <th class="px-3 py-2 text-center text-sm w-12" style="font-weight: 900;">ITEM.</th>
-                            <th class="px-3 py-2 text-center text-sm" style="font-weight: 900;">DESCRIPTION</th>
-                            <th class="px-3 py-2 text-center text-sm w-20" style="font-weight: 900;">QTY</th>
-                            <th class="px-3 py-2 text-center text-sm w-20" style="font-weight: 900;">UOM</th>
-                            <th class="px-3 py-2 text-center text-sm w-24" style="font-weight: 900;">PRICE<br>(RM)</th>
-                            <th class="px-3 py-2 text-center text-sm w-20" style="font-weight: 900;">DISC.</th>
-                            <th class="px-3 py-2 text-center text-sm w-20" style="font-weight: 900;">TAX</th>
-                            <th class="px-3 py-2 text-center text-sm w-24" style="font-weight: 900;">AMOUNT<br>(RM)</th>
+                            <th class="px-3 py-2 text-center text-xs w-12" style="font-weight: 900; border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; border-left: none; border-right: none;">ITEM.</th>
+                            <th class="px-3 py-2 text-center text-xs" style="font-weight: 900; border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; border-left: none; border-right: none;">DESCRIPTION</th>
+                            <th class="px-3 py-2 text-center text-xs w-20" style="font-weight: 900; border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; border-left: none; border-right: none;">QTY</th>
+                            <th class="px-3 py-2 text-center text-xs w-20" style="font-weight: 900; border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; border-left: none; border-right: none;">UOM</th>
+                            <th class="px-3 py-2 text-center text-xs w-24" style="font-weight: 900; border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; border-left: none; border-right: none;">PRICE<br>(RM)</th>
+                            <th class="px-3 py-2 text-center text-xs w-20" style="font-weight: 900; border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; border-left: none; border-right: none;">DISC.</th>
+                            <th class="px-3 py-2 text-center text-xs w-20" style="font-weight: 900; border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; border-left: none; border-right: none;">TAX</th>
+                            <th class="px-3 py-2 text-center text-xs w-24" style="font-weight: 900; border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; border-left: none; border-right: none;">AMOUNT<br>(RM)</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($bill->items as $index => $item)
                         <tr>
                             <td class="px-3 py-2 text-center text-sm">{{ $index + 1 }}</td>
-                            <td class="px-3 py-2 text-left text-sm">
+                            <td class="px-3 py-2 text-sm">
                                 {{ $item->description }}
                                 @if($item->category)
                                 <br><span class="text-gray-500 text-xs">{{ $item->category }}</span>
@@ -106,10 +237,10 @@
                             </td>
                             <td class="px-3 py-2 text-center text-sm">{{ number_format($item->qty, 2) }}</td>
                             <td class="px-3 py-2 text-center text-sm">{{ $item->uom }}</td>
-                            <td class="px-3 py-2 text-right text-sm">{{ number_format($item->unit_price, 2) }}</td>
+                            <td class="px-3 py-2 text-center text-sm">{{ number_format($item->unit_price, 2) }}</td>
                             <td class="px-3 py-2 text-center text-sm">{{ number_format($item->discount_percent, 1) }}%</td>
                             <td class="px-3 py-2 text-center text-sm">{{ number_format($item->tax_percent, 1) }}%</td>
-                            <td class="px-3 py-2 text-right text-sm">{{ number_format($item->amount, 2) }}</td>
+                            <td class="px-3 py-2 text-right text-sm font-medium">{{ number_format($item->amount, 2) }}</td>
                         </tr>
                         @empty
                         <tr>
@@ -120,65 +251,49 @@
                 </table>
             </div>
 
-            <!-- Footer Section -->
-            <div>
-                <div class="grid grid-cols-2 gap-8">
-                    <div class="amount-in-words">
-                        <p class="font-normal" style="font-size: 12px; line-height: 1.2; text-indent: -80px; padding-left: 80px;">Ringgit Malaysia: {{ $bill->total_words ?? 'Amount in Words' }}</p>
-                        @if($bill->description)
-                        <p class="text-sm mt-4"><strong>Description:</strong> {{ $bill->description }}</p>
-                        @endif
-                        @if($bill->remark)
-                        <p class="text-sm mt-2"><strong>Note:</strong> {{ $bill->remark }}</p>
-                        @endif
-                    </div>
-                    <div class="summary-table">
-                        <table class="w-full border-collapse">
-                            <tr>
-                                <td class="py-1 px-2 text-right font-bold text-sm">Subtotal</td>
-                                <td class="py-1 px-2 border border-gray-800 text-right text-sm w-24">{{ number_format($bill->subtotal ?? 0, 2) }}</td>
-                            </tr>
-                            @if($bill->tax_total > 0)
-                            <tr>
-                                <td class="py-1 px-2 text-right font-bold text-sm">Tax</td>
-                                <td class="py-1 px-2 border border-gray-800 text-right text-sm w-24">{{ number_format($bill->tax_total ?? 0, 2) }}</td>
-                            </tr>
-                            @endif
-                            <tr>
-                                <td class="py-1 px-2 text-right font-bold text-sm">Total</td>
-                                <td class="py-1 px-2 border border-gray-800 text-right text-sm w-24 bg-gray-200">{{ number_format($bill->total_amount ?? 0, 2) }}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
+            <div class="summary-section">
+                <table class="summary-table">
+                    <tr>
+                        <td class="summary-label">Subtotal:</td>
+                        <td class="summary-value">{{ number_format($bill->subtotal ?? 0, 2) }}</td>
+                    </tr>
+                    @if($bill->tax_total > 0)
+                    <tr>
+                        <td class="summary-label">Tax:</td>
+                        <td class="summary-value">{{ number_format($bill->tax_total ?? 0, 2) }}</td>
+                    </tr>
+                    @endif
+                    <tr>
+                        <td class="summary-label">Total:</td>
+                        <td class="summary-value">{{ number_format($bill->total_amount ?? 0, 2) }}</td>
+                    </tr>
+                </table>
             </div>
 
-            <!-- Signature Section -->
-            <div class="mt-12 pt-8 border-t border-gray-300">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="text-center">
-                        <div class="text-xs text-gray-700">
-                            <div class="mb-8"></div>
-                            <div class="border-t border-gray-400 inline-block w-32 pt-2">
-                                Prepared By
-                            </div>
-                        </div>
+            <div class="footer-section">
+                <div class="reminder-text">
+                    <p><strong>Ringgit Malaysia:</strong> {{ $bill->total_words ?? 'Amount in Words' }}</p>
+                    @if($bill->description)
+                        <p style="margin-top: 15px;"><strong>Description:</strong> {{ $bill->description }}</p>
+                    @endif
+                    @if($bill->remark)
+                        <p style="margin-top: 15px;"><strong>Note:</strong> {{ $bill->remark }}</p>
+                    @endif
+                </div>
+
+                <!-- Signature Section -->
+                <div style="margin-top: 60px; display: flex; justify-content: space-around;">
+                    <div style="text-align: center;">
+                        <div style="width: 150px; border-top: 1px solid #000; margin-bottom: 8px;"></div>
+                        <div style="font-size: 12px; font-weight: bold; color: #333;">Prepared By</div>
                     </div>
-                    <div class="text-center">
-                        <div class="text-xs text-gray-700">
-                            <div class="mb-8"></div>
-                            <div class="border-t border-gray-400 inline-block w-32 pt-2">
-                                Checked By
-                            </div>
-                        </div>
+                    <div style="text-align: center;">
+                        <div style="width: 150px; border-top: 1px solid #000; margin-bottom: 8px;"></div>
+                        <div style="font-size: 12px; font-weight: bold; color: #333;">Checked By</div>
                     </div>
-                    <div class="text-center">
-                        <div class="text-xs text-gray-700">
-                            <div class="mb-8"></div>
-                            <div class="border-t border-gray-400 inline-block w-32 pt-2">
-                                Approved By
-                            </div>
-                        </div>
+                    <div style="text-align: center;">
+                        <div style="width: 150px; border-top: 1px solid #000; margin-bottom: 8px;"></div>
+                        <div style="font-size: 12px; font-weight: bold; color: #333;">Approved By</div>
                     </div>
                 </div>
             </div>

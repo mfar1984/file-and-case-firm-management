@@ -146,9 +146,15 @@ class PartnerController extends Controller
     {
         // Find partner with firm scope validation
         $user = auth()->user();
+        $currentFirmId = session('current_firm_id');
 
-        if ($user->hasRole('Super Administrator')) {
-            // Super Admin can access any partner
+        if ($user->hasRole('Super Administrator') && $currentFirmId) {
+            // Super Admin with firm context - respect firm scope
+            $partner = Partner::forFirm($currentFirmId)
+                ->with('user')
+                ->findOrFail($id);
+        } elseif ($user->hasRole('Super Administrator') && !$currentFirmId) {
+            // Super Admin without firm context - can access any partner (for system management)
             $partner = Partner::withoutFirmScope()
                 ->with('user')
                 ->findOrFail($id);

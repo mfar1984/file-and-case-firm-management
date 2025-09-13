@@ -25,6 +25,7 @@ class Receipt extends Model
         'cheque_number',
         'transaction_id',
         'amount_paid',
+        'amount_paid_words',
         'outstanding_balance',
         'payment_notes',
         'status',
@@ -158,6 +159,114 @@ class Receipt extends Model
     {
         $nextId = (self::max('id') ?? 0) + 1;
         return 'RCP-' . str_pad((string)$nextId, 5, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Convert number to words in Malaysian Ringgit format
+     */
+    public function convertToWords($number)
+    {
+        if ($number == 0) {
+            return 'Zero Ringgit Only';
+        }
+
+        $ones = [
+            '', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
+            'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
+            'Seventeen', 'Eighteen', 'Nineteen'
+        ];
+
+        $tens = [
+            '', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'
+        ];
+
+        $scales = ['', 'Thousand', 'Million', 'Billion'];
+
+        // Split into ringgit and sen
+        $parts = explode('.', number_format($number, 2, '.', ''));
+        $ringgit = (int)$parts[0];
+        $sen = (int)$parts[1];
+
+        $result = '';
+
+        if ($ringgit > 0) {
+            $result .= $this->convertNumberToWords($ringgit, $ones, $tens, $scales) . ' Ringgit';
+        }
+
+        if ($sen > 0) {
+            if ($ringgit > 0) {
+                $result .= ' And ';
+            }
+            $result .= $this->convertNumberToWords($sen, $ones, $tens, $scales) . ' Sen';
+        }
+
+        return $result . ' Only';
+    }
+
+    private function convertNumberToWords($number, $ones, $tens, $scales)
+    {
+        if ($number == 0) {
+            return '';
+        }
+
+        $result = '';
+        $scaleIndex = 0;
+
+        while ($number > 0) {
+            $chunk = $number % 1000;
+            if ($chunk != 0) {
+                $chunkWords = $this->convertChunkToWords($chunk, $ones, $tens);
+                if ($scaleIndex > 0) {
+                    $chunkWords .= ' ' . $scales[$scaleIndex];
+                }
+                $result = $chunkWords . ($result ? ' ' . $result : '');
+            }
+            $number = intval($number / 1000);
+            $scaleIndex++;
+        }
+
+        return $result;
+    }
+
+    private function convertChunkToWords($number, $ones, $tens)
+    {
+        $result = '';
+
+        // Hundreds
+        if ($number >= 100) {
+            $result .= $ones[intval($number / 100)] . ' Hundred';
+            $number %= 100;
+            if ($number > 0) {
+                $result .= ' ';
+            }
+        }
+
+        // Tens and ones
+        if ($number >= 20) {
+            $result .= $tens[intval($number / 10)];
+            $number %= 10;
+            if ($number > 0) {
+                $result .= ' ' . $ones[$number];
+            }
+        } elseif ($number > 0) {
+            $result .= $ones[$number];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Auto-generate amount_paid_words when amount_paid is updated
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($receipt) {
+            if ($receipt->isDirty('amount_paid')) {
+                $receipt->amount_paid_words = $receipt->convertToWords($receipt->amount_paid);
+            }
+        });
     }
 
 

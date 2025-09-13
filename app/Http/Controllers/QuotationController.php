@@ -99,10 +99,32 @@ class QuotationController extends Controller
             $qFrom = Quotation::with('items', 'case')->find($request->integer('from_quotation'));
         }
 
+        // Get tax categories for dropdown - ensure proper firm filtering
+        $user = auth()->user();
+        if ($user->hasRole('Super Administrator')) {
+            // For Super Admin, use session firm_id or default to user's firm
+            $firmId = session('current_firm_id') ?? $user->firm_id;
+            $taxCategories = \App\Models\TaxCategory::withoutFirmScope()
+                ->where('firm_id', $firmId)
+                ->where('status', 'active')
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get();
+        } else {
+            // For regular users, use HasFirmScope automatic filtering
+            $taxCategories = \App\Models\TaxCategory::active()->ordered()->get();
+        }
+
+        // Deduplicate by name + rate combination
+        $taxCategories = $taxCategories->unique(function ($item) {
+            return $item->name . '_' . $item->tax_rate;
+        })->values();
+
         return view('quotation-create', [
             'caseOptions' => $caseOptions,
             'casePrefill' => $casePrefill,
             'qFrom' => $qFrom,
+            'taxCategories' => $taxCategories,
         ]);
     }
 
@@ -127,6 +149,7 @@ class QuotationController extends Controller
             'items.*.unit_price' => 'nullable|numeric|min:0',
             'items.*.discount_amount' => 'nullable|numeric|min:0',
             'items.*.tax_percent' => 'nullable|numeric|min:0|max:100',
+            'items.*.tax_category_id' => 'nullable|integer|exists:tax_categories,id',
             'items.*.amount' => 'nullable|numeric|min:0',
             'from_quotation' => 'nullable|integer|exists:quotations,id', // Add validation for edit mode
         ]);
@@ -250,6 +273,7 @@ class QuotationController extends Controller
                     'unit_price' => $item['unit_price'] ?? 0,
                     'discount_amount' => $item['discount_amount'] ?? 0,
                     'tax_percent' => $item['tax_percent'] ?? 0,
+                    'tax_category_id' => $item['tax_category_id'] ?? null,
                     'amount' => $itemAmount,
                 ]);
             }
@@ -278,15 +302,21 @@ class QuotationController extends Controller
     {
         // Find quotation with firm scope validation
         $user = auth()->user();
+        $currentFirmId = session('current_firm_id');
 
-        if ($user->hasRole('Super Administrator')) {
-            // Super Admin can access any quotation
+        if ($user->hasRole('Super Administrator') && $currentFirmId) {
+            // Super Admin with firm context - respect firm scope
+            $quotation = Quotation::forFirm($currentFirmId)
+                ->with(['items.taxCategory', 'case'])
+                ->findOrFail($id);
+        } elseif ($user->hasRole('Super Administrator') && !$currentFirmId) {
+            // Super Admin without firm context - can access any quotation (for system management)
             $quotation = Quotation::withoutFirmScope()
-                ->with('items', 'case')
+                ->with(['items.taxCategory', 'case'])
                 ->findOrFail($id);
         } else {
             // Regular users can only access quotations from their firm (HasFirmScope trait handles this)
-            $quotation = Quotation::with('items', 'case')->findOrFail($id);
+            $quotation = Quotation::with(['items.taxCategory', 'case'])->findOrFail($id);
         }
 
         return view('quotation-show', compact('quotation'));
@@ -300,11 +330,11 @@ class QuotationController extends Controller
         if ($user->hasRole('Super Administrator')) {
             // Super Admin can print any quotation
             $quotation = Quotation::withoutFirmScope()
-                ->with('items', 'case')
+                ->with(['items.taxCategory', 'case'])
                 ->findOrFail($id);
         } else {
             // Regular users can only print quotations from their firm (HasFirmScope trait handles this)
-            $quotation = Quotation::with('items', 'case')->findOrFail($id);
+            $quotation = Quotation::with(['items.taxCategory', 'case'])->findOrFail($id);
         }
 
         // Get firm settings for current firm context

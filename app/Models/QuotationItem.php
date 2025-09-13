@@ -19,6 +19,7 @@ class QuotationItem extends Model
         'unit_price',
         'discount_amount',
         'tax_percent',
+        'tax_category_id',
         'amount',
     ];
 
@@ -33,6 +34,11 @@ class QuotationItem extends Model
     public function quotation()
     {
         return $this->belongsTo(Quotation::class);
+    }
+
+    public function taxCategory()
+    {
+        return $this->belongsTo(TaxCategory::class)->withoutGlobalScopes();
     }
 }
 

@@ -5,65 +5,100 @@
 @endsection
 
 @section('content')
-<div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto">
-    <div class="bg-white rounded shadow-md border border-gray-300">
-        <div class="p-4 md:p-6 border-b border-gray-200">
-            <div class="flex flex-col md:flex-row md:justify-between md:items-start space-y-4 md:space-y-0">
-                <div>
-                    <div class="flex items-center">
-                        <span class="material-icons mr-2 text-blue-600">description</span>
-                        <h1 class="text-lg md:text-xl font-bold text-gray-800">Quotation Management</h1>
+<style>
+    .quotation-management-style {
+        font-family: 'Poppins', sans-serif;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #333;
+    }
+    .page-header {
+        background: #f8f9fa;
+        border-bottom: 2px solid #e9ecef;
+        padding: 20px;
+        margin-bottom: 0;
+    }
+    .page-title {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    .page-title h1 {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin: 0;
+        margin-left: 8px;
+    }
+    .page-subtitle {
+        font-size: 12px;
+        color: #666;
+        margin: 0;
+        margin-left: 32px;
+    }
+
+</style>
+
+<div class="quotation-management-style">
+    <div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto">
+        <div class="bg-white rounded shadow-md border border-gray-300">
+            <div class="page-header">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-start space-y-4 md:space-y-0">
+                    <div>
+                        <div class="page-title">
+                            <span class="material-icons text-blue-600">description</span>
+                            <h1>Quotation Management</h1>
+                        </div>
+                        <p class="page-subtitle">Manage all quotations and convert them to invoices.</p>
                     </div>
-                    <p class="text-xs text-gray-500 mt-1 ml-8">Manage all quotations and convert them to invoices.</p>
-                </div>
-                
-                <!-- Add Quotation Button -->
-                <a href="{{ route('quotation.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
-                    <span class="material-icons text-sm md:text-xs mr-1">add</span>
-                    Add Quotation
-                </a>
-            </div>
-        </div>
-        
-        <!-- Desktop Table View -->
-        <div class="hidden md:block p-6">
-            <!-- Controls Above Table -->
-            <div class="flex justify-between items-center mb-2">
-                <!-- Left: Show Entries -->
-                <div class="flex items-center gap-2">
-                    <label for="perPage" class="text-xs text-gray-700">Show:</label>
-                    <select id="perPage" onchange="changePerPage()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-                        <option value="10">10</option>
-                        <option value="25" selected>25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                    </select>
-                    <span class="text-xs text-gray-700">entries</span>
-                </div>
 
-                <!-- Right: Search and Filters -->
-                <div class="flex gap-2 items-center">
-                    <input type="text" id="searchFilter" placeholder="Search quotations..."
-                           onkeyup="filterQuotations()"
-                           class="border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-64">
-
-                    <select id="statusFilter" onchange="filterQuotations()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-                        <option value="">All Status</option>
-                        <option value="Draft">Draft</option>
-                        <option value="Sent">Sent</option>
-                        <option value="Approved">Approved</option>
-                        <option value="Rejected">Rejected</option>
-                    </select>
-
-                    <button onclick="filterQuotations()" class="px-3 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
-                        🔍 Search
-                    </button>
-
-                    <button onclick="resetFilters()" class="px-3 py-2 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors">
-                        🔄 Reset
-                    </button>
+                    <!-- Add Quotation Button -->
+                    <a href="{{ route('quotation.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
+                        <span class="material-icons text-sm md:text-xs mr-1">add</span>
+                        Add Quotation
+                    </a>
                 </div>
             </div>
+
+            <!-- Desktop Table View -->
+            <div class="hidden md:block p-6">
+                <!-- Controls Above Table -->
+                <div class="flex justify-between items-center mb-2">
+                    <!-- Left: Show Entries -->
+                    <div class="flex items-center gap-2">
+                        <label for="perPage" class="text-xs text-gray-700">Show:</label>
+                        <select id="perPage" onchange="changePerPage()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                            <option value="10">10</option>
+                            <option value="25" selected>25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        <span class="text-xs text-gray-700">entries</span>
+                    </div>
+
+                    <!-- Right: Search and Filters -->
+                    <div class="flex gap-2 items-center">
+                        <input type="text" id="searchFilter" placeholder="Search quotations..."
+                               onkeyup="filterQuotations()"
+                               class="border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-64">
+
+                        <select id="statusFilter" onchange="filterQuotations()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                            <option value="">All Status</option>
+                            <option value="Draft">Draft</option>
+                            <option value="Sent">Sent</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+
+                        <button onclick="filterQuotations()" class="px-3 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
+                            🔍 Search
+                        </button>
+
+                        <button onclick="resetFilters()" class="px-3 py-2 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors">
+                            🔄 Reset
+                        </button>
+                    </div>
+                </div>
             <div class="overflow-visible border border-gray-200 rounded">
                 <table class="min-w-full border-collapse">
                     <thead>
