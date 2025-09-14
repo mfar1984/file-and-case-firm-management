@@ -15,20 +15,24 @@ body {
 @layer components {
     /* Button styles */
     .btn-primary {
-        @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-medium transition-colors;
+        @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-sm text-xs font-medium transition-colors;
+        border-radius: 2px !important;
     }
-    
+
     .btn-secondary {
-        @apply bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors;
+        @apply bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-sm text-xs font-medium hover:bg-gray-50 transition-colors;
+        border-radius: 2px !important;
     }
-    
+
     .btn-danger {
-        @apply bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-medium transition-colors;
+        @apply bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-sm text-xs font-medium transition-colors;
+        border-radius: 2px !important;
     }
-    
+
     /* Card styles */
     .card {
-        @apply bg-white border border-gray-200 rounded-lg shadow-sm;
+        @apply bg-white border border-gray-200 rounded-sm shadow-sm;
+        border-radius: 2px !important;
     }
     
     .card-header {
@@ -214,16 +218,57 @@ body {
     .text-primary {
         @apply text-blue-600;
     }
-    
+
     .bg-primary {
         @apply bg-blue-600;
     }
-    
+
     .border-primary {
         @apply border-blue-600;
     }
-    
+
     .shadow-custom {
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+}
+
+/* Global Border Radius Override - BUTTONS AND CARDS ONLY */
+@layer utilities {
+    /* Button border radius override */
+    button:not(.sidebar-submenu-item):not(.no-override) {
+        border-radius: 2px !important;
+    }
+
+    /* Anchor buttons (links styled as buttons) */
+    a[class*="bg-"]:not(.sidebar-submenu-item):not(.no-override),
+    a[class*="btn-"]:not(.sidebar-submenu-item):not(.no-override) {
+        border-radius: 2px !important;
+    }
+
+    /* Card elements */
+    .card,
+    [class*="card"],
+    .bg-white[class*="rounded"],
+    .bg-gray-50[class*="rounded"]:not(.sidebar-submenu-item) {
+        border-radius: 2px !important;
+    }
+
+    /* Form inputs and selects */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="date"],
+    input[type="time"],
+    input[type="search"],
+    textarea,
+    select {
+        border-radius: 2px !important;
+    }
+
+    /* Dropdown menus */
+    .dropdown-menu,
+    [class*="dropdown"] {
+        border-radius: 2px !important;
     }
 }

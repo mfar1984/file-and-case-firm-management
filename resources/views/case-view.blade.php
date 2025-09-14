@@ -280,7 +280,7 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Payment Status</label>
-                            <span class="inline-block px-2 py-1 rounded-full text-[11px] font-medium {{ $statusClassBg }}">{{ $status }}</span>
+                            <span class="inline-block px-2 py-1 rounded-sm text-[11px] font-medium {{ $statusClassBg }}" style="border-radius: 2px !important;">{{ $status }}</span>
                         </div>
                     </div>
                     <div class="mt-6 pt-4 border-t border-gray-200">
@@ -288,8 +288,8 @@
                             <span class="text-xs font-medium text-gray-700">Payment Progress</span>
                             <span class="text-xs text-gray-500">{{ $percent }}%</span>
                         </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-emerald-600 h-2 rounded-full" style="width: {{ $percent }}%"></div>
+                        <div class="w-full bg-gray-200 rounded-sm h-2" style="border-radius: 2px !important;">
+                            <div class="bg-emerald-600 h-2 rounded-sm" style="width: {{ $percent }}%; border-radius: 2px !important;"></div>
                         </div>
                     </div>
 
@@ -419,7 +419,7 @@
                             <span class="material-icons mr-2 text-xs">timeline</span>
                             <h2 class="text-sm font-semibold">Case Timeline</h2>
                         </div>
-                        <button @click="$dispatch('open-modal', 'add-timeline')" class="bg-white text-blue-600 px-3 py-1 rounded-md text-xs font-medium flex items-center hover:bg-gray-50 transition-colors">
+                        <button @click="$dispatch('open-modal', 'add-timeline')" class="bg-white text-blue-600 px-3 py-1 rounded-sm text-xs font-medium flex items-center hover:bg-gray-50 transition-colors" style="border-radius: 2px !important;">
                             <span class="material-icons text-xs mr-1">add</span>
                             Add Event
                         </button>
@@ -511,7 +511,7 @@
                             <span class="material-icons mr-2 text-xs">folder</span>
                             <h2 class="text-sm font-semibold">Documents</h2>
                         </div>
-                        <button @click="$dispatch('open-modal', 'file-management')" class="bg-white text-blue-600 px-3 py-1 rounded-md text-xs font-medium flex items-center hover:bg-gray-50 transition-colors">
+                        <button @click="$dispatch('open-modal', 'file-management')" class="bg-white text-blue-600 px-3 py-1 rounded-sm text-xs font-medium flex items-center hover:bg-gray-50 transition-colors" style="border-radius: 2px !important;">
                             <span class="material-icons text-xs mr-1">cloud_upload</span>
                             Upload File
                         </button>
@@ -521,7 +521,7 @@
                     @if($case->files->count() > 0)
                         <div class="space-y-3">
                             @foreach($case->files as $file)
-                            <div class="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
+                            <div class="flex items-center justify-between p-3 bg-white rounded-sm border border-gray-200" style="border-radius: 2px !important;">
                                 <div class="flex items-center space-x-3">
                                     <span class="material-icons text-red-500 text-xs">picture_as_pdf</span>
                                     <div>
@@ -566,7 +566,7 @@
                 </div>
                 <div class="p-4">
                     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                        <a href="{{ route('tax-invoice.create') }}?case_id={{ $case->id }}" class="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors border border-blue-100">
+                        <a href="{{ route('tax-invoice.create') }}?case_id={{ $case->id }}" class="flex flex-col items-center p-4 bg-blue-50 rounded-sm hover:bg-blue-100 transition-colors border border-blue-100" style="border-radius: 2px !important;">
                             <span class="material-icons text-blue-600 text-lg mb-2">receipt</span>
                             <span class="text-[11px] font-medium text-blue-700">Create Invoice</span>
                         </a>
@@ -638,10 +638,10 @@
             <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
         </div>
         
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div class="inline-block align-bottom bg-white rounded-sm text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full" style="border-radius: 2px !important;">
             <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div class="sm:flex sm:items-start">
-                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-purple-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-sm bg-purple-100 sm:mx-0 sm:h-10 sm:w-10" style="border-radius: 2px !important;">
                         <span class="material-icons text-purple-600">upload_file</span>
                     </div>
                     <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
@@ -650,12 +650,12 @@
                         <form class="space-y-4">
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Document Title *</label>
-                                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Court Filing Document" required>
+                                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Court Filing Document" required style="border-radius: 2px !important;">
                             </div>
                             
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Document Type *</label>
-                                <select class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-purple-500" required>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-purple-500" required style="border-radius: 2px !important;">
                                     <option value="">Select Type</option>
                                     <option value="contract">Contract</option>
                                     <option value="court_filing">Court Filing</option>
@@ -668,7 +668,7 @@
                             
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Upload File *</label>
-                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                                <div class="border-2 border-dashed border-gray-300 rounded-sm p-4 text-center" style="border-radius: 2px !important;">
                                     <span class="material-icons text-gray-400 text-2xl mb-2">cloud_upload</span>
                                     <p class="text-xs text-gray-500">Click to upload or drag and drop</p>
                                     <p class="text-xs text-gray-400 mt-1">PDF, DOC, DOCX, JPG, PNG (max 10MB)</p>
@@ -678,17 +678,17 @@
                             
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
-                                <textarea class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-purple-500" rows="3" placeholder="Enter document description"></textarea>
+                                <textarea class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-purple-500" rows="3" placeholder="Enter document description" style="border-radius: 2px !important;"></textarea>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
             <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button type="button" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-md text-xs font-medium">
+                <button type="button" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-sm text-xs font-medium" style="border-radius: 2px !important;">
                     Upload Document
                 </button>
-                <button @click="open = false" type="button" class="mt-3 bg-white text-gray-700 hover:bg-gray-50 px-3 py-1 rounded-md text-xs font-medium border border-gray-300 sm:mt-0 sm:ml-3">
+                <button @click="open = false" type="button" class="mt-3 bg-white text-gray-700 hover:bg-gray-50 px-3 py-1 rounded-sm text-xs font-medium border border-gray-300 sm:mt-0 sm:mr-4" style="border-radius: 2px !important; margin-right: 16px !important;">
                     Cancel
                 </button>
             </div>
@@ -732,7 +732,7 @@
             <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
         </div>
         
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+        <div class="inline-block align-bottom bg-white rounded-sm text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full" style="border-radius: 2px !important;">
             <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div class="sm:flex sm:items-start">
                     <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
@@ -747,13 +747,13 @@
                             @csrf
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Event Title *</label>
-                                <input type="text" x-model="timelineData.title" name="title" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="e.g., Court Hearing Scheduled" required>
+                                <input type="text" x-model="timelineData.title" name="title" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="e.g., Court Hearing Scheduled" required style="border-radius: 2px !important;">
                             </div>
                             
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-1">Event Type *</label>
-                                    <select x-model="timelineData.event_type" name="event_type" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                                    <select x-model="timelineData.event_type" name="event_type" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-green-500" required style="border-radius: 2px !important;">
                                         <option value="">Select Type</option>
                                         <option value="consultation">Consultation</option>
                                         <option value="court_hearing">Court Hearing</option>
@@ -765,7 +765,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-1">Event Status *</label>
-                                    <select x-model="timelineData.status" name="status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                                    <select x-model="timelineData.status" name="status" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-green-500" required style="border-radius: 2px !important;">
                                         <option value="">Select Status</option>
                                         @foreach($eventStatuses as $eventStatus)
                                             <option value="{{ $eventStatus->name }}">{{ $eventStatus->display_name }}</option>
@@ -777,17 +777,17 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-1">Event Date *</label>
-                                    <input type="date" x-model="timelineData.event_date" name="event_date" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                                    <input type="date" x-model="timelineData.event_date" name="event_date" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-green-500" required style="border-radius: 2px !important;">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-1">Event Time</label>
-                                    <input type="time" x-model="timelineData.event_time" name="event_time" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500">
+                                    <input type="time" x-model="timelineData.event_time" name="event_time" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-green-500" style="border-radius: 2px !important;">
                                 </div>
                             </div>
                             
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
-                                <textarea x-model="timelineData.description" name="description" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500" rows="3" placeholder="Enter event description"></textarea>
+                                <textarea x-model="timelineData.description" name="description" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-green-500" rows="3" placeholder="Enter event description" style="border-radius: 2px !important;"></textarea>
                             </div>
 
                             <!-- Add to Calendar Option -->
@@ -813,7 +813,7 @@
                                     <div class="grid grid-cols-1 gap-4">
                                         <div>
                                             <label class="block text-xs font-medium text-gray-700 mb-1">Reminder</label>
-                                            <select x-model="timelineData.reminder" name="reminder" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <select x-model="timelineData.reminder" name="reminder" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" style="border-radius: 2px !important;">
                                                 <option value="">No Reminder</option>
                                                 <option value="15">15 minutes before</option>
                                                 <option value="30">30 minutes before</option>
@@ -935,10 +935,10 @@
                 </div>
             </div>
             <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button type="button" @click="submitTimelineEvent()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-xs font-medium" :disabled="isSubmitting">
+                <button type="button" @click="submitTimelineEvent()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-sm text-xs font-medium" :disabled="isSubmitting" style="border-radius: 2px !important;">
                     <span x-text="isSubmitting ? 'Adding...' : 'Add Event'"></span>
                 </button>
-                <button @click="open = false; resetTimelineForm()" type="button" class="mt-3 bg-white text-gray-700 hover:bg-gray-50 px-3 py-1 rounded-md text-xs font-medium border border-gray-300 sm:mt-0 sm:ml-3">
+                <button @click="open = false; resetTimelineForm()" type="button" class="mt-3 bg-white text-gray-700 hover:bg-gray-50 px-3 py-1 rounded-sm text-xs font-medium border border-gray-300 sm:mt-0 sm:mr-4" style="border-radius: 2px !important; margin-right: 16px !important;">
                     Cancel
                 </button>
             </div>
@@ -961,7 +961,7 @@
             <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
         </div>
 
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+        <div class="inline-block align-bottom bg-white rounded-sm text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full" style="border-radius: 2px !important;">
             <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div class="sm:flex sm:items-start">
                     <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
@@ -977,13 +977,13 @@
                             @method('PUT')
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Event Title *</label>
-                                <input type="text" x-model="timelineData.title" name="title" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Court Hearing Scheduled" required>
+                                <input type="text" x-model="timelineData.title" name="title" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Court Hearing Scheduled" required style="border-radius: 2px !important;">
                             </div>
 
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-1">Event Type *</label>
-                                    <select x-model="timelineData.event_type" name="event_type" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                    <select x-model="timelineData.event_type" name="event_type" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required style="border-radius: 2px !important;">
                                         <option value="">Select Type</option>
                                         <option value="consultation">Consultation</option>
                                         <option value="court_hearing">Court Hearing</option>
@@ -995,7 +995,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-1">Event Status *</label>
-                                    <select x-model="timelineData.status" name="status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                    <select x-model="timelineData.status" name="status" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required style="border-radius: 2px !important;">
                                         <option value="">Select Status</option>
                                         @foreach($eventStatuses as $eventStatus)
                                             <option value="{{ $eventStatus->name }}">{{ $eventStatus->display_name }}</option>
@@ -1007,17 +1007,17 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-1">Event Date *</label>
-                                    <input type="date" x-model="timelineData.event_date" name="event_date" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                    <input type="date" x-model="timelineData.event_date" name="event_date" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required style="border-radius: 2px !important;">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-1">Event Time</label>
-                                    <input type="time" x-model="timelineData.event_time" name="event_time" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <input type="time" x-model="timelineData.event_time" name="event_time" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" style="border-radius: 2px !important;">
                                 </div>
                             </div>
 
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
-                                <textarea x-model="timelineData.description" name="description" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Enter event description"></textarea>
+                                <textarea x-model="timelineData.description" name="description" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Enter event description" style="border-radius: 2px !important;"></textarea>
                             </div>
 
                             <!-- Add to Calendar Option -->
@@ -1043,7 +1043,7 @@
                                     <div class="grid grid-cols-1 gap-4">
                                         <div>
                                             <label class="block text-xs font-medium text-gray-700 mb-1">Reminder</label>
-                                            <select x-model="timelineData.reminder" name="reminder" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <select x-model="timelineData.reminder" name="reminder" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" style="border-radius: 2px !important;">
                                                 <option value="">No Reminder</option>
                                                 <option value="15">15 minutes before</option>
                                                 <option value="30">30 minutes before</option>
@@ -1165,10 +1165,10 @@
                 </div>
             </div>
             <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button type="button" @click="submitEditTimelineEventFromForm({{ $event->id }}, $data)" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs font-medium" :disabled="isSubmitting">
+                <button type="button" @click="submitEditTimelineEventFromForm({{ $event->id }}, $data)" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-sm text-xs font-medium" :disabled="isSubmitting" style="border-radius: 2px !important;">
                     <span x-text="isSubmitting ? 'Updating...' : 'Update Event'"></span>
                 </button>
-                <button @click="open = false" type="button" class="mt-3 bg-white text-gray-700 hover:bg-gray-50 px-3 py-1 rounded-md text-xs font-medium border border-gray-300 sm:mt-0 sm:ml-3">
+                <button @click="open = false" type="button" class="mt-3 bg-white text-gray-700 hover:bg-gray-50 px-3 py-1 rounded-sm text-xs font-medium border border-gray-300 sm:mt-0 sm:mr-4" style="border-radius: 2px !important; margin-right: 16px !important;">
                     Cancel
                 </button>
             </div>
@@ -1190,10 +1190,10 @@
             <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
         </div>
         
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+        <div class="inline-block align-bottom bg-white rounded-sm text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full" style="border-radius: 2px !important;">
             <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div class="sm:flex sm:items-start">
-                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-sm bg-blue-100 sm:mx-0 sm:h-10 sm:w-10" style="border-radius: 2px !important;">
                         <span class="material-icons text-blue-600 text-xs">folder</span>
                     </div>
                     <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
@@ -1209,38 +1209,38 @@
                                     <!-- File Type -->
                                     <div>
                                         <label class="block text-xs font-medium text-gray-700 mb-2">File Type</label>
-                                        <select name="file_type" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                        <select name="file_type" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" required style="border-radius: 2px !important;">
                                             <option value="">Select file type...</option>
                                             @foreach(\App\Models\FileType::active()->orderBy('description')->get(['id','code','description']) as $type)
                                                 <option value="{{ $type->id }}">{{ $type->description }}</option>
                                             @endforeach
                                         </select>
                                     </div>
-                                    
+
                                     <!-- Description -->
                                     <div>
                                         <label class="block text-xs font-medium text-gray-700 mb-2">Description</label>
-                                        <input type="text" name="description" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter file description">
+                                        <input type="text" name="description" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter file description" style="border-radius: 2px !important;">
                                     </div>
                                 </div>
                                 
                                 <!-- File Upload -->
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-2">Upload Files</label>
-                                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+                                    <div class="border-2 border-dashed border-gray-300 rounded-sm p-6 text-center hover:border-blue-400 transition-colors" style="border-radius: 2px !important;">
                                         <span class="material-icons text-gray-400 text-3xl mb-2">cloud_upload</span>
                                         <p class="text-xs text-gray-600 mb-2">Drag and drop files here, or click to browse</p>
                                         <p class="text-xs text-gray-500">Supports: PDF, DOC, DOCX, JPG, PNG, ZIP, RAR (Max 10MB each)</p>
                                         <input type="file" name="files[]" multiple class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" id="modalFileInput">
-                                        <button type="button" onclick="document.getElementById('modalFileInput').click()" class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-xs font-medium">
+                                        <button type="button" onclick="document.getElementById('modalFileInput').click()" class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-sm text-xs font-medium" style="border-radius: 2px !important;">
                                             Choose Files
                                         </button>
                                         <div id="modalSelectedFiles" class="mt-3 text-xs text-gray-600"></div>
                                     </div>
                                 </div>
-                                
+
                                 <div class="flex justify-end">
-                                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-xs font-medium">
+                                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-sm text-xs font-medium" style="border-radius: 2px !important;">
                                         Upload Files
                                     </button>
                                 </div>
@@ -1292,7 +1292,7 @@
                 </div>
             </div>
             <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button @click="open = false" type="button" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded-md text-xs font-medium">
+                <button @click="open = false" type="button" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded-sm text-xs font-medium" style="border-radius: 2px !important;">
                     Close
                 </button>
             </div>
@@ -1303,7 +1303,7 @@
 <!-- File Status Modal -->
 <div class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden" id="statusModal">
     <div class="flex items-center justify-center min-h-screen">
-        <div class="bg-white rounded-lg p-6 w-96">
+        <div class="bg-white rounded-sm p-6 w-96" style="border-radius: 2px !important;">
             <h3 class="text-lg font-bold mb-4">Change File Status</h3>
             <form id="statusForm" method="POST">
                 @csrf

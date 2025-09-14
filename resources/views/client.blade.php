@@ -18,7 +18,7 @@
                 </div>
                 
                 <!-- Add Client Button -->
-                <a href="{{ route('client.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
+                <a href="{{ route('client.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-sm text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto" style="border-radius: 2px !important;">
                     <span class="material-icons text-sm md:text-xs mr-1">add</span>
                     Add Client
                 </a>
@@ -231,19 +231,19 @@
                 
                 <!-- Mobile Action Buttons -->
                 <div class="flex space-x-2">
-                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-sm text-xs font-medium flex items-center justify-center" style="border-radius: 2px !important;">
                         <span class="material-icons text-sm mr-1">block</span>
                         Ban
                     </button>
-                    <a href="#" class="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                    <a href="#" class="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded-sm text-xs font-medium flex items-center justify-center" style="border-radius: 2px !important;">
                         <span class="material-icons text-sm mr-1">visibility</span>
                         View
                     </a>
-                    <a href="#" class="flex-1 bg-yellow-100 text-yellow-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                    <a href="#" class="flex-1 bg-yellow-100 text-yellow-700 py-2 px-3 rounded-sm text-xs font-medium flex items-center justify-center" style="border-radius: 2px !important;">
                         <span class="material-icons text-sm mr-1">edit</span>
                         Edit
                     </a>
-                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-sm text-xs font-medium flex items-center justify-center" style="border-radius: 2px !important;">
                         <span class="material-icons text-sm mr-1">delete</span>
                         Delete
                     </button>
@@ -277,19 +277,19 @@
                 
                 <!-- Mobile Action Buttons -->
                 <div class="flex space-x-2">
-                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-sm text-xs font-medium flex items-center justify-center" style="border-radius: 2px !important;">
                         <span class="material-icons text-sm mr-1">block</span>
                         Ban
                     </button>
-                    <a href="#" class="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                    <a href="#" class="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded-sm text-xs font-medium flex items-center justify-center" style="border-radius: 2px !important;">
                         <span class="material-icons text-sm mr-1">visibility</span>
                         View
                     </a>
-                    <a href="#" class="flex-1 bg-yellow-100 text-yellow-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                    <a href="#" class="flex-1 bg-yellow-100 text-yellow-700 py-2 px-3 rounded-sm text-xs font-medium flex items-center justify-center" style="border-radius: 2px !important;">
                         <span class="material-icons text-sm mr-1">edit</span>
                         Edit
                     </a>
-                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-sm text-xs font-medium flex items-center justify-center" style="border-radius: 2px !important;">
                         <span class="material-icons text-sm mr-1">delete</span>
                         Delete
                     </button>
@@ -323,19 +323,19 @@
                 
                 <!-- Mobile Action Buttons -->
                 <div class="flex space-x-2">
-                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-sm text-xs font-medium flex items-center justify-center" style="border-radius: 2px !important;">
                         <span class="material-icons text-sm mr-1">block</span>
                         Ban
                     </button>
-                    <a href="#" class="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                    <a href="#" class="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded-sm text-xs font-medium flex items-center justify-center" style="border-radius: 2px !important;">
                         <span class="material-icons text-sm mr-1">visibility</span>
                         View
                     </a>
-                    <a href="#" class="flex-1 bg-yellow-100 text-yellow-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                    <a href="#" class="flex-1 bg-yellow-100 text-yellow-700 py-2 px-3 rounded-sm text-xs font-medium flex items-center justify-center" style="border-radius: 2px !important;">
                         <span class="material-icons text-sm mr-1">edit</span>
                         Edit
                     </a>
-                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-sm text-xs font-medium flex items-center justify-center" style="border-radius: 2px !important;">
                         <span class="material-icons text-sm mr-1">delete</span>
                         Delete
                     </button>

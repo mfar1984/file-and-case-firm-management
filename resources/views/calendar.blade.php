@@ -48,7 +48,7 @@
                     </div>
                     
                     <!-- Add Event Button -->
-                    <button id="addEventBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs font-medium flex items-center">
+                    <button id="addEventBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-sm text-xs font-medium flex items-center" style="border-radius: 2px !important;">
                         <span class="material-icons text-xs mr-1">add</span>
                         Add Event
                     </button>
@@ -289,11 +289,11 @@
             </div>
 
             <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-                <button id="editEventBtn" class="px-4 py-2 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition duration-150 flex items-center">
+                <button id="editEventBtn" class="px-4 py-2 text-xs font-medium text-white bg-blue-600 rounded-sm hover:bg-blue-700 transition duration-150 flex items-center" style="border-radius: 2px !important;">
                     <span class="material-icons text-xs mr-1">edit</span>
                     Edit Event
                 </button>
-                <button id="deleteEventBtn" class="px-4 py-2 text-xs font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition duration-150 flex items-center">
+                <button id="deleteEventBtn" class="px-4 py-2 text-xs font-medium text-white bg-red-600 rounded-sm hover:bg-red-700 transition duration-150 flex items-center" style="border-radius: 2px !important;">
                     <span class="material-icons text-xs mr-1">delete</span>
                     Delete
                 </button>
@@ -1232,11 +1232,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Toast notification function
     function showToast(message, type = 'info') {
         const toast = document.createElement('div');
-        toast.className = `fixed top-4 right-4 px-4 py-2 rounded-md text-white text-sm z-50 transition-opacity duration-300 ${
+        toast.className = `fixed top-4 right-4 px-4 py-2 rounded-sm text-white text-sm z-50 transition-opacity duration-300 ${
             type === 'success' ? 'bg-green-500' :
             type === 'error' ? 'bg-red-500' :
             'bg-blue-500'
         }`;
+        toast.style.borderRadius = '2px';
         toast.textContent = message;
 
         document.body.appendChild(toast);
