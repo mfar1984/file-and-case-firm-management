@@ -549,33 +549,7 @@
                 <!-- SPACER -->
                 <div class="h-6 bg-transparent"></div>
 
-                @if(auth()->user()->hasRole('Super Administrator') && $firms->count() > 0)
-                    <!-- Firm Selection Section -->
-                    <div class="bg-gray-50 p-4 rounded-sm mb-6">
-                        <h3 class="text-sm font-semibold text-gray-700 mb-1 flex items-center">
-                            <span class="material-icons text-purple-600 text-base mr-2">business</span>
-                            Firm Assignment *
-                        </h3>
-                        <p class="text-xs text-gray-600 mb-4 ml-6">Select which firm this case belongs to</p>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-2">Firm *</label>
-                                <select name="firm_id" required class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 @error('firm_id') border-red-500 @enderror">
-                                    <option value="">Select Firm</option>
-                                    @foreach($firms as $firm)
-                                        <option value="{{ $firm->id }}" {{ old('firm_id', $case->firm_id ?? '') == $firm->id ? 'selected' : '' }}>{{ $firm->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('firm_id')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="h-6 bg-transparent"></div>
-                @endif
 
                 <!-- Client Information Section -->
                 <div class="bg-gray-50 p-4 rounded-sm mb-6">
@@ -955,19 +929,15 @@
                                                     @endforeach
                                                 </select>
                                             </td>
-                                            <td class="px-3 py-2 text-center align-middle relative">
+                                            <td class="px-3 py-2 text-center align-middle">
                                                 <template x-if="document.existing">
-                                                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 inline-flex items-center justify-center gap-2">
-                                                        <a :href="'/file-management/'+document.id+'/download'" class="flex items-center justify-center w-6 h-6 text-blue-600 hover:text-blue-800" title="Download">
-                                                            <span class="material-icons text-[18px] leading-none" style="vertical-align: middle !important; line-height: 1 !important;">download</span>
+                                                    <div class="inline-flex items-center justify-center gap-2" style="align-items: center !important;">
+                                                        <a :href="'/file-management/'+document.id+'/download'" class="flex items-center justify-center w-6 h-6 text-blue-600 hover:text-blue-800" title="Download" style="align-items: center !important; display: flex !important;">
+                                                            <span class="material-icons text-[18px]" style="vertical-align: middle !important; line-height: 1 !important; display: block !important; margin: auto !important;">download</span>
                                                         </a>
-                                                        <form :action="'/file-management/'+document.id" method="POST" class="flex items-center justify-center" @submit.prevent="if(confirm('Delete this file?')) $el.submit()">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="flex items-center justify-center w-6 h-6 text-red-600 hover:text-red-800" title="Delete">
-                                                                <span class="material-icons text-[18px] leading-none" style="vertical-align: middle !important; line-height: 1 !important;">delete</span>
-                                                            </button>
-                                                        </form>
+                                                        <button type="button" @click="if(confirm('Delete this file?')) { fetch('/file-management/'+document.id, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Content-Type': 'application/json' } }).then(() => location.reload()) }" class="flex items-center justify-center w-6 h-6 text-red-600 hover:text-red-800" title="Delete" style="align-items: center !important; display: flex !important;">
+                                                            <span class="material-icons text-[18px]" style="vertical-align: middle !important; line-height: 1 !important; display: block !important; margin: auto !important;">delete</span>
+                                                        </button>
                                                     </div>
                                                 </template>
                                                 <template x-if="!document.existing">
@@ -1453,18 +1423,25 @@
                 return;
             }
 
-            // Generate hidden inputs using innerHTML
+            // Generate hidden inputs using DOM manipulation for better performance
             const container = document.getElementById('hidden-inputs-container');
-            let hiddenInputsHTML = '';
+
+            // Clear existing inputs first
+            container.innerHTML = '';
+
+            // Use DocumentFragment for better performance
+            const fragment = document.createDocumentFragment();
 
             // Generate plaintiffs inputs
             if (alpineData.plaintiffs && alpineData.plaintiffs.length > 0) {
                 alpineData.plaintiffs.forEach((plaintiff, index) => {
                     const fields = ['name', 'ic', 'phone', 'email', 'gender', 'nationality', 'client_id'];
                     fields.forEach(field => {
-                        const rawValue = plaintiff[field] || '';
-                        const value = String(rawValue).replace(/"/g, '&quot;');
-                        hiddenInputsHTML += '<input type="hidden" name="plaintiffs[' + index + '][' + field + ']" value="' + value + '">';
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = `plaintiffs[${index}][${field}]`;
+                        input.value = plaintiff[field] || '';
+                        fragment.appendChild(input);
                     });
                 });
             }
@@ -1474,9 +1451,11 @@
                 alpineData.defendants.forEach((defendant, index) => {
                     const fields = ['name', 'ic', 'phone', 'email', 'gender', 'nationality', 'client_id'];
                     fields.forEach(field => {
-                        const rawValue = defendant[field] || '';
-                        const value = String(rawValue).replace(/"/g, '&quot;');
-                        hiddenInputsHTML += '<input type="hidden" name="defendants[' + index + '][' + field + ']" value="' + value + '">';
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = `defendants[${index}][${field}]`;
+                        input.value = defendant[field] || '';
+                        fragment.appendChild(input);
                     });
                 });
             }
@@ -1486,42 +1465,46 @@
                 alpineData.partners.forEach((partner, index) => {
                     const fields = ['partner_id', 'role'];
                     fields.forEach(field => {
-                        const rawValue = partner[field] || '';
-                        const value = String(rawValue).replace(/"/g, '&quot;');
-                        hiddenInputsHTML += '<input type="hidden" name="partners[' + index + '][' + field + ']" value="' + value + '">';
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = `partners[${index}][${field}]`;
+                        input.value = partner[field] || '';
+                        fragment.appendChild(input);
                     });
                 });
             }
 
             // Generate documents inputs
             if (alpineData.documents && alpineData.documents.length > 0) {
-                alpineData.documents.forEach((document, index) => {
+                alpineData.documents.forEach((docItem, index) => {
                     const fields = ['type', 'filed_by', 'filing_date', 'status'];
                     fields.forEach(field => {
-                        const rawValue = document[field] || '';
-                        const value = String(rawValue).replace(/"/g, '&quot;');
-                        hiddenInputsHTML += '<input type="hidden" name="documents[' + index + '][' + field + ']" value="' + value + '">';
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = `documents[${index}][${field}]`;
+                        input.value = docItem[field] || '';
+                        fragment.appendChild(input);
                     });
 
                     // Handle file uploads by creating file input elements
-                    if (document.file && !document.existing) {
+                    if (docItem.file && !docItem.existing) {
                         const fileInput = document.createElement('input');
                         fileInput.type = 'file';
-                        fileInput.name = 'documents[' + index + ']';
+                        fileInput.name = `documents[${index}]`;
                         fileInput.style.display = 'none';
 
                         // Create a new FileList with the selected file
                         const dataTransfer = new DataTransfer();
-                        dataTransfer.items.add(document.file);
+                        dataTransfer.items.add(docItem.file);
                         fileInput.files = dataTransfer.files;
 
-                        container.appendChild(fileInput);
+                        fragment.appendChild(fileInput);
                     }
                 });
             }
 
-            // Set the HTML
-            container.innerHTML = hiddenInputsHTML;
+            // Append all inputs at once for better performance
+            container.appendChild(fragment);
 
             // Check if form is valid
             if (!formElement.checkValidity()) {

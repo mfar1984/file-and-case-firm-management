@@ -19,11 +19,11 @@
                 
                 <!-- Action Buttons -->
                 <div class="flex space-x-2">
-                    <a href="{{ route('case.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
+                    <a href="{{ route('case.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-sm text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto" style="border-radius: 2px !important;">
                         <span class="material-icons text-sm md:text-xs mr-1">add</span>
                         Add Case
                     </a>
-                    <a href="{{ route('file-management.index') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
+                    <a href="{{ route('file-management.index') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-sm text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto" style="border-radius: 2px !important;">
                         <span class="material-icons text-sm md:text-xs mr-1">folder</span>
                         File Management
                     </a>
@@ -51,25 +51,25 @@
                 <div class="flex gap-2 items-center">
                     <input type="text" id="searchFilter" placeholder="Search cases..."
                            onkeyup="filterCases()"
-                           class="border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-64">
+                           class="border border-gray-300 rounded-sm px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-64" style="border-radius: 2px !important;">
 
-                    <select id="statusFilter" onchange="filterCases()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                    <select id="statusFilter" onchange="filterCases()" class="custom-select border border-gray-300 rounded-sm pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" style="border-radius: 2px !important;">
                         <option value="">All Status</option>
                         @foreach($caseStatuses as $status)
                             <option value="{{ $status->name }}">{{ $status->name }}</option>
                         @endforeach
                     </select>
 
-                    <button onclick="filterCases()" class="px-3 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
+                    <button onclick="filterCases()" class="px-3 py-2 bg-blue-500 text-white rounded-sm text-xs hover:bg-blue-600 transition-colors" style="border-radius: 2px !important;">
                         🔍 Search
                     </button>
 
-                    <button onclick="resetFilters()" class="px-3 py-2 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors">
+                    <button onclick="resetFilters()" class="px-3 py-2 bg-gray-500 text-white rounded-sm text-xs hover:bg-gray-600 transition-colors" style="border-radius: 2px !important;">
                         🔄 Reset
                     </button>
                 </div>
             </div>
-            <div class="overflow-visible border border-gray-200 rounded">
+            <div class="overflow-visible border border-gray-200 rounded-sm" style="border-radius: 2px !important;">
                 <table class="min-w-full border-collapse">
                     <thead>
                         <tr class="bg-primary-light text-white uppercase text-xs">
@@ -141,11 +141,11 @@
                             <td class="py-1 px-4 text-[11px]">{{ $case->created_at->format('d M Y') }}</td>
                             <td class="py-1 px-4 text-[11px]">
                                 @if($case->caseStatus)
-                                    <span class="inline-block bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full text-[10px]">
+                                    <span class="inline-block bg-green-100 text-green-800 px-1.5 py-0.5 rounded-sm text-[10px]" style="border-radius: 2px !important;">
                                         {{ $case->caseStatus->name }}
                                     </span>
                                 @else
-                                    <span class="inline-block bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded-full text-[10px]">
+                                    <span class="inline-block bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded-sm text-[10px]" style="border-radius: 2px !important;">
                                         Unknown
                                     </span>
                                 @endif
@@ -164,13 +164,13 @@
                                     <button class="p-0.5 text-red-600 hover:text-red-700 delete-case-btn" data-case-id="{{ $case->id }}" title="Delete">
                                         <span class="material-icons text-base">delete</span>
                                     </button>
-                                    <div x-show="open" @click.away="open = false" class="absolute z-50 mt-2 w-64 bg-white rounded shadow-xl border border-gray-200 p-3 text-[11px]">
+                                    <div x-show="open" @click.away="open = false" class="absolute z-50 mt-2 w-64 bg-white rounded-sm shadow-xl border border-gray-200 p-3 text-[11px]" style="border-radius: 2px !important;">
                                         <div class="mb-2 font-bold text-gray-800">Change Status</div>
                                         <ul class="space-y-1">
                                             @foreach($caseStatuses as $status)
                                                 <li>
-                                                    <button class="w-full text-left px-2 py-1 hover:bg-gray-100 rounded change-status-btn" 
-                                                            data-case-id="{{ $case->id }}" 
+                                                    <button class="w-full text-left px-2 py-1 hover:bg-gray-100 rounded-sm change-status-btn" style="border-radius: 2px !important;"
+                                                            data-case-id="{{ $case->id }}"
                                                             data-status-id="{{ $status->id }}"
                                                             data-status-name="{{ $status->name }}">
                                                         {{ $status->name }}
@@ -258,18 +258,18 @@
                            class="w-full border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
 
                     <div class="flex gap-2">
-                        <select id="statusFilterMobile" onchange="filterCases()" class="custom-select flex-1 border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <select id="statusFilterMobile" onchange="filterCases()" class="custom-select flex-1 border border-gray-300 rounded-sm pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" style="border-radius: 2px !important;">
                             <option value="">All Status</option>
                             @foreach($caseStatuses as $status)
                                 <option value="{{ $status->name }}">{{ $status->name }}</option>
                             @endforeach
                         </select>
 
-                        <button onclick="filterCases()" class="px-3 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
+                        <button onclick="filterCases()" class="px-3 py-2 bg-blue-500 text-white rounded-sm text-xs hover:bg-blue-600 transition-colors" style="border-radius: 2px !important;">
                             🔍
                         </button>
 
-                        <button onclick="resetFilters()" class="px-3 py-2 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors">
+                        <button onclick="resetFilters()" class="px-3 py-2 bg-gray-500 text-white rounded-sm text-xs hover:bg-gray-600 transition-colors" style="border-radius: 2px !important;">
                             🔄
                         </button>
                     </div>
@@ -278,16 +278,16 @@
 
             <div class="space-y-4" id="cases-mobile-container">
             @forelse($cases as $case)
-            <div class="bg-gray-50 rounded-lg border border-gray-200 p-4" data-case-card-id="{{ $case->id }}" x-data="{ showStatusMenu: false }">
+            <div class="bg-gray-50 rounded-sm border border-gray-200 p-4" data-case-card-id="{{ $case->id }}" x-data="{ showStatusMenu: false }" style="border-radius: 2px !important;">
                 <div class="flex justify-between items-start mb-3">
                     <div>
                         <h3 class="font-semibold text-gray-800 text-sm">{{ $case->case_number }}</h3>
                         <p class="text-xs text-gray-600">{{ $case->title }}</p>
                     </div>
                     @if($case->caseStatus)
-                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">{{ $case->caseStatus->name }}</span>
+                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-sm text-xs" style="border-radius: 2px !important;">{{ $case->caseStatus->name }}</span>
                     @else
-                        <span class="inline-block bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">Unknown</span>
+                        <span class="inline-block bg-gray-100 text-gray-800 px-2 py-1 rounded-sm text-xs" style="border-radius: 2px !important;">Unknown</span>
                     @endif
                 </div>
                 
@@ -324,31 +324,31 @@
                 
                 <!-- Mobile Action Buttons -->
                 <div class="flex space-x-2">
-                    <button @click="showStatusMenu = !showStatusMenu" class="flex-1 bg-white border border-gray-300 text-gray-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center hover:bg-gray-50">
+                    <button @click="showStatusMenu = !showStatusMenu" class="flex-1 bg-white border border-gray-300 text-gray-700 py-2 px-3 rounded-sm text-xs font-medium flex items-center justify-center hover:bg-gray-50" style="border-radius: 2px !important;">
                         <span class="material-icons text-sm mr-1">add</span>
                         Status
                     </button>
-                    <a href="{{ route('case.show', $case->id) }}" class="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                    <a href="{{ route('case.show', $case->id) }}" class="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded-sm text-xs font-medium flex items-center justify-center" style="border-radius: 2px !important;">
                         <span class="material-icons text-sm mr-1">visibility</span>
                         View
                     </a>
-                    <a href="{{ route('case.edit', $case->id) }}" class="flex-1 bg-yellow-100 text-yellow-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center">
+                    <a href="{{ route('case.edit', $case->id) }}" class="flex-1 bg-yellow-100 text-yellow-700 py-2 px-3 rounded-sm text-xs font-medium flex items-center justify-center" style="border-radius: 2px !important;">
                         <span class="material-icons text-sm mr-1">edit</span>
                         Edit
                     </a>
-                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-md text-xs font-medium flex items-center justify-center delete-case-btn" data-case-id="{{ $case->id }}">
+                    <button class="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-sm text-xs font-medium flex items-center justify-center delete-case-btn" data-case-id="{{ $case->id }}" style="border-radius: 2px !important;">
                         <span class="material-icons text-sm mr-1">delete</span>
                         Delete
                     </button>
                 </div>
                 
                 <!-- Mobile Status Dropdown -->
-                <div x-show="showStatusMenu" @click.away="showStatusMenu = false" class="mt-3 bg-white rounded-md shadow-lg border border-gray-200 p-3">
+                <div x-show="showStatusMenu" @click.away="showStatusMenu = false" class="mt-3 bg-white rounded-sm shadow-lg border border-gray-200 p-3" style="border-radius: 2px !important;">
                     <div class="mb-2 font-bold text-gray-800 text-xs">Change Status</div>
                     <div class="grid grid-cols-2 gap-2">
                         @foreach($caseStatuses as $status)
-                            <button class="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 rounded change-status-btn" 
-                                    data-case-id="{{ $case->id }}" 
+                            <button class="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 rounded-sm change-status-btn" style="border-radius: 2px !important;"
+                                    data-case-id="{{ $case->id }}"
                                     data-status-id="{{ $status->id }}"
                                     data-status-name="{{ $status->name }}">
                                 {{ $status->name }}
@@ -358,7 +358,7 @@
                 </div>
             </div>
             @empty
-            <div class="bg-gray-50 rounded-lg border border-gray-200 p-8 text-center">
+            <div class="bg-gray-50 rounded-sm border border-gray-200 p-8 text-center" style="border-radius: 2px !important;">
                 <span class="material-icons text-gray-400 text-4xl mb-2">folder_open</span>
                 <p class="text-sm text-gray-600">No cases found</p>
                 <p class="text-xs text-gray-400">Create your first case to get started</p>
@@ -488,7 +488,7 @@ function updatePageNumbers(totalPages) {
         const isActive = i === currentPage;
         pageHtml += `
             <button onclick="goToPage(${i})"
-                    class="w-8 h-8 flex items-center justify-center text-xs transition-colors ${isActive ? 'bg-blue-500 text-white rounded-full' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full'}">
+                    class="w-8 h-8 flex items-center justify-center text-xs transition-colors ${isActive ? 'bg-blue-500 text-white rounded-sm' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-sm'}" style="border-radius: 2px !important;">
                 ${i}
             </button>
         `;

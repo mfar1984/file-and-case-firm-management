@@ -248,14 +248,9 @@ class CaseController extends Controller
                 $title = $request->name_of_property;
             }
 
-            // Add firm context
+            // Auto-assign firm based on session context
             $user = auth()->user();
-            $firmId = null;
-            if ($user->hasRole('Super Administrator') && $request->has('firm_id')) {
-                $firmId = $request->firm_id;
-            } else {
-                $firmId = session('current_firm_id') ?? $user->firm_id;
-            }
+            $firmId = session('current_firm_id') ?? $user->firm_id;
 
             // Create the case
             $case = CourtCase::create([

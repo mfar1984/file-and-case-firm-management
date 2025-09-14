@@ -18,15 +18,15 @@
                     <p class="text-xs text-gray-500 mt-1 ml-8">Case Reference: {{ $case->case_number ?? 'N/A' }}</p>
                 </div>
                 <div class="flex space-x-2">
-                    <a href="{{ route('case.edit', $case->id) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs font-medium flex items-center">
+                    <a href="{{ route('case.edit', $case->id) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-sm text-xs font-medium flex items-center" style="border-radius: 2px !important;">
                         <span class="material-icons text-xs mr-1">edit</span>
                         Edit Case
                     </a>
-                    <button class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded-md text-xs font-medium flex items-center">
+                    <button class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded-sm text-xs font-medium flex items-center" style="border-radius: 2px !important;">
                         <span class="material-icons text-xs mr-1">print</span>
                         Print
                     </button>
-                    <a href="{{ route('case.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded-md text-xs font-medium flex items-center">
+                    <a href="{{ route('case.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded-sm text-xs font-medium flex items-center" style="border-radius: 2px !important;">
                         <span class="material-icons text-xs mr-1">arrow_back</span>
                         Back to List
                     </a>
@@ -37,7 +37,7 @@
         <!-- Body -->
         <div class="p-4 md:p-6">
             <!-- Case Information -->
-            <div class="bg-gray-50 p-4 rounded-sm mb-6">
+            <div class="bg-gray-50 p-4 rounded-sm mb-6" style="border-radius: 2px !important;">
                 <div class="p-2 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700 text-white -mx-4 -mt-4">
                     <div class="flex items-center">
                         <span class="material-icons mr-2 text-xs">description</span>
@@ -61,11 +61,11 @@
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
                             @if($case->caseStatus)
-                                <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-[11px] font-medium">
+                                <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-sm text-[11px] font-medium" style="border-radius: 2px !important;">
                                     {{ $case->caseStatus->name }}
                                 </span>
                             @else
-                                <span class="inline-block bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-[11px] font-medium">
+                                <span class="inline-block bg-gray-100 text-gray-800 px-2 py-1 rounded-sm text-[11px] font-medium" style="border-radius: 2px !important;">
                                     Unknown
                                 </span>
                             @endif
@@ -120,7 +120,7 @@
             </div>
 
             <!-- Applicant Information -->
-            <div class="bg-blue-50 p-4 rounded-sm mb-6">
+            <div class="bg-blue-50 p-4 rounded-sm mb-6" style="border-radius: 2px !important;">
                 <div class="p-2 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700 text-white -mx-4 -mt-4">
                     <div class="flex items-center">
                         <span class="material-icons mr-2 text-xs">person</span>
@@ -168,7 +168,7 @@
             </div>
 
             <!-- Respondent Information -->
-            <div class="bg-blue-50 p-4 rounded-sm mb-6">
+            <div class="bg-blue-50 p-4 rounded-sm mb-6" style="border-radius: 2px !important;">
                 <div class="p-2 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700 text-white -mx-4 -mt-4">
                     <div class="flex items-center">
                         <span class="material-icons mr-2 text-xs">person_remove</span>
@@ -224,13 +224,13 @@
                             <h2 class="text-sm font-semibold">Financial Information</h2>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <a href="{{ route('quotation.create', ['case_id' => $case->id, 'case_number' => $case->case_number]) }}" class="bg-white text-blue-700 px-3 py-1 rounded-md text-[11px] font-medium hover:bg-gray-50">
+                            <a href="{{ route('quotation.create', ['case_id' => $case->id, 'case_number' => $case->case_number]) }}" class="bg-white text-blue-700 px-3 py-1 rounded-sm text-[11px] font-medium hover:bg-gray-50" style="border-radius: 2px !important;">
                                 Create Quotation
                             </a>
-                            <a href="{{ route('tax-invoice.create', ['case_id' => $case->id, 'case_number' => $case->case_number]) }}" class="bg-white text-blue-700 px-3 py-1 rounded-md text-[11px] font-medium hover:bg-gray-50">
+                            <a href="{{ route('tax-invoice.create', ['case_id' => $case->id, 'case_number' => $case->case_number]) }}" class="bg-white text-blue-700 px-3 py-1 rounded-sm text-[11px] font-medium hover:bg-gray-50" style="border-radius: 2px !important;">
                                 Create Invoice
                             </a>
-                            <a href="{{ route('receipt.create', ['case_id' => $case->id, 'case_number' => $case->case_number]) }}" class="bg-white text-emerald-700 px-3 py-1 rounded-md text-[11px] font-medium hover:bg-gray-50">
+                            <a href="{{ route('receipt.create', ['case_id' => $case->id, 'case_number' => $case->case_number]) }}" class="bg-white text-emerald-700 px-3 py-1 rounded-sm text-[11px] font-medium hover:bg-gray-50" style="border-radius: 2px !important;">
                                 Create Receipt
                             </a>
                         </div>
@@ -441,7 +441,7 @@
                                     <div class="relative flex items-start">
                                         <!-- Timeline Marker (Left) -->
                                         <div class="absolute left-56 transform -translate-x-1/2">
-                                            <div class="w-5 h-5 {{ $event->getStatusColor() }} rounded-full border-2 border-white shadow-sm flex items-center justify-center">
+                                            <div class="w-5 h-5 {{ $event->getStatusColor() }} rounded-sm border-2 border-white shadow-sm flex items-center justify-center" style="border-radius: 2px !important;">
                                                 <span class="material-icons text-white text-sm">{{ $event->getStatusIcon() }}</span>
                                             </div>
                                         </div>
@@ -530,16 +530,16 @@
                                     </div>
                                 </div>
                                 <div class="flex space-x-2">
-                                    <a href="{{ route('file-management.view', hash('sha256', $file->id . '|' . $file->file_path . '|' . config('app.key'))) }}" target="_blank" class="p-1 bg-blue-50 rounded hover:bg-blue-100 border border-blue-100" title="View">
+                                    <a href="{{ route('file-management.view', hash('sha256', $file->id . '|' . $file->file_path . '|' . config('app.key'))) }}" target="_blank" class="p-1 bg-blue-50 rounded-sm hover:bg-blue-100 border border-blue-100" title="View" style="border-radius: 2px !important;">
                                         <span class="material-icons text-blue-600 text-xs">visibility</span>
                                     </a>
-                                    <a href="{{ route('file-management.download', $file->id) }}" class="p-1 bg-green-50 rounded hover:bg-green-100 border border-green-100" title="Download">
+                                    <a href="{{ route('file-management.download', $file->id) }}" class="p-1 bg-green-50 rounded-sm hover:bg-green-100 border border-green-100" title="Download" style="border-radius: 2px !important;">
                                         <span class="material-icons text-green-600 text-xs">download</span>
                                     </a>
                                     <form action="{{ route('file-management.destroy', $file->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this file?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Delete">
+                                        <button type="submit" class="p-1 bg-red-50 rounded-sm hover:bg-red-100 border border-red-100" title="Delete" style="border-radius: 2px !important;">
                                             <span class="material-icons text-red-600 text-xs">delete</span>
                                         </button>
                                     </form>
@@ -571,27 +571,27 @@
                             <span class="text-[11px] font-medium text-blue-700">Create Invoice</span>
                         </a>
 
-                        <a href="{{ route('calendar') }}" class="flex flex-col items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors border border-green-100">
+                        <a href="{{ route('calendar') }}" class="flex flex-col items-center p-4 bg-green-50 rounded-sm hover:bg-green-100 transition-colors border border-green-100" style="border-radius: 2px !important;">
                             <span class="material-icons text-green-600 text-lg mb-2">event</span>
                             <span class="text-[11px] font-medium text-green-700">Schedule Hearing</span>
                         </a>
 
-                        <a href="mailto:{{ $case->client->email ?? '' }}?subject=Regarding Case: {{ $case->case_number }}" class="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors border border-purple-100">
+                        <a href="mailto:{{ $case->client->email ?? '' }}?subject=Regarding Case: {{ $case->case_number }}" class="flex flex-col items-center p-4 bg-purple-50 rounded-sm hover:bg-purple-100 transition-colors border border-purple-100" style="border-radius: 2px !important;">
                             <span class="material-icons text-purple-600 text-lg mb-2">email</span>
                             <span class="text-[11px] font-medium text-purple-700">Send Email</span>
                         </a>
 
-                        <a href="tel:{{ $case->client->phone ?? '' }}" class="flex flex-col items-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors border border-orange-100">
+                        <a href="tel:{{ $case->client->phone ?? '' }}" class="flex flex-col items-center p-4 bg-orange-50 rounded-sm hover:bg-orange-100 transition-colors border border-orange-100" style="border-radius: 2px !important;">
                             <span class="material-icons text-orange-600 text-lg mb-2">phone</span>
                             <span class="text-[11px] font-medium text-orange-700">Call Client</span>
                         </a>
 
-                        <a href="{{ route('quotation.create') }}?case_id={{ $case->id }}" class="flex flex-col items-center p-4 bg-teal-50 rounded-lg hover:bg-teal-100 transition-colors border border-teal-100">
+                        <a href="{{ route('quotation.create') }}?case_id={{ $case->id }}" class="flex flex-col items-center p-4 bg-teal-50 rounded-sm hover:bg-teal-100 transition-colors border border-teal-100" style="border-radius: 2px !important;">
                             <span class="material-icons text-teal-600 text-lg mb-2">request_quote</span>
                             <span class="text-[11px] font-medium text-teal-700">Create Quote</span>
                         </a>
 
-                        <a href="{{ route('file-management.index') }}?case_id={{ $case->id }}" class="flex flex-col items-center p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors border border-indigo-100">
+                        <a href="{{ route('file-management.index') }}?case_id={{ $case->id }}" class="flex flex-col items-center p-4 bg-indigo-50 rounded-sm hover:bg-indigo-100 transition-colors border border-indigo-100" style="border-radius: 2px !important;">
                             <span class="material-icons text-indigo-600 text-lg mb-2">folder_open</span>
                             <span class="text-[11px] font-medium text-indigo-700">Manage Files</span>
                         </a>
@@ -1248,12 +1248,12 @@
                         </div>
                         
                         <!-- File List Section -->
-                        <div class="bg-gray-50 p-4 rounded-sm">
+                        <div class="bg-gray-50 p-4 rounded-sm" style="border-radius: 2px !important;">
                             <h4 class="text-xs font-semibold text-gray-700 mb-3">Case Files</h4>
                             @if($case->files->count() > 0)
                                 <div class="space-y-3">
                                     @foreach($case->files as $file)
-                                    <div class="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
+                                    <div class="flex items-center justify-between p-3 bg-white rounded-sm border border-gray-200" style="border-radius: 2px !important;">
                                         <div class="flex items-center space-x-3">
                                             <span class="material-icons {{ $file->fileType ? ($file->fileType->code === 'CO' ? 'text-red-500' : ($file->fileType->code === 'EV' ? 'text-green-500' : 'text-blue-500')) : 'text-gray-500' }} text-xs">
                                                 {{ $file->fileType ? ($file->fileType->code === 'CO' ? 'picture_as_pdf' : ($file->fileType->code === 'EV' ? 'image' : 'description')) : 'insert_drive_file' }}
@@ -1264,16 +1264,16 @@
                                             </div>
                                         </div>
                                         <div class="flex space-x-2">
-                                            <a href="{{ route('file-management.download', $file->id) }}" class="p-1 bg-blue-50 rounded hover:bg-blue-100 border border-blue-100" title="Download">
+                                            <a href="{{ route('file-management.download', $file->id) }}" class="p-1 bg-blue-50 rounded-sm hover:bg-blue-100 border border-blue-100" title="Download" style="border-radius: 2px !important;">
                                                 <span class="material-icons text-blue-600 text-xs">download</span>
                                             </a>
-                                            <button onclick="openStatusModal({{ $file->id }}, '{{ $file->status }}', '{{ $file->taken_by }}', '{{ $file->purpose }}', '{{ $file->expected_return }}', '{{ $file->rack_location }}')" class="p-1 bg-purple-50 rounded hover:bg-purple-100 border border-purple-100" title="Change Status">
+                                            <button onclick="openStatusModal({{ $file->id }}, '{{ $file->status }}', '{{ $file->taken_by }}', '{{ $file->purpose }}', '{{ $file->expected_return }}', '{{ $file->rack_location }}')" class="p-1 bg-purple-50 rounded-sm hover:bg-purple-100 border border-purple-100" title="Change Status" style="border-radius: 2px !important;">
                                                 <span class="material-icons text-purple-600 text-xs">swap_horiz</span>
                                             </button>
                                             <form action="{{ route('file-management.destroy', $file->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this file?')">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="p-1 bg-red-50 rounded hover:bg-red-100 border border-red-100" title="Delete">
+                                                <button type="submit" class="p-1 bg-red-50 rounded-sm hover:bg-red-100 border border-red-100" title="Delete" style="border-radius: 2px !important;">
                                                     <span class="material-icons text-red-600 text-xs">delete</span>
                                                 </button>
                                             </form>
