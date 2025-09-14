@@ -20,6 +20,8 @@
     showEditPayeeModal: false,
     showExpenseCategoryModal: false,
     showEditExpenseCategoryModal: false,
+    showSectionTypeModal: false,
+    showEditSectionTypeModal: false,
     typeForm: { code: '', description: '', status: 'active' },
     taxCategoryForm: { name: '', tax_rate: 0, sort_order: 0, status: 'active' },
     statusForm: { name: '', description: '', color: 'blue', status: 'active' },
@@ -34,6 +36,8 @@
         editPayeeForm: { id: '', name: '', category: '', address: '', contact_person: '', phone: '', email: '', status: '1' },
     expenseCategoryForm: { name: '', description: '', status: 'active', sort_order: 0 },
     editExpenseCategoryForm: { id: '', name: '', description: '', status: 'active', sort_order: 0 },
+    sectionTypeForm: { code: '', name: '', description: '', status: 'active' },
+    editSectionTypeForm: { id: '', code: '', name: '', description: '', status: 'active' },
 
     openEditTypeModal(id, code, description, status) {
         this.editTypeForm = { id: id, code: code, description: description, status: status };
@@ -68,6 +72,11 @@
     openEditExpenseCategoryModal(id, name, description, status, sort_order) {
         this.editExpenseCategoryForm = { id: id, name: name, description: description, status: status, sort_order: sort_order };
         this.showEditExpenseCategoryModal = true;
+    },
+
+    openEditSectionTypeModal(id, code, name, description, status) {
+        this.editSectionTypeForm = { id: id, code: code, name: name, description: description, status: status };
+        this.showEditSectionTypeModal = true;
     },
 
     submitTypeForm() {
@@ -1175,6 +1184,253 @@
                             Cancel
                         </button>
                         <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700">
+                            Update
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Type Section -->
+    <div class="bg-white rounded shadow-md border border-gray-300 mt-6 mb-6">
+        <div class="p-4 md:p-6 border-b border-gray-200">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-start">
+                <div class="mb-4 md:mb-0">
+                    <div class="flex items-center">
+                        <span class="material-icons mr-2 text-purple-600">account_tree</span>
+                        <h2 class="text-lg md:text-xl font-bold text-gray-800">Section Types</h2>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1 ml-8">Manage case section types (Civil, Criminal, Probate, Conveyancing)</p>
+                </div>
+                <button @click="showSectionTypeModal = true" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 md:px-3 md:py-1 rounded-md text-sm md:text-xs font-medium flex items-center justify-center md:justify-start w-full md:w-auto">
+                    <span class="material-icons text-xs mr-1">add</span>
+                    Add Section Type
+                </button>
+            </div>
+        </div>
+
+        @if($sectionTypes->count() > 0)
+        <!-- Desktop Table View -->
+        <div class="hidden md:block p-6">
+            <!-- Controls Above Table -->
+            <div class="flex justify-between items-center mb-2">
+                <!-- Left: Show Entries -->
+                <div class="flex items-center gap-2">
+                    <label for="perPageSectionType" class="text-xs text-gray-700">Show:</label>
+                    <select id="perPageSectionType" onchange="changePerPageSectionType()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span class="text-xs text-gray-700">entries</span>
+                </div>
+
+                <!-- Right: Search and Filters -->
+                <div class="flex gap-2 items-center">
+                    <input type="text" id="searchFilterSectionType" placeholder="Search section types..."
+                           onkeyup="filterSectionType()"
+                           class="border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-64">
+
+                    <select id="statusFilterSectionType" onchange="filterSectionType()" class="custom-select border border-gray-300 rounded pl-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="">All Status</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+
+                    <button onclick="filterSectionType()" class="px-3 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
+                        🔍 Search
+                    </button>
+
+                    <button onclick="resetFiltersSectionType()" class="px-3 py-2 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors">
+                        🔄 Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-purple-600 text-white">
+                        <tr>
+                            <th class="py-2 px-4 text-left text-xs font-medium uppercase tracking-wider">Code</th>
+                            <th class="py-2 px-4 text-left text-xs font-medium uppercase tracking-wider">Name</th>
+                            <th class="py-2 px-4 text-left text-xs font-medium uppercase tracking-wider">Description</th>
+                            <th class="py-2 px-4 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                            <th class="py-2 px-4 text-center text-xs font-medium uppercase tracking-wider">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach($sectionTypes as $sectionType)
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-1 px-4 text-[11px] font-medium text-gray-900">{{ $sectionType->code }}</td>
+                            <td class="py-1 px-4 text-[11px] text-gray-900">{{ $sectionType->name }}</td>
+                            <td class="py-1 px-4 text-[11px] text-gray-500">{{ $sectionType->description ?? '-' }}</td>
+                            <td class="py-1 px-4 text-[11px]">
+                                <span class="inline-block {{ $sectionType->status_color }} px-1.5 py-0.5 rounded-full text-[10px]">{{ $sectionType->status_display }}</span>
+                            </td>
+                            <td class="py-1 px-4">
+                                <div class="flex justify-center space-x-1 items-center">
+                                    <button @click="openEditSectionTypeModal({{ $sectionType->id }}, '{{ $sectionType->code }}', '{{ $sectionType->name }}', '{{ $sectionType->description }}', '{{ $sectionType->status }}')" class="p-0.5 text-yellow-600 hover:text-yellow-700" title="Edit">
+                                        <span class="material-icons text-base">edit</span>
+                                    </button>
+                                    <button @click="deleteSectionType({{ $sectionType->id }})" class="p-0.5 text-red-600 hover:text-red-700" title="Delete">
+                                        <span class="material-icons text-base">delete</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination Section for Section Types -->
+        <div class="p-6">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                <!-- Left: Page Info -->
+                <div class="text-xs text-gray-600">
+                    <span id="pageInfoSectionType">Showing 1 to 10 of 100 records</span>
+                </div>
+
+                <!-- Right: Pagination -->
+                <div class="flex items-center gap-1">
+                    <button id="prevBtnSectionType" onclick="firstPageSectionType()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lt;&lt;
+                    </button>
+
+                    <button id="prevSingleBtnSectionType" onclick="previousPageSectionType()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lt;
+                    </button>
+
+                    <div id="pageNumbersSectionType" class="flex items-center gap-1 mx-2">
+                        <!-- Page numbers will be populated here -->
+                    </div>
+
+                    <button id="nextSingleBtnSectionType" onclick="nextPageSectionType()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &gt;
+                    </button>
+
+                    <button id="nextBtnSectionType" onclick="lastPageSectionType()"
+                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &gt;&gt;
+                    </button>
+                </div>
+            </div>
+        </div>
+        @else
+        <div class="hidden md:block p-6">
+            <div class="text-center py-8">
+                <span class="material-icons text-gray-400 text-4xl mb-2">account_tree</span>
+                <p class="text-sm text-gray-500">No section types available</p>
+                <p class="text-xs text-gray-400">Add section types to categorize cases</p>
+            </div>
+        </div>
+
+        <div class="md:hidden p-4">
+            <div class="text-center py-8">
+                <span class="material-icons text-gray-400 text-4xl mb-2">account_tree</span>
+                <p class="text-sm text-gray-500">No section types available</p>
+                <p class="text-xs text-gray-400">Add section types to categorize cases</p>
+            </div>
+        </div>
+        @endif
+    </div>
+
+    <!-- Add Section Type Modal -->
+    <div x-show="showSectionTypeModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" x-cloak>
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Add Section Type</h3>
+                    <button @click="showSectionTypeModal = false" class="text-gray-400 hover:text-gray-600">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
+                <form id="sectionTypeForm" @submit.prevent="submitSectionTypeForm()">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Code *</label>
+                        <input type="text" name="code" x-model="sectionTypeForm.code" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" required maxlength="10">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Name *</label>
+                        <input type="text" name="name" x-model="sectionTypeForm.name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" required maxlength="100">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea name="description" x-model="sectionTypeForm.description" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" maxlength="500"></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Status *</label>
+                        <select name="status" x-model="sectionTypeForm.status" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" required>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" @click="showSectionTypeModal = false" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-md hover:bg-purple-700">
+                            Create
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Section Type Modal -->
+    <div x-show="showEditSectionTypeModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" x-cloak>
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Edit Section Type</h3>
+                    <button @click="showEditSectionTypeModal = false" class="text-gray-400 hover:text-gray-600">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
+                <form id="editSectionTypeForm" @submit.prevent="submitEditSectionTypeForm()">
+                    <input type="hidden" name="section_type_id" x-model="editSectionTypeForm.id">
+                    <input type="hidden" name="_method" value="PUT">
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Code *</label>
+                        <input type="text" name="code" x-model="editSectionTypeForm.code" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" required maxlength="10">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Name *</label>
+                        <input type="text" name="name" x-model="editSectionTypeForm.name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" required maxlength="100">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea name="description" x-model="editSectionTypeForm.description" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" maxlength="500"></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Status *</label>
+                        <select name="status" x-model="editSectionTypeForm.status" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" required>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" @click="showEditSectionTypeModal = false" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-md hover:bg-purple-700">
                             Update
                         </button>
                     </div>
@@ -3996,6 +4252,82 @@ function deleteExpenseCategory(id) {
     }
 }
 
+// Section Type Functions
+function submitSectionTypeForm() {
+    const form = document.getElementById('sectionTypeForm');
+    const formData = new FormData(form);
+
+    fetch('{{ route("settings.category.section-type.store") }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while creating the section type.');
+    });
+}
+
+function submitEditSectionTypeForm() {
+    const form = document.getElementById('editSectionTypeForm');
+    const formData = new FormData(form);
+    const sectionTypeId = document.querySelector('input[name="section_type_id"]').value;
+
+    fetch(`/settings/category/section-type/${sectionTypeId}`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating the section type.');
+    });
+}
+
+function deleteSectionType(id) {
+    if (confirm('Are you sure you want to delete this section type?')) {
+        fetch(`/settings/category/section-type/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the section type.');
+        });
+    }
+}
+
 // Pagination variables for Case Types
 let currentPageTypes = 1;
 let perPageTypes = 10;
@@ -4334,6 +4666,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializePaginationSpecialization();
     initializePaginationEventStatus();
     initializePaginationExpenseCategory();
+    initializePaginationSectionType();
     initializePaginationPayee();
 
     // Agency pagination is handled by Alpine.js - no separate initialization needed
@@ -4853,6 +5186,177 @@ function goToPageExpenseCategory(page) {
     currentPageExpenseCategory = page;
     displayExpenseCategory();
     updatePaginationExpenseCategory();
+}
+
+// Section Type Pagination
+let currentPageSectionType = 1;
+let perPageSectionType = 10;
+let allSectionTypes = [];
+let filteredSectionTypes = [];
+
+function initializePaginationSectionType() {
+    // Find Section Types section by looking for the h2 text
+    const allH2s = document.querySelectorAll('h2');
+    let sectionTypeTable = null;
+
+    for (let h2 of allH2s) {
+        if (h2.textContent.includes('Section Types')) {
+            sectionTypeTable = h2.closest('.bg-white').querySelector('table tbody');
+            break;
+        }
+    }
+
+    if (!sectionTypeTable) return;
+
+    const sectionTypeRows = sectionTypeTable.querySelectorAll('tr');
+    allSectionTypes = Array.from(sectionTypeRows).map((row, index) => ({
+        id: index,
+        element: row,
+        searchText: row.textContent.toLowerCase()
+    }));
+
+    filteredSectionTypes = [...allSectionTypes];
+    displaySectionType();
+    updatePaginationSectionType();
+}
+
+function displaySectionType() {
+    const startIndex = (currentPageSectionType - 1) * perPageSectionType;
+    const endIndex = startIndex + perPageSectionType;
+
+    allSectionTypes.forEach(sectionType => {
+        if (sectionType.element) sectionType.element.style.display = 'none';
+    });
+
+    const sectionTypesToShow = filteredSectionTypes.slice(startIndex, endIndex);
+    sectionTypesToShow.forEach(sectionType => {
+        if (sectionType.element) sectionType.element.style.display = '';
+    });
+}
+
+function updatePaginationSectionType() {
+    const totalItems = filteredSectionTypes.length;
+    const totalPages = Math.ceil(totalItems / perPageSectionType);
+    const startItem = totalItems === 0 ? 0 : (currentPageSectionType - 1) * perPageSectionType + 1;
+    const endItem = Math.min(currentPageSectionType * perPageSectionType, totalItems);
+
+    const pageInfo = document.getElementById('pageInfoSectionType');
+    if (pageInfo) pageInfo.textContent = `Showing ${startItem} to ${endItem} of ${totalItems} records`;
+
+    const prevBtn = document.getElementById('prevBtnSectionType');
+    const prevSingleBtn = document.getElementById('prevSingleBtnSectionType');
+    const nextBtn = document.getElementById('nextBtnSectionType');
+    const nextSingleBtn = document.getElementById('nextSingleBtnSectionType');
+
+    if (prevBtn) prevBtn.disabled = currentPageSectionType === 1;
+    if (prevSingleBtn) prevSingleBtn.disabled = currentPageSectionType === 1;
+    if (nextBtn) nextBtn.disabled = currentPageSectionType === totalPages || totalPages === 0;
+    if (nextSingleBtn) nextSingleBtn.disabled = currentPageSectionType === totalPages || totalPages === 0;
+
+    updatePageNumbersSectionType(totalPages);
+}
+
+function updatePageNumbersSectionType(totalPages) {
+    const pageNumbersContainer = document.getElementById('pageNumbersSectionType');
+    if (!pageNumbersContainer) return;
+
+    pageNumbersContainer.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    let startPage = Math.max(1, currentPageSectionType - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+
+    if (endPage - startPage < 4) {
+        startPage = Math.max(1, endPage - 4);
+    }
+
+    let pageHtml = '';
+    for (let i = startPage; i <= endPage; i++) {
+        pageHtml += `
+            <button onclick="goToPageSectionType(${i})"
+                    class="px-2 py-1 text-xs ${i === currentPageSectionType ? 'bg-blue-500 text-white' : 'text-gray-600 hover:text-blue-600'} transition-colors">
+                ${i}
+            </button>
+        `;
+    }
+    pageNumbersContainer.innerHTML = pageHtml;
+}
+
+function changePerPageSectionType() {
+    const select = document.getElementById('perPageSectionType');
+    if (select) {
+        perPageSectionType = parseInt(select.value);
+        currentPageSectionType = 1;
+        displaySectionType();
+        updatePaginationSectionType();
+    }
+}
+
+function filterSectionType() {
+    const searchInput = document.getElementById('searchFilterSectionType');
+    const statusFilter = document.getElementById('statusFilterSectionType');
+
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    const statusValue = statusFilter ? statusFilter.value : '';
+
+    filteredSectionTypes = allSectionTypes.filter(sectionType => {
+        const matchesSearch = sectionType.searchText.includes(searchTerm);
+        const matchesStatus = !statusValue || sectionType.searchText.includes(statusValue.toLowerCase());
+        return matchesSearch && matchesStatus;
+    });
+
+    currentPageSectionType = 1;
+    displaySectionType();
+    updatePaginationSectionType();
+}
+
+function resetFiltersSectionType() {
+    const searchInput = document.getElementById('searchFilterSectionType');
+    const statusFilter = document.getElementById('statusFilterSectionType');
+
+    if (searchInput) searchInput.value = '';
+    if (statusFilter) statusFilter.value = '';
+
+    filteredSectionTypes = [...allSectionTypes];
+    currentPageSectionType = 1;
+    displaySectionType();
+    updatePaginationSectionType();
+}
+
+function previousPageSectionType() {
+    if (currentPageSectionType > 1) {
+        currentPageSectionType--;
+        displaySectionType();
+        updatePaginationSectionType();
+    }
+}
+
+function nextPageSectionType() {
+    const totalPages = Math.ceil(filteredSectionTypes.length / perPageSectionType);
+    if (currentPageSectionType < totalPages) {
+        currentPageSectionType++;
+        displaySectionType();
+        updatePaginationSectionType();
+    }
+}
+
+function firstPageSectionType() {
+    currentPageSectionType = 1;
+    displaySectionType();
+    updatePaginationSectionType();
+}
+
+function lastPageSectionType() {
+    const totalPages = Math.ceil(filteredSectionTypes.length / perPageSectionType);
+    currentPageSectionType = totalPages;
+    displaySectionType();
+    updatePaginationSectionType();
+}
+
+function goToPageSectionType(page) {
+    currentPageSectionType = page;
+    displaySectionType();
+    updatePaginationSectionType();
 }
 
 // Event Status Pagination

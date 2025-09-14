@@ -6,6 +6,7 @@ use App\Models\CaseType;
 use App\Models\CaseStatus;
 use App\Models\EventStatus;
 use App\Models\ExpenseCategory;
+use App\Models\SectionType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -26,6 +27,7 @@ class CategoryController extends Controller
                 $fileTypes = \App\Models\FileType::forFirm(session('current_firm_id'))->orderBy('code')->get();
                 $specializations = \App\Models\Specialization::forFirm(session('current_firm_id'))->orderBy('specialist_name')->get();
                 $expenseCategories = ExpenseCategory::forFirm(session('current_firm_id'))->ordered()->get();
+                $sectionTypes = SectionType::forFirm(session('current_firm_id'))->ordered()->get();
             } else {
                 $caseTypes = CaseType::withoutFirmScope()->orderBy('code')->get();
                 $taxCategories = \App\Models\TaxCategory::withoutFirmScope()->ordered()->get();
@@ -34,6 +36,7 @@ class CategoryController extends Controller
                 $fileTypes = \App\Models\FileType::withoutFirmScope()->orderBy('code')->get();
                 $specializations = \App\Models\Specialization::withoutFirmScope()->orderBy('specialist_name')->get();
                 $expenseCategories = ExpenseCategory::withoutFirmScope()->ordered()->get();
+                $sectionTypes = SectionType::withoutFirmScope()->ordered()->get();
             }
         } else {
             $caseTypes = CaseType::orderBy('code')->get();
@@ -43,9 +46,10 @@ class CategoryController extends Controller
             $fileTypes = \App\Models\FileType::orderBy('code')->get();
             $specializations = \App\Models\Specialization::orderBy('specialist_name')->get();
             $expenseCategories = ExpenseCategory::ordered()->get();
+            $sectionTypes = SectionType::ordered()->get();
         }
 
-        return view('settings.category', compact('caseTypes', 'taxCategories', 'caseStatuses', 'eventStatuses', 'fileTypes', 'specializations', 'expenseCategories'));
+        return view('settings.category', compact('caseTypes', 'taxCategories', 'caseStatuses', 'eventStatuses', 'fileTypes', 'specializations', 'expenseCategories', 'sectionTypes'));
     }
 
     // Case Type Methods
@@ -896,5 +900,115 @@ class CategoryController extends Controller
                 'message' => 'Failed to delete tax category: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    // Section Type Methods
+    public function storeSectionType(Request $request)
+    {
+        // Get current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+
+        $validator = Validator::make($request->all(), [
+            'code' => 'required|string|max:10|unique:section_types,code,NULL,id,firm_id,' . $firmId,
+            'name' => 'required|string|max:100',
+            'description' => 'nullable|string|max:500',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $sectionType = SectionType::create([
+            'code' => strtoupper($request->code),
+            'name' => $request->name,
+            'description' => $request->description,
+            'status' => $request->status,
+            'firm_id' => $firmId,
+        ]);
+
+        // Log section type creation
+        activity()
+            ->performedOn($sectionType)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'code' => $sectionType->code,
+                'name' => $sectionType->name,
+            ])
+            ->log('Section type created');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Section type created successfully',
+            'data' => $sectionType
+        ]);
+    }
+
+    public function updateSectionType(Request $request, $id)
+    {
+        // Get current firm context
+        $user = auth()->user();
+        $firmId = session('current_firm_id') ?? $user->firm_id;
+
+        $request->validate([
+            'code' => 'required|string|max:10|unique:section_types,code,' . $id . ',id,firm_id,' . $firmId,
+            'name' => 'required|string|max:100',
+            'description' => 'nullable|string|max:500',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        $sectionType = SectionType::findOrFail($id);
+        $sectionType->update([
+            'code' => strtoupper($request->code),
+            'name' => $request->name,
+            'description' => $request->description,
+            'status' => $request->status,
+        ]);
+
+        // Log section type update
+        activity()
+            ->performedOn($sectionType)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'code' => $sectionType->code,
+                'name' => $sectionType->name,
+            ])
+            ->log('Section type updated');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Section type updated successfully',
+            'data' => $sectionType
+        ]);
+    }
+
+    public function destroySectionType($id)
+    {
+        $sectionType = SectionType::findOrFail($id);
+
+        // Log section type deletion
+        activity()
+            ->performedOn($sectionType)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'code' => $sectionType->code,
+                'name' => $sectionType->name,
+            ])
+            ->log('Section type deleted');
+
+        $sectionType->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Section type deleted successfully'
+        ]);
     }
 }

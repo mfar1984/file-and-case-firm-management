@@ -285,6 +285,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/category/expense-category', [App\Http\Controllers\CategoryController::class, 'storeExpenseCategory'])->name('settings.category.expense-category.store');
     Route::put('/settings/category/expense-category/{expenseCategory}', [App\Http\Controllers\CategoryController::class, 'updateExpenseCategory'])->name('settings.category.expense-category.update');
     Route::delete('/settings/category/expense-category/{expenseCategory}', [App\Http\Controllers\CategoryController::class, 'destroyExpenseCategory'])->name('settings.category.expense-category.destroy');
+
+    // Section Types
+    Route::post('/settings/category/section-type', [App\Http\Controllers\CategoryController::class, 'storeSectionType'])->name('settings.category.section-type.store');
+    Route::put('/settings/category/section-type/{id}', [App\Http\Controllers\CategoryController::class, 'updateSectionType'])->name('settings.category.section-type.update');
+    Route::delete('/settings/category/section-type/{id}', [App\Http\Controllers\CategoryController::class, 'destroySectionType'])->name('settings.category.section-type.destroy');
 });
 Route::get('/settings/log', [App\Http\Controllers\ActivityLogController::class, 'index'])->name('settings.log');
 Route::get('/settings/log/data', [App\Http\Controllers\ActivityLogController::class, 'getLogs'])->name('settings.log.data');
