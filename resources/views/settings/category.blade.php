@@ -5,6 +5,8 @@
 @endsection
 
 @section('content')
+    <script id="sectionTypesJson" type="application/json">@json($sectionTypes)</script>
+
 <div class="px-4 md:px-6 pt-4 md:pt-6 pb-6 max-w-7xl mx-auto" x-data="{
     showTypeModal: false,
     showTaxCategoryModal: false,
@@ -36,8 +38,23 @@
         editPayeeForm: { id: '', name: '', category: '', address: '', contact_person: '', phone: '', email: '', status: '1' },
     expenseCategoryForm: { name: '', description: '', status: 'active', sort_order: 0 },
     editExpenseCategoryForm: { id: '', name: '', description: '', status: 'active', sort_order: 0 },
-    sectionTypeForm: { code: '', name: '', description: '', status: 'active' },
-    editSectionTypeForm: { id: '', code: '', name: '', description: '', status: 'active' },
+    sectionTypeForm: {
+        code: '',
+        name: '',
+        description: '',
+        status: 'active',
+        documents: [{ document_name: '', document_code: '' }],
+        customFields: [{ field_name: '', field_type: 'text', placeholder: '', is_required: false, field_options: [], conditional_document_code: '' }]
+    },
+    editSectionTypeForm: {
+        id: '',
+        code: '',
+        name: '',
+        description: '',
+        status: 'active',
+        documents: [],
+        customFields: []
+    },
 
     openEditTypeModal(id, code, description, status) {
         this.editTypeForm = { id: id, code: code, description: description, status: status };
@@ -75,9 +92,56 @@
     },
 
     openEditSectionTypeModal(id, code, name, description, status) {
-        this.editSectionTypeForm = { id: id, code: code, name: name, description: description, status: status };
+        // Find the section type data from the existing data
+        const sectionTypes = JSON.parse(document.getElementById('sectionTypesJson').textContent);
+        const sectionType = sectionTypes.find(section => section.id == id);
+
+
+
+        this.editSectionTypeForm = {
+            id: id,
+            code: code,
+            name: name,
+            description: description,
+            status: status,
+            documents: sectionType && sectionType.initiating_documents ?
+                sectionType.initiating_documents.map(doc => ({
+                    document_name: doc.document_name,
+                    document_code: doc.document_code
+                })) : [{ document_name: '', document_code: '' }],
+            customFields: sectionType && sectionType.custom_fields ?
+                sectionType.custom_fields.map(field => ({
+                    field_name: field.field_name,
+                    field_type: field.field_type,
+                    placeholder: field.placeholder || '',
+                    is_required: field.is_required || false,
+                    field_options: field.field_options ? (Array.isArray(field.field_options) ? field.field_options : []) : [],
+                    conditional_document_code: field.conditional_document_code || ''
+                })) : [{ field_name: '', field_type: 'text', placeholder: '', is_required: false, field_options: [], conditional_document_code: '' }]
+        };
+
+
+
+
+
         this.showEditSectionTypeModal = true;
+
+        // Force refresh dropdown values after modal is shown
+        setTimeout(() => {
+            this.editSectionTypeForm.customFields.forEach((field, index) => {
+                if (field.conditional_document_code) {
+                    // Force re-assignment to trigger Alpine.js reactivity
+                    const currentValue = field.conditional_document_code;
+                    field.conditional_document_code = '';
+                    setTimeout(() => {
+                        field.conditional_document_code = currentValue;
+                    }, 50);
+                }
+            });
+        }, 100);
     },
+
+
 
     submitTypeForm() {
         const formData = new FormData();
@@ -1344,44 +1408,138 @@
 
     <!-- Add Section Type Modal -->
     <div x-show="showSectionTypeModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" x-cloak>
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 xl:w-2/3 shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
             <div class="mt-3">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-900">Add Section Type</h3>
-                    <button @click="showSectionTypeModal = false" class="text-gray-400 hover:text-gray-600">
-                        <span class="material-icons">close</span>
-                    </button>
+                <!-- Modal Title with Icon -->
+                <div class="flex items-center gap-x-2 mb-6 pl-1">
+                    <span class="material-icons text-purple-600 text-xl">account_tree</span>
+                    <h3 class="text-lg font-semibold text-gray-900">Add Section Type</h3>
+                    <div class="ml-auto">
+                        <button @click="showSectionTypeModal = false" class="text-gray-400 hover:text-gray-600">
+                            <span class="material-icons">close</span>
+                        </button>
+                    </div>
                 </div>
-                <form id="sectionTypeForm" @submit.prevent="submitSectionTypeForm()">
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Code *</label>
-                        <input type="text" name="code" x-model="sectionTypeForm.code" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" required maxlength="10">
+                <div class="border-b border-gray-200 mb-6"></div>
+
+                <form id="sectionTypeForm" @submit.prevent="submitSectionTypeForm()" class="space-y-4">
+                    <!-- Basic Information -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-2">Code *</label>
+                            <input type="text" name="code" x-model="sectionTypeForm.code" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-purple-500" required maxlength="10" placeholder="e.g., CA, CR, CVY" style="border-radius: 2px !important;">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-2">Status *</label>
+                            <select name="status" x-model="sectionTypeForm.status" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-purple-500" required style="border-radius: 2px !important;">
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-medium text-gray-700 mb-2">Name *</label>
+                            <input type="text" name="name" x-model="sectionTypeForm.name" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-purple-500" required maxlength="100" placeholder="e.g., Civil Action, Criminal, Conveyancing" style="border-radius: 2px !important;">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-medium text-gray-700 mb-2">Description</label>
+                            <textarea name="description" x-model="sectionTypeForm.description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-purple-500" maxlength="500" placeholder="Detailed description of this section type" style="border-radius: 2px !important;"></textarea>
+                        </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Name *</label>
-                        <input type="text" name="name" x-model="sectionTypeForm.name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" required maxlength="100">
+                    <!-- Case Initiating Documents -->
+                    <div class="border-t border-gray-200 pt-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <label class="block text-xs font-medium text-gray-600">Case Initiating Documents</label>
+                            <button type="button" @click="sectionTypeForm.documents.push({ document_name: '', document_code: '' })" class="text-purple-600 hover:text-purple-700 text-xs font-medium flex items-center">
+                                <span class="material-icons text-xs mr-1">add_circle_outline</span> Add Document
+                            </button>
+                        </div>
+                        <template x-for="(doc, index) in sectionTypeForm.documents" :key="index">
+                            <div class="flex space-x-2 mb-2 items-center">
+                                <input type="text" x-model="doc.document_name" placeholder="Document Name (e.g., Writ of Summons)" class="w-1/2 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" style="border-radius: 2px !important;">
+                                <input type="text" x-model="doc.document_code" placeholder="Code (e.g., WOS)" class="w-1/2 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" style="border-radius: 2px !important;">
+                                <button type="button" @click="sectionTypeForm.documents.splice(index, 1)" x-show="sectionTypeForm.documents.length > 1" class="text-red-500 hover:text-red-700">
+                                    <span class="material-icons text-sm">remove_circle_outline</span>
+                                </button>
+                            </div>
+                        </template>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Description</label>
-                        <textarea name="description" x-model="sectionTypeForm.description" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" maxlength="500"></textarea>
+                    <!-- Custom Fields -->
+                    <div class="border-t border-gray-200 pt-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <label class="block text-xs font-medium text-gray-600">Custom Fields</label>
+                            <button type="button" @click="sectionTypeForm.customFields.push({ field_name: '', field_type: 'text', placeholder: '', is_required: false, field_options: [], conditional_document_code: '' })" class="text-purple-600 hover:text-purple-700 text-xs font-medium flex items-center">
+                                <span class="material-icons text-xs mr-1">add_circle_outline</span> Add Custom Field
+                            </button>
+                        </div>
+                        <template x-for="(field, index) in sectionTypeForm.customFields" :key="index">
+                            <div class="border border-gray-200 rounded p-3 mb-3" style="border-radius: 2px !important;">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                                    <input type="text" x-model="field.field_name" placeholder="Field Name (e.g., Total Claim)" class="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" style="border-radius: 2px !important;">
+                                    <select x-model="field.field_type" class="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" style="border-radius: 2px !important;">
+                                        <option value="text">Text</option>
+                                        <option value="number">Number</option>
+                                        <option value="dropdown">Dropdown</option>
+                                        <option value="checkbox">Checkbox</option>
+                                        <option value="date">Date</option>
+                                        <option value="time">Time</option>
+                                        <option value="datetime">Date & Time</option>
+                                    </select>
+                                    <input type="text" x-model="field.placeholder" placeholder="Placeholder text" class="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" style="border-radius: 2px !important;">
+                                </div>
+                                <!-- Conditional Document Code -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Show Only When Document Selected</label>
+                                        <select x-model="field.conditional_document_code"
+                                                x-init="$nextTick(() => { $el.value = field.conditional_document_code || ''; })"
+                                                class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" style="border-radius: 2px !important;">
+                                            <option value="">Always Show (No Condition)</option>
+                                            <template x-for="doc in sectionTypeForm.documents" :key="doc.document_code">
+                                                <option x-show="doc.document_code" :value="doc.document_code" x-text="doc.document_name + ' (' + doc.document_code + ')'"></option>
+                                            </template>
+                                        </select>
+                                        <p class="text-xs text-gray-500 mt-1">Field will only appear when the selected document is chosen in case creation</p>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <label class="flex items-center text-xs">
+                                        <input type="checkbox" x-model="field.is_required" class="mr-1 rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                                        Required Field
+                                    </label>
+                                    <button type="button" @click="sectionTypeForm.customFields.splice(index, 1)" x-show="sectionTypeForm.customFields.length > 1" class="text-red-500 hover:text-red-700">
+                                        <span class="material-icons text-sm">remove_circle_outline</span>
+                                    </button>
+                                </div>
+                                <!-- Dropdown Options (only show for dropdown type) -->
+                                <div x-show="field.field_type === 'dropdown'" class="mt-2">
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Dropdown Options</label>
+                                    <template x-for="(option, optIndex) in field.field_options" :key="optIndex">
+                                        <div class="flex space-x-2 mb-1 items-center">
+                                            <input type="text" x-model="field.field_options[optIndex]" placeholder="Option value" class="flex-1 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" style="border-radius: 2px !important;">
+                                            <button type="button" @click="field.field_options.splice(optIndex, 1)" class="text-red-500 hover:text-red-700">
+                                                <span class="material-icons text-xs">remove</span>
+                                            </button>
+                                        </div>
+                                    </template>
+                                    <button type="button" @click="field.field_options.push('')" class="text-purple-600 hover:text-purple-700 text-xs font-medium flex items-center mt-1">
+                                        <span class="material-icons text-xs mr-1">add</span> Add Option
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Status *</label>
-                        <select name="status" x-model="sectionTypeForm.status" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" required>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
-                    </div>
-
-                    <div class="flex justify-end space-x-3">
-                        <button type="button" @click="showSectionTypeModal = false" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">
+                    <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+                        <button type="button" @click="showSectionTypeModal = false" class="px-4 py-2 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-sm hover:bg-gray-200" style="border-radius: 2px !important;">
                             Cancel
                         </button>
-                        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-md hover:bg-purple-700">
-                            Create
+                        <button type="submit" class="px-4 py-2 text-xs font-medium text-white bg-purple-600 border border-transparent rounded-sm hover:bg-purple-700" style="border-radius: 2px !important;">
+                            Create Section Type
                         </button>
                     </div>
                 </form>
@@ -1391,47 +1549,141 @@
 
     <!-- Edit Section Type Modal -->
     <div x-show="showEditSectionTypeModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" x-cloak>
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 xl:w-2/3 shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
             <div class="mt-3">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-900">Edit Section Type</h3>
-                    <button @click="showEditSectionTypeModal = false" class="text-gray-400 hover:text-gray-600">
-                        <span class="material-icons">close</span>
-                    </button>
+                <!-- Modal Title with Icon -->
+                <div class="flex items-center gap-x-2 mb-6 pl-1">
+                    <span class="material-icons text-purple-600 text-xl">edit</span>
+                    <h3 class="text-lg font-semibold text-gray-900">Edit Section Type</h3>
+                    <div class="ml-auto">
+                        <button @click="showEditSectionTypeModal = false" class="text-gray-400 hover:text-gray-600">
+                            <span class="material-icons">close</span>
+                        </button>
+                    </div>
                 </div>
-                <form id="editSectionTypeForm" @submit.prevent="submitEditSectionTypeForm()">
+                <div class="border-b border-gray-200 mb-6"></div>
+
+                <form id="editSectionTypeForm" @submit.prevent="submitEditSectionTypeForm()" class="space-y-4">
                     <input type="hidden" name="section_type_id" x-model="editSectionTypeForm.id">
                     <input type="hidden" name="_method" value="PUT">
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Code *</label>
-                        <input type="text" name="code" x-model="editSectionTypeForm.code" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" required maxlength="10">
+                    <!-- Basic Information -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-2">Code *</label>
+                            <input type="text" name="code" x-model="editSectionTypeForm.code" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-purple-500" required maxlength="10" placeholder="e.g., CA, CR, CVY" style="border-radius: 2px !important;">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-2">Status *</label>
+                            <select name="status" x-model="editSectionTypeForm.status" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-purple-500" required style="border-radius: 2px !important;">
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-medium text-gray-700 mb-2">Name *</label>
+                            <input type="text" name="name" x-model="editSectionTypeForm.name" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-purple-500" required maxlength="100" placeholder="e.g., Civil Action, Criminal, Conveyancing" style="border-radius: 2px !important;">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-medium text-gray-700 mb-2">Description</label>
+                            <textarea name="description" x-model="editSectionTypeForm.description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-purple-500" maxlength="500" placeholder="Detailed description of this section type" style="border-radius: 2px !important;"></textarea>
+                        </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Name *</label>
-                        <input type="text" name="name" x-model="editSectionTypeForm.name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" required maxlength="100">
+                    <!-- Case Initiating Documents -->
+                    <div class="border-t border-gray-200 pt-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <label class="block text-xs font-medium text-gray-600">Case Initiating Documents</label>
+                            <button type="button" @click="editSectionTypeForm.documents.push({ document_name: '', document_code: '' })" class="text-purple-600 hover:text-purple-700 text-xs font-medium flex items-center">
+                                <span class="material-icons text-xs mr-1">add_circle_outline</span> Add Document
+                            </button>
+                        </div>
+                        <template x-for="(doc, index) in editSectionTypeForm.documents" :key="index">
+                            <div class="flex space-x-2 mb-2 items-center">
+                                <input type="text" x-model="doc.document_name" placeholder="Document Name (e.g., Writ of Summons)" class="w-1/2 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" style="border-radius: 2px !important;">
+                                <input type="text" x-model="doc.document_code" placeholder="Code (e.g., WOS)" class="w-1/2 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" style="border-radius: 2px !important;">
+                                <button type="button" @click="editSectionTypeForm.documents.splice(index, 1)" x-show="editSectionTypeForm.documents.length > 1" class="text-red-500 hover:text-red-700">
+                                    <span class="material-icons text-sm">remove_circle_outline</span>
+                                </button>
+                            </div>
+                        </template>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Description</label>
-                        <textarea name="description" x-model="editSectionTypeForm.description" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" maxlength="500"></textarea>
+                    <!-- Custom Fields -->
+                    <div class="border-t border-gray-200 pt-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <label class="block text-xs font-medium text-gray-600">Custom Fields</label>
+                            <button type="button" @click="editSectionTypeForm.customFields.push({ field_name: '', field_type: 'text', placeholder: '', is_required: false, field_options: [], conditional_document_code: '' })" class="text-purple-600 hover:text-purple-700 text-xs font-medium flex items-center">
+                                <span class="material-icons text-xs mr-1">add_circle_outline</span> Add Custom Field
+                            </button>
+                        </div>
+                        <template x-for="(field, index) in editSectionTypeForm.customFields" :key="index">
+                            <div class="border border-gray-200 rounded p-3 mb-3" style="border-radius: 2px !important;">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                                    <input type="text" x-model="field.field_name" placeholder="Field Name (e.g., Total Claim)" class="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" style="border-radius: 2px !important;">
+                                    <select x-model="field.field_type" class="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" style="border-radius: 2px !important;">
+                                        <option value="text">Text</option>
+                                        <option value="number">Number</option>
+                                        <option value="dropdown">Dropdown</option>
+                                        <option value="checkbox">Checkbox</option>
+                                        <option value="date">Date</option>
+                                        <option value="time">Time</option>
+                                        <option value="datetime">Date & Time</option>
+                                    </select>
+                                    <input type="text" x-model="field.placeholder" placeholder="Placeholder text" class="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" style="border-radius: 2px !important;">
+                                </div>
+                                <!-- Conditional Document Code -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Show Only When Document Selected</label>
+                                        <select x-model="field.conditional_document_code"
+                                                x-init="$nextTick(() => { $el.value = field.conditional_document_code || ''; })"
+                                                class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" style="border-radius: 2px !important;">
+                                            <option value="">Always Show (No Condition)</option>
+                                            <template x-for="doc in editSectionTypeForm.documents" :key="doc.document_code">
+                                                <option x-show="doc.document_code" :value="doc.document_code" x-text="doc.document_name + ' (' + doc.document_code + ')'"></option>
+                                            </template>
+                                        </select>
+                                        <p class="text-xs text-gray-500 mt-1">Field will only appear when the selected document is chosen in case creation</p>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <label class="flex items-center text-xs">
+                                        <input type="checkbox" x-model="field.is_required" class="mr-1 rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                                        Required Field
+                                    </label>
+                                    <button type="button" @click="editSectionTypeForm.customFields.splice(index, 1)" x-show="editSectionTypeForm.customFields.length > 1" class="text-red-500 hover:text-red-700">
+                                        <span class="material-icons text-sm">remove_circle_outline</span>
+                                    </button>
+                                </div>
+                                <!-- Dropdown Options (only show for dropdown type) -->
+                                <div x-show="field.field_type === 'dropdown'" class="mt-2">
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Dropdown Options</label>
+                                    <template x-for="(option, optIndex) in field.field_options" :key="optIndex">
+                                        <div class="flex space-x-2 mb-1 items-center">
+                                            <input type="text" x-model="field.field_options[optIndex]" placeholder="Option value" class="flex-1 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" style="border-radius: 2px !important;">
+                                            <button type="button" @click="field.field_options.splice(optIndex, 1)" class="text-red-500 hover:text-red-700">
+                                                <span class="material-icons text-xs">remove</span>
+                                            </button>
+                                        </div>
+                                    </template>
+                                    <button type="button" @click="field.field_options.push('')" class="text-purple-600 hover:text-purple-700 text-xs font-medium flex items-center mt-1">
+                                        <span class="material-icons text-xs mr-1">add</span> Add Option
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Status *</label>
-                        <select name="status" x-model="editSectionTypeForm.status" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" required>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
-                    </div>
-
-                    <div class="flex justify-end space-x-3">
-                        <button type="button" @click="showEditSectionTypeModal = false" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">
+                    <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+                        <button type="button" @click="showEditSectionTypeModal = false" class="px-4 py-2 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-sm hover:bg-gray-200" style="border-radius: 2px !important;">
                             Cancel
                         </button>
-                        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-md hover:bg-purple-700">
-                            Update
+                        <button type="submit" class="px-4 py-2 text-xs font-medium text-white bg-purple-600 border border-transparent rounded-sm hover:bg-purple-700" style="border-radius: 2px !important;">
+                            Update Section Type
                         </button>
                     </div>
                 </form>
@@ -4254,19 +4506,62 @@ function deleteExpenseCategory(id) {
 
 // Section Type Functions
 function submitSectionTypeForm() {
-    const form = document.getElementById('sectionTypeForm');
-    const formData = new FormData(form);
+    // Get Alpine.js data
+    const modal = document.querySelector('[x-show="showSectionTypeModal"]');
+    const alpine = Alpine.$data(modal);
+
+    const formData = new FormData();
+    formData.append('_token', '{{ csrf_token() }}');
+    formData.append('code', alpine.sectionTypeForm.code);
+    formData.append('name', alpine.sectionTypeForm.name);
+    formData.append('description', alpine.sectionTypeForm.description);
+    formData.append('status', alpine.sectionTypeForm.status);
+
+    // Add documents data
+    alpine.sectionTypeForm.documents.forEach((doc, index) => {
+        if (doc.document_name && doc.document_code) {
+            formData.append(`documents[${index}][document_name]`, doc.document_name);
+            formData.append(`documents[${index}][document_code]`, doc.document_code);
+        }
+    });
+
+    // Add custom fields data
+    alpine.sectionTypeForm.customFields.forEach((field, index) => {
+        if (field.field_name && field.field_type) {
+            formData.append(`custom_fields[${index}][field_name]`, field.field_name);
+            formData.append(`custom_fields[${index}][field_type]`, field.field_type);
+            formData.append(`custom_fields[${index}][placeholder]`, field.placeholder || '');
+            formData.append(`custom_fields[${index}][is_required]`, field.is_required ? '1' : '0');
+            formData.append(`custom_fields[${index}][conditional_document_code]`, field.conditional_document_code || '');
+
+            // Add field options for dropdown type
+            if (field.field_type === 'dropdown' && field.field_options) {
+                field.field_options.forEach((option, optIndex) => {
+                    if (option) {
+                        formData.append(`custom_fields[${index}][field_options][${optIndex}]`, option);
+                    }
+                });
+            }
+        }
+    });
 
     fetch('{{ route("settings.category.section-type.store") }}', {
         method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        }
+        body: formData
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            // Reset form
+            alpine.sectionTypeForm = {
+                code: '',
+                name: '',
+                description: '',
+                status: 'active',
+                documents: [{ document_name: '', document_code: '' }],
+                customFields: [{ field_name: '', field_type: 'text', placeholder: '', is_required: false, field_options: [] }]
+            };
+            alpine.showSectionTypeModal = false;
             location.reload();
         } else {
             alert('Error: ' + data.message);
@@ -4279,20 +4574,62 @@ function submitSectionTypeForm() {
 }
 
 function submitEditSectionTypeForm() {
-    const form = document.getElementById('editSectionTypeForm');
-    const formData = new FormData(form);
-    const sectionTypeId = document.querySelector('input[name="section_type_id"]').value;
+    // Get Alpine.js data
+    const modal = document.querySelector('[x-show="showEditSectionTypeModal"]');
+    const alpine = Alpine.$data(modal);
+
+    const formData = new FormData();
+    formData.append('_token', '{{ csrf_token() }}');
+    formData.append('_method', 'PUT');
+    formData.append('code', alpine.editSectionTypeForm.code);
+    formData.append('name', alpine.editSectionTypeForm.name);
+    formData.append('description', alpine.editSectionTypeForm.description);
+    formData.append('status', alpine.editSectionTypeForm.status);
+
+    // Add documents data
+    alpine.editSectionTypeForm.documents.forEach((doc, index) => {
+        if (doc.document_name && doc.document_code) {
+            formData.append(`documents[${index}][document_name]`, doc.document_name);
+            formData.append(`documents[${index}][document_code]`, doc.document_code);
+            if (doc.id) {
+                formData.append(`documents[${index}][id]`, doc.id);
+            }
+        }
+    });
+
+    // Add custom fields data
+    alpine.editSectionTypeForm.customFields.forEach((field, index) => {
+        if (field.field_name && field.field_type) {
+            formData.append(`custom_fields[${index}][field_name]`, field.field_name);
+            formData.append(`custom_fields[${index}][field_type]`, field.field_type);
+            formData.append(`custom_fields[${index}][placeholder]`, field.placeholder || '');
+            formData.append(`custom_fields[${index}][is_required]`, field.is_required ? '1' : '0');
+            formData.append(`custom_fields[${index}][conditional_document_code]`, field.conditional_document_code || '');
+            if (field.id) {
+                formData.append(`custom_fields[${index}][id]`, field.id);
+            }
+
+            // Add field options for dropdown type
+            if (field.field_type === 'dropdown' && field.field_options) {
+                field.field_options.forEach((option, optIndex) => {
+                    if (option) {
+                        formData.append(`custom_fields[${index}][field_options][${optIndex}]`, option);
+                    }
+                });
+            }
+        }
+    });
+
+    const sectionTypeId = alpine.editSectionTypeForm.id;
 
     fetch(`/settings/category/section-type/${sectionTypeId}`, {
         method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        }
+        body: formData
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            alpine.showEditSectionTypeModal = false;
             location.reload();
         } else {
             alert('Error: ' + data.message);

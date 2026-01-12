@@ -13,6 +13,10 @@ use App\Models\Client;
 use App\Models\FileType;
 use App\Models\SystemSetting;
 use App\Models\Firm;
+use App\Models\SectionType;
+use App\Models\CaseInitiatingDocument;
+use App\Models\SectionCustomField;
+use App\Models\CaseCustomFieldValue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -76,7 +80,22 @@ class CaseController extends Controller
             $firms = Firm::where('id', $firmId)->get();
         }
 
-        return view('case-create', compact('partners', 'caseTypes', 'caseStatuses', 'clients', 'fileTypes', 'categoryStatuses', 'firms'));
+        // Get dynamic section data with proper firm scope handling
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $sectionTypes = SectionType::forFirm(session('current_firm_id'))->active()->ordered()->get();
+                $customFields = SectionCustomField::forFirm(session('current_firm_id'))->with('sectionType')->active()->ordered()->get();
+            } else {
+                $sectionTypes = SectionType::withoutFirmScope()->active()->ordered()->get();
+                $customFields = SectionCustomField::withoutFirmScope()->with('sectionType')->active()->ordered()->get();
+            }
+        } else {
+            $sectionTypes = SectionType::active()->ordered()->get();
+            $customFields = SectionCustomField::with('sectionType')->active()->ordered()->get();
+        }
+        $initiatingDocuments = CaseInitiatingDocument::with('sectionType')->active()->ordered()->get();
+
+        return view('case-create', compact('partners', 'caseTypes', 'caseStatuses', 'clients', 'fileTypes', 'categoryStatuses', 'firms', 'sectionTypes', 'initiatingDocuments', 'customFields'));
     }
 
     public function show($id)
@@ -119,7 +138,52 @@ class CaseController extends Controller
         // Get system settings for date/time formatting
         $systemSettings = SystemSetting::getSystemSettings();
 
-        return view('case-view', compact('case', 'systemSettings', 'caseTypes', 'eventStatuses', 'allCases', 'courtLocations'));
+        // Get custom field values for this case with proper firm scope
+        $customFieldValues = CaseCustomFieldValue::where('case_id', $case->id)->get();
+
+        // Manually load custom fields with proper firm scope
+        foreach ($customFieldValues as $value) {
+            if ($user->hasRole('Super Administrator') && $currentFirmId) {
+                $value->customField = SectionCustomField::forFirm($currentFirmId)->with('sectionType')->find($value->custom_field_id);
+            } elseif ($user->hasRole('Super Administrator') && !$currentFirmId) {
+                $value->customField = SectionCustomField::withoutFirmScope()->with('sectionType')->find($value->custom_field_id);
+            } else {
+                $value->customField = SectionCustomField::with('sectionType')->find($value->custom_field_id);
+            }
+        }
+
+        // Group by section type ID
+        $customFieldValues = $customFieldValues->filter(function($value) {
+            return $value->customField !== null;
+        })->groupBy('customField.section_type_id');
+
+        // Get section type for this case with proper firm scope
+        $sectionType = null;
+        if ($case->section) {
+            // Case section is stored as ID, not code
+            if (is_numeric($case->section)) {
+                if ($user->hasRole('Super Administrator') && $currentFirmId) {
+                    $sectionType = SectionType::forFirm($currentFirmId)->with('initiatingDocuments')->find($case->section);
+                } elseif ($user->hasRole('Super Administrator') && !$currentFirmId) {
+                    $sectionType = SectionType::withoutFirmScope()->with('initiatingDocuments')->find($case->section);
+                } else {
+                    $sectionType = SectionType::with('initiatingDocuments')->find($case->section);
+                }
+            } else {
+                // Fallback for code-based lookup
+                $sectionCode = $this->mapSectionToCode($case->section);
+                if ($user->hasRole('Super Administrator') && $currentFirmId) {
+                    $sectionType = SectionType::forFirm($currentFirmId)->with('initiatingDocuments')->where('code', $sectionCode)->first();
+                } elseif ($user->hasRole('Super Administrator') && !$currentFirmId) {
+                    $sectionType = SectionType::withoutFirmScope()->with('initiatingDocuments')->where('code', $sectionCode)->first();
+                } else {
+                    $sectionType = SectionType::with('initiatingDocuments')->where('code', $sectionCode)->first();
+                }
+            }
+        }
+
+
+        return view('case-view', compact('case', 'systemSettings', 'caseTypes', 'eventStatuses', 'allCases', 'courtLocations', 'customFieldValues', 'sectionType'));
     }
 
     public function edit($id)
@@ -201,22 +265,67 @@ class CaseController extends Controller
             $firms = Firm::where('id', $firmId)->get();
         }
 
+        // Get dynamic section data with proper firm scope
+        $user = auth()->user();
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $sectionTypes = SectionType::forFirm(session('current_firm_id'))->active()->ordered()->get();
+                $initiatingDocuments = CaseInitiatingDocument::forFirm(session('current_firm_id'))->with('sectionType')->active()->ordered()->get();
+                $customFields = SectionCustomField::forFirm(session('current_firm_id'))->with('sectionType')->active()->ordered()->get();
+            } else {
+                $sectionTypes = SectionType::withoutFirmScope()->active()->ordered()->get();
+                $initiatingDocuments = CaseInitiatingDocument::withoutFirmScope()->with('sectionType')->active()->ordered()->get();
+                $customFields = SectionCustomField::withoutFirmScope()->with('sectionType')->active()->ordered()->get();
+            }
+        } else {
+            $sectionTypes = SectionType::active()->ordered()->get();
+            $initiatingDocuments = CaseInitiatingDocument::with('sectionType')->active()->ordered()->get();
+            $customFields = SectionCustomField::with('sectionType')->active()->ordered()->get();
+        }
+
+        // Get existing custom field values for this case
+        $existingCustomFieldValues = CaseCustomFieldValue::where('case_id', $case->id)
+            ->with('customField')
+            ->get()
+            ->keyBy('custom_field_id');
+
         // Render the full create view in edit mode so all form scripts (section->documents) run properly
-        return view('case-create', compact('case', 'partners', 'caseTypes', 'caseStatuses', 'clients', 'fileTypes', 'categoryStatuses', 'firms'));
+        return view('case-create', compact('case', 'partners', 'caseTypes', 'caseStatuses', 'clients', 'fileTypes', 'categoryStatuses', 'firms', 'sectionTypes', 'initiatingDocuments', 'customFields', 'existingCustomFieldValues'));
     }
 
     public function store(Request $request)
     {
-        // Validate request with conditional rules
+        $user = auth()->user();
+        $sessionFirmId = session('current_firm_id');
+        $userFirmId = $user->firm_id;
+        $isSuperAdmin = $user->hasRole('Super Administrator');
+
+        // Validate reference data exists in current firm scope
+        $caseType = null;
+        $caseStatus = null;
+
+        if ($isSuperAdmin && $sessionFirmId) {
+            $caseType = \App\Models\CaseType::forFirm($sessionFirmId)->find($request->case_type_id);
+            $caseStatus = \App\Models\CaseStatus::forFirm($sessionFirmId)->find($request->case_status_id);
+        } elseif ($isSuperAdmin && !$sessionFirmId) {
+            $caseType = \App\Models\CaseType::withoutFirmScope()->find($request->case_type_id);
+            $caseStatus = \App\Models\CaseStatus::withoutFirmScope()->find($request->case_status_id);
+        } else {
+            $caseType = \App\Models\CaseType::find($request->case_type_id);
+            $caseStatus = \App\Models\CaseStatus::find($request->case_status_id);
+        }
+
+        // Validate request with conditional rules - fix firm scope for exists validation
+        // Note: case_ref is now auto-generated, so it's optional in request
         $rules = [
-            'case_ref' => 'required|string|max:255',
+            'case_ref' => 'nullable|string|max:255', // Changed to nullable - will be auto-generated
             'person_in_charge' => 'required|string|max:255',
             'court_ref' => 'nullable|string|max:255',
             'jurisdiction' => 'nullable|string|max:255',
             'section' => 'nullable|string|max:255',
             'initiating_document' => 'nullable|string|max:255',
-            'case_type_id' => 'required|exists:case_types,id',
-            'case_status_id' => 'required|exists:case_statuses,id',
+            'case_type_id' => 'required|integer',
+            'case_status_id' => 'required|integer',
             'judge_name' => 'nullable|string|max:255',
             'court_name' => 'nullable|string|max:255',
             'claim_amount' => 'nullable|numeric|min:0',
@@ -227,34 +336,76 @@ class CaseController extends Controller
             'others_document' => 'nullable|string|max:500',
         ];
 
-        // Conditional validation for case_title based on section
-        if ($request->section === 'conveyancing') {
-            // For conveyancing, case_title is not required (name_of_property is used instead)
-            $rules['case_title'] = 'nullable|string|max:500';
-            $rules['name_of_property'] = 'required|string|max:500';
-        } else {
-            // For other sections, case_title is required
-            $rules['case_title'] = 'required|string|max:500';
+        // Dynamic validation based on section type
+        $sectionType = null;
+        if ($request->section) {
+            $sectionType = SectionType::find($request->section);
         }
 
+        // For dynamic forms, case title comes from custom fields, not a separate field
+        // Remove case_title requirement since we use custom fields for title
+
         $request->validate($rules);
+
+        // Custom validation for case_type_id and case_status_id with firm scope
+        if (!$caseType) {
+            return back()->withInput()->withErrors(['case_type_id' => 'The selected case type is invalid or not accessible.']);
+        }
+
+        if (!$caseStatus) {
+            return back()->withInput()->withErrors(['case_status_id' => 'The selected case status is invalid or not accessible.']);
+        }
 
         try {
             DB::beginTransaction();
             
-            // Determine title based on section
-            $title = $request->case_title;
-            if ($request->section === 'conveyancing' && $request->name_of_property) {
-                $title = $request->name_of_property;
-            }
-
             // Auto-assign firm based on session context
             $user = auth()->user();
             $firmId = session('current_firm_id') ?? $user->firm_id;
 
-            // Create the case
-            $case = CourtCase::create([
-                'case_number' => $request->case_ref,
+            // Generate case number with new format: YEAR-SECTIONCODE-RUNNINGNUMBER-CLIENTABBR
+            // Example: 2025-CA-1-MFBAR
+            $caseNumber = $request->case_ref; // Use provided case_ref if exists
+
+            if (!$caseNumber) {
+                // Get first plaintiff/applicant name for abbreviation
+                $firstClientName = null;
+                if ($request->has('plaintiffs') && is_array($request->plaintiffs)) {
+                    foreach ($request->plaintiffs as $plaintiff) {
+                        if (!empty($plaintiff['name'])) {
+                            $firstClientName = $plaintiff['name'];
+                            break;
+                        }
+                    }
+                }
+
+                // Generate case number with section and client info
+                $caseNumber = CourtCase::generateCaseNumber(
+                    $request->section,      // section_type_id
+                    $firstClientName,       // client name for abbreviation
+                    $firmId                 // firm_id
+                );
+            }
+
+            // Determine title from custom fields or fallback
+            $title = 'Case ' . $caseNumber; // Use case number as default title
+
+            // Look for "Case Title" custom field
+            foreach ($request->all() as $key => $value) {
+                if (str_starts_with($key, 'custom_field_') && !empty($value)) {
+                    $fieldId = str_replace('custom_field_', '', $key);
+                    $customField = \App\Models\SectionCustomField::find($fieldId);
+                    if ($customField && strtolower($customField->field_name) === 'case title') {
+                        $title = $value;
+                        break;
+                    }
+                }
+            }
+
+            // Create the case (case_number will be auto-generated if null)
+            try {
+                $case = CourtCase::create([
+                'case_number' => $caseNumber, // Will be auto-generated by boot method if null
                 'title' => $title,
                 'description' => $request->case_description,
                 'case_type_id' => $request->case_type_id,
@@ -275,6 +426,12 @@ class CaseController extends Controller
                 'name_of_property' => $request->name_of_property,
                 'others_document' => $request->others_document,
             ]);
+
+
+
+            } catch (\Exception $e) {
+                throw $e; // Re-throw to be caught by outer try-catch
+            }
 
             // Add plaintiffs (applicants)
             if ($request->has('plaintiffs')) {
@@ -518,6 +675,9 @@ class CaseController extends Controller
                     'claim_amount' => $case->claim_amount
                 ])
                 ->log("Case {$case->case_number} created");
+
+            // Handle custom field values
+            $this->handleCustomFieldValues($case, $request);
 
             DB::commit();
 
@@ -1004,7 +1164,6 @@ class CaseController extends Controller
             // Regular users can only update cases from their firm (HasFirmScope trait handles this)
             $case = CourtCase::findOrFail($id);
         }
-
         // Validate request with conditional rules (same as store method)
         $rules = [
             'case_ref' => 'required|string|max:255',
@@ -1025,21 +1184,34 @@ class CaseController extends Controller
             'others_document' => 'nullable|string|max:500',
         ];
 
-        // Conditional validation for case_title based on section
-        if ($request->section === 'conveyancing') {
-            // For conveyancing, case_title is not required (name_of_property is used instead)
-            $rules['case_title'] = 'nullable|string|max:500';
-            $rules['name_of_property'] = 'required|string|max:500';
-        } else {
-            // For other sections, case_title is required
-            $rules['case_title'] = 'required|string|max:500';
+        // Dynamic validation based on section type (same as store method)
+        $sectionType = null;
+        if ($request->section) {
+            $sectionType = SectionType::find($request->section);
         }
+
+        // For update method, case_title is not required since form doesn't have this field
+        // Title is generated automatically from case_ref or custom fields
 
         $request->validate($rules);
 
-        // Determine title based on section (same logic as store method)
-        $title = $request->case_title;
-        if ($request->section === 'conveyancing' && $request->name_of_property) {
+        // Determine title from custom fields or fallback (same logic as store method)
+        $title = 'Case ' . $request->case_ref; // Default fallback
+
+        // Look for "Case Title" custom field
+        foreach ($request->all() as $key => $value) {
+            if (str_starts_with($key, 'custom_field_') && !empty($value)) {
+                $fieldId = str_replace('custom_field_', '', $key);
+                $customField = \App\Models\SectionCustomField::find($fieldId);
+                if ($customField && strtolower($customField->field_name) === 'case title') {
+                    $title = $value;
+                    break;
+                }
+            }
+        }
+
+        // For conveyancing, use name_of_property if available
+        if ($sectionType && strtolower($sectionType->code) === 'conveyancing' && $request->name_of_property) {
             $title = $request->name_of_property;
         }
 
@@ -1225,6 +1397,9 @@ class CaseController extends Controller
                 }
             }
 
+            // Handle custom field values
+            $this->handleCustomFieldValues($case, $request);
+
             DB::commit();
 
             return redirect()->route('case.show', $case->id)->with('success', 'Case updated successfully');
@@ -1272,6 +1447,128 @@ class CaseController extends Controller
                 return $case->parties->where('party_type', 'plaintiff')->first() ??
                        $case->parties->where('party_type', 'applicant')->first() ??
                        $case->parties->first();
+        }
+    }
+
+    /**
+     * Handle custom field values for case creation/update
+     */
+    private function handleCustomFieldValues($case, $request)
+    {
+        // Get section type to determine which custom fields to process
+        if (!$request->section) {
+            return;
+        }
+
+        // Try to get section type by ID first, then by code for backward compatibility
+        $sectionType = null;
+        $user = auth()->user();
+
+        if (is_numeric($request->section)) {
+            if ($user->hasRole('Super Administrator')) {
+                if (session('current_firm_id')) {
+                    $sectionType = SectionType::forFirm(session('current_firm_id'))->find($request->section);
+                } else {
+                    $sectionType = SectionType::withoutFirmScope()->find($request->section);
+                }
+            } else {
+                $sectionType = SectionType::find($request->section);
+            }
+        } else {
+            // Backward compatibility: find by code
+            if ($user->hasRole('Super Administrator')) {
+                if (session('current_firm_id')) {
+                    $sectionType = SectionType::forFirm(session('current_firm_id'))->where('code', $this->mapSectionToCode($request->section))->first();
+                } else {
+                    $sectionType = SectionType::withoutFirmScope()->where('code', $this->mapSectionToCode($request->section))->first();
+                }
+            } else {
+                $sectionType = SectionType::where('code', $this->mapSectionToCode($request->section))->first();
+            }
+        }
+
+        if (!$sectionType) {
+            return;
+        }
+
+        // Get active custom fields for this section with proper firm scope
+        $user = auth()->user();
+        if ($user->hasRole('Super Administrator')) {
+            if (session('current_firm_id')) {
+                $customFields = SectionCustomField::forFirm(session('current_firm_id'))
+                    ->where('section_type_id', $sectionType->id)
+                    ->where('status', 'active')
+                    ->get();
+            } else {
+                $customFields = SectionCustomField::withoutFirmScope()
+                    ->where('section_type_id', $sectionType->id)
+                    ->where('status', 'active')
+                    ->get();
+            }
+        } else {
+            $customFields = SectionCustomField::where('section_type_id', $sectionType->id)
+                ->where('status', 'active')
+                ->get();
+        }
+
+        foreach ($customFields as $customField) {
+            $fieldKey = 'custom_field_' . $customField->id;
+            $fieldValue = $request->input($fieldKey);
+
+            // Skip if no value provided and field is not required
+            if (empty($fieldValue) && !$customField->is_required) {
+                continue;
+            }
+
+            // Format value based on field type
+            $formattedValue = $this->formatCustomFieldValue($fieldValue, $customField->field_type);
+
+            // Update or create custom field value
+            CaseCustomFieldValue::updateOrCreate(
+                [
+                    'case_id' => $case->id,
+                    'custom_field_id' => $customField->id,
+                ],
+                [
+                    'field_value' => $formattedValue,
+                ]
+            );
+        }
+    }
+
+    /**
+     * Map section form value to section type code
+     */
+    private function mapSectionToCode($section)
+    {
+        $mapping = [
+            'civil' => 'CA',
+            'criminal' => 'CR',
+            'conveyancing' => 'CVY',
+            'probate' => 'PB',
+        ];
+
+        return $mapping[$section] ?? $section;
+    }
+
+    /**
+     * Format custom field value based on field type
+     */
+    private function formatCustomFieldValue($value, $fieldType)
+    {
+        switch ($fieldType) {
+            case 'number':
+                return is_numeric($value) ? (float) $value : null;
+            case 'date':
+                return $value ? date('Y-m-d', strtotime($value)) : null;
+            case 'time':
+                return $value ? date('H:i:s', strtotime($value)) : null;
+            case 'datetime':
+                return $value ? date('Y-m-d H:i:s', strtotime($value)) : null;
+            case 'checkbox':
+                return is_array($value) ? json_encode($value) : $value;
+            default:
+                return $value;
         }
     }
 }

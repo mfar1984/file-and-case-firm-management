@@ -23,3 +23,10 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 sijil/
+
+# Custom ignores
+.augment/
+.cursor/
+.kiro/
+MD/
+Website-old/

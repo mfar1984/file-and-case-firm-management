@@ -23,6 +23,11 @@ class SectionType extends Model
         'status' => 'string',
     ];
 
+    /**
+     * The relationships that should always be loaded.
+     */
+    protected $with = ['initiatingDocuments', 'customFields'];
+
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
@@ -59,5 +64,51 @@ class SectionType extends Model
     public function getStatusDisplayAttribute()
     {
         return ucfirst($this->status);
+    }
+
+    /**
+     * Relationship with CaseInitiatingDocuments
+     */
+    public function initiatingDocuments()
+    {
+        return $this->hasMany(CaseInitiatingDocument::class);
+    }
+
+    /**
+     * Relationship with active CaseInitiatingDocuments
+     */
+    public function activeInitiatingDocuments()
+    {
+        return $this->hasMany(CaseInitiatingDocument::class)->active()->ordered();
+    }
+
+    /**
+     * Relationship with SectionCustomFields
+     */
+    public function customFields()
+    {
+        return $this->hasMany(SectionCustomField::class);
+    }
+
+    /**
+     * Relationship with active SectionCustomFields
+     */
+    public function activeCustomFields()
+    {
+        return $this->hasMany(SectionCustomField::class)->active()->ordered();
+    }
+
+    /**
+     * Get form value for backward compatibility
+     */
+    public function getFormValueAttribute()
+    {
+        return match($this->code) {
+            'CA' => 'civil',
+            'CR' => 'criminal',
+            'CVY' => 'conveyancing',
+            'PB' => 'probate',
+            default => strtolower($this->code),
+        };
     }
 }

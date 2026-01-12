@@ -203,6 +203,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings/weather/get', [App\Http\Controllers\WeatherSettingsController::class, 'get'])->name('settings.weather.get');
     Route::post('/settings/weather', [App\Http\Controllers\WeatherSettingsController::class, 'store'])->name('settings.weather.store');
     Route::post('/settings/weather/test', [App\Http\Controllers\WeatherSettingsController::class, 'testApi'])->name('settings.weather.test');
+
+    // API Security Settings
+    Route::get('/settings/api-security/get', [App\Http\Controllers\ApiSecuritySettingsController::class, 'get'])->name('settings.api-security.get');
+    Route::post('/settings/api-security', [App\Http\Controllers\ApiSecuritySettingsController::class, 'store'])->name('settings.api-security.store');
 });
 
 // Webhook Routes (CSRF excluded)
@@ -290,6 +294,18 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/category/section-type', [App\Http\Controllers\CategoryController::class, 'storeSectionType'])->name('settings.category.section-type.store');
     Route::put('/settings/category/section-type/{id}', [App\Http\Controllers\CategoryController::class, 'updateSectionType'])->name('settings.category.section-type.update');
     Route::delete('/settings/category/section-type/{id}', [App\Http\Controllers\CategoryController::class, 'destroySectionType'])->name('settings.category.section-type.destroy');
+
+    // Case Initiating Documents
+    Route::get('/settings/category/section-type/{sectionTypeId}/documents', [App\Http\Controllers\CategoryController::class, 'getDocuments'])->name('settings.category.documents.get');
+    Route::post('/settings/category/documents', [App\Http\Controllers\CategoryController::class, 'storeDocument'])->name('settings.category.documents.store');
+    Route::put('/settings/category/documents/{id}', [App\Http\Controllers\CategoryController::class, 'updateDocument'])->name('settings.category.documents.update');
+    Route::delete('/settings/category/documents/{id}', [App\Http\Controllers\CategoryController::class, 'destroyDocument'])->name('settings.category.documents.destroy');
+
+    // Section Custom Fields
+    Route::get('/settings/category/section-type/{sectionTypeId}/custom-fields', [App\Http\Controllers\CategoryController::class, 'getCustomFields'])->name('settings.category.custom-fields.get');
+    Route::post('/settings/category/custom-fields', [App\Http\Controllers\CategoryController::class, 'storeCustomField'])->name('settings.category.custom-fields.store');
+    Route::put('/settings/category/custom-fields/{id}', [App\Http\Controllers\CategoryController::class, 'updateCustomField'])->name('settings.category.custom-fields.update');
+    Route::delete('/settings/category/custom-fields/{id}', [App\Http\Controllers\CategoryController::class, 'destroyCustomField'])->name('settings.category.custom-fields.destroy');
 });
 Route::get('/settings/log', [App\Http\Controllers\ActivityLogController::class, 'index'])->name('settings.log');
 Route::get('/settings/log/data', [App\Http\Controllers\ActivityLogController::class, 'getLogs'])->name('settings.log.data');

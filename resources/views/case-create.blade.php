@@ -66,7 +66,6 @@
                         'status' => $f->status,
                     ];
                 })->values() : []),
-                totalClaim: @js(isset($case) ? (float)($case->claim_amount ?? 0) : 0),
                 showPlaintiffDropdown: false,
                 showDefendantDropdown: false,
                 showPartnerDropdown: false,
@@ -290,8 +289,22 @@
                     <p class="text-xs text-gray-600 mb-4 ml-6">Enter the basic case details and court information</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-2">Case Reference *</label>
-                            <input type="text" name="case_ref" value="{{ old('case_ref', $case->case_number ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., 2025-001" required>
+                            <label class="block text-xs font-medium text-gray-700 mb-2">
+                                Case Reference
+                                @if(!isset($case))
+                                    <span class="text-green-600 text-xs">(Auto-Generated)</span>
+                                @else
+                                    *
+                                @endif
+                            </label>
+                            @if(isset($case))
+                                <!-- Edit mode: show existing case number (editable) -->
+                                <input type="text" name="case_ref" value="{{ old('case_ref', $case->case_number ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., 2025-11-A7JG8K" required>
+                            @else
+                                <!-- Create mode: auto-generated, readonly with green background -->
+                                <input type="text" name="case_ref" value="Auto-Generated: {{ date('Y-m') }}-XXXXXX" readonly class="w-full px-3 py-2 border border-green-300 bg-green-50 rounded-sm text-xs text-green-700 font-medium cursor-not-allowed" placeholder="Will be auto-generated">
+                                <p class="text-xs text-green-600 mt-1">Format: YEAR-MONTH-6UNIQUEID (e.g., 2025-11-A7JG8K)</p>
+                            @endif
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Person In Charge *</label>
@@ -498,21 +511,18 @@
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Section</label>
                             <select id="section-select" name="section" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                @php 
-                                    $sec = old('section', $case->section ?? ''); 
-                                    if (!$sec && isset($case)) {
-                                        $desc = strtolower($case->caseType->description ?? '');
-                                        if (str_contains($desc, 'criminal')) { $sec = 'criminal'; }
-                                        elseif (str_contains($desc, 'civil')) { $sec = 'civil'; }
-                                        elseif (str_contains($desc, 'convey')) { $sec = 'conveyancing'; }
-                                        elseif (str_contains($desc, 'probate') || str_contains($desc,'administration')) { $sec = 'probate'; }
-                                    }
+                                @php
+                                    $sec = old('section', $case->section ?? '');
                                 @endphp
                                 <option value="">Select section...</option>
-                                <option value="civil" {{ $sec=='civil' ? 'selected' : '' }}>Civil</option>
-                                <option value="criminal" {{ $sec=='criminal' ? 'selected' : '' }}>Criminal</option>
-                                <option value="conveyancing" {{ $sec=='conveyancing' ? 'selected' : '' }}>Conveyancing</option>
-                                <option value="probate" {{ $sec=='probate' ? 'selected' : '' }}>Probate / Letter of Administration</option>
+                                @foreach($sectionTypes as $sectionType)
+                                    <option value="{{ $sectionType->id }}"
+                                            data-code="{{ $sectionType->code }}"
+                                            data-name="{{ $sectionType->name }}"
+                                            {{ $sec==$sectionType->id || $sec==$sectionType->form_value ? 'selected' : '' }}>
+                                        {{ $sectionType->name }}
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
                         <div>
@@ -521,28 +531,11 @@
                                 <option value="">Please select a section first...</option>
                             </select>
                         </div>
-                        <!-- Others Document Field (only when Probate section and "Others" is selected in Case Initiating Documents) -->
-                        <div id="others-document-field" style="display: none;">
-                            <label class="block text-xs font-medium text-gray-700 mb-2">Others</label>
-                            <input type="text" name="others_document" value="{{ old('others_document', $case->others_document ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Specify other document">
+                        <!-- Dynamic Custom Fields Container -->
+                        <div id="custom-fields-container" class="contents">
+                            <!-- Custom fields will be dynamically inserted here as grid items -->
                         </div>
-                        <!-- Name of Property Field (only for Conveyancing) -->
-                        <div id="property-name-field" style="display: none;">
-                            <label class="block text-xs font-medium text-gray-700 mb-2">Name of Property</label>
-                            <input type="text" name="name_of_property" value="{{ old('name_of_property', $case->name_of_property ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter property name">
-                        </div>
-                        <div id="claim-amount-field">
-                            <label class="block text-xs font-medium text-gray-700 mb-2" id="claim-amount-label">Total Claim (RM) *</label>
-                            <input type="number" name="claim_amount" step="0.01" x-model="totalClaim" value="{{ old('claim_amount', $case->claim_amount ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="0.00" required>
-                        </div>
-                        <div id="case-title-field">
-                            <label class="block text-xs font-medium text-gray-700 mb-2">Case Title *</label>
-                            <input type="text" name="case_title" value="{{ old('case_title', $case->title ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter case title" required>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-2">Case Description</label>
-                            <textarea name="case_description" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Enter case description">{{ old('case_description', $case->description ?? '') }}</textarea>
-                        </div>
+
                     </div>
                 </div>
 
@@ -1032,6 +1025,7 @@
                     <a href="{{ route('case.index') }}" class="w-full md:w-auto px-3 py-1.5 text-gray-600 border border-gray-300 rounded-sm text-xs font-medium hover:bg-gray-50 text-center">
                         Cancel
                     </a>
+
                     <button type="submit" class="w-full md:w-auto px-3 py-1.5 bg-blue-600 text-white rounded-sm text-xs font-medium hover:bg-blue-700">
                         {{ isset($case) ? 'Update Case' : 'Create Case' }}
                     </button>
@@ -1051,45 +1045,60 @@
         const sectionSelect = document.getElementById('section-select');
         const documentsSelect = document.getElementById('documents-select');
         const courtLocationSelect = document.querySelector('select[name="court_name"]');
-        const claimAmountField = document.getElementById('claim-amount-field');
-        const claimAmountInput = claimAmountField ? claimAmountField.querySelector('input[name="claim_amount"]') : null;
-        const savedClaimAmount = claimAmountInput ? claimAmountInput.value : '';
+
         
-        const documentOptions = {
-            civil: [
-                { value: 'originating_summons', text: 'Originating Summons' },
-                { value: 'judgment_debtor_summons', text: 'Judgment Debtor Summons' },
-                { value: 'writ_of_execution', text: 'Writ of Execution' },
-                { value: 'writ_of_summons', text: 'Writ of Summons' },
-                { value: 'citizenship_investigation_report', text: 'Citizenship Investigation Report' }
-            ],
-            criminal: [
-                { value: 'charge_sheet_alternative', text: 'Charge Sheet / Alternative Charge' },
-                { value: 'criminal_application_motion', text: 'Criminal Application / Motion' },
-                { value: 'summons_charge_sheet', text: 'Summons and Charge Sheet / Alternative Charge' },
-                { value: 'death_investigation_report', text: 'Death Investigation Report (Coroner)' }
-            ],
-            conveyancing: [
-                { value: 'letter_offer', text: 'Letter Offer' },
-                { value: 'sale_purchase_agreement', text: 'Sale & Purchase Agreement' },
-                { value: 'loan_agreement', text: 'Loan Agreement/ Facility Agreement' }
-            ],
-            probate: [
-                { value: 'originating_summons_exparte', text: 'Originating Summons (Ex-Parte)' },
-                { value: 'form_p', text: 'Form P' },
-                { value: 'others', text: 'Others' }
-            ]
+        // Dynamic section types data from backend
+        const sectionTypesData = {
+            @foreach($sectionTypes as $sectionType)
+                {{ $sectionType->id }}: {
+                    id: {{ $sectionType->id }},
+                    code: '{{ $sectionType->code }}',
+                    name: '{{ $sectionType->name }}',
+                    form_value: '{{ $sectionType->form_value }}',
+                    documents: [
+                        @foreach($initiatingDocuments->where('section_type_id', $sectionType->id) as $document)
+                            {
+                                id: {{ $document->id }},
+                                value: '{{ $document->document_code }}',
+                                text: {!! json_encode($document->document_name) !!},
+                                code: '{{ $document->document_code }}'
+                            },
+                        @endforeach
+                    ],
+                    customFields: [
+                        @foreach($customFields->where('section_type_id', $sectionType->id) as $customField)
+                            {
+                                id: {{ $customField->id }},
+                                name: '{{ $customField->field_name }}',
+                                type: '{{ $customField->field_type }}',
+                                placeholder: '{{ $customField->placeholder }}',
+                                required: {{ $customField->is_required ? 'true' : 'false' }},
+                                options: @json($customField->field_options ?? []),
+                                conditional_document_code: '{{ $customField->conditional_document_code ?? '' }}',
+                                @if(isset($existingCustomFieldValues) && $existingCustomFieldValues->has($customField->id))
+                                    value: '{{ $existingCustomFieldValues[$customField->id]->field_value }}'
+                                @else
+                                    value: ''
+                                @endif
+                            },
+                        @endforeach
+                    ]
+                },
+            @endforeach
         };
-        
-        function populateDocumentsForSection(selectedSection, preselectValue) {
+
+        function populateDocumentsForSection(selectedSectionId, preselectValue) {
             documentsSelect.innerHTML = '<option value="">Select document...</option>';
-            if (selectedSection && documentOptions[selectedSection]) {
+            if (selectedSectionId && sectionTypesData[selectedSectionId]) {
+                const sectionData = sectionTypesData[selectedSectionId];
                 documentsSelect.disabled = false;
                 documentsSelect.removeAttribute('disabled');
-                documentOptions[selectedSection].forEach(option => {
+
+                sectionData.documents.forEach(option => {
                     const optionElement = document.createElement('option');
                     optionElement.value = option.value;
                     optionElement.textContent = option.text;
+                    optionElement.setAttribute('data-code', option.code);
                     if (preselectValue && String(preselectValue) === String(option.value)) {
                         optionElement.selected = true;
                     }
@@ -1104,104 +1113,174 @@
             }
         }
 
-        sectionSelect.addEventListener('change', function() {
-            const selectedSection = this.value;
-            const caseTitleField = document.getElementById('case-title-field');
-            const caseTitleInput = caseTitleField ? caseTitleField.querySelector('input[name="case_title"]') : null;
-            const propertyNameField = document.getElementById('property-name-field');
-            const othersDocumentField = document.getElementById('others-document-field');
-            const claimAmountLabel = document.getElementById('claim-amount-label');
+        function renderCustomFields(selectedSectionId, selectedDocumentCode = null) {
+            const customFieldsContainer = document.getElementById('custom-fields-container');
+            customFieldsContainer.innerHTML = '';
 
-            // Handle Conveyancing specific logic
-            if (selectedSection === 'conveyancing') {
-                // Hide Case Title field for Conveyancing
-                if (caseTitleField) {
-                    caseTitleField.style.display = 'none';
-                    if (caseTitleInput) {
-                        caseTitleInput.removeAttribute('required');
-                        caseTitleInput.value = '';
-                    }
-                }
-                // Show Name of Property field
-                if (propertyNameField) {
-                    propertyNameField.style.display = 'block';
-                }
-                // Change label to Purchase Price
-                if (claimAmountLabel) {
-                    claimAmountLabel.textContent = 'Purchase Price *';
-                }
-                // Show claim amount field
-                claimAmountField.style.display = 'block';
-                claimAmountInput.setAttribute('required', 'required');
-                if (!claimAmountInput.value && savedClaimAmount) {
-                    claimAmountInput.value = savedClaimAmount;
-                }
-            } else {
-                // Show Case Title field for non-Conveyancing
-                if (caseTitleField) {
-                    caseTitleField.style.display = 'block';
-                    if (caseTitleInput) {
-                        caseTitleInput.setAttribute('required', 'required');
-                    }
-                }
-                // Hide Name of Property field
-                if (propertyNameField) {
-                    propertyNameField.style.display = 'none';
-                }
-                // Hide Others Document field for non-Probate
-                if (othersDocumentField) {
-                    othersDocumentField.style.display = 'none';
-                    const othersInput = othersDocumentField.querySelector('input[name="others_document"]');
-                    if (othersInput) {
-                        othersInput.value = '';
-                    }
-                }
-                // Change label back to Total Claim
-                if (claimAmountLabel) {
-                    claimAmountLabel.textContent = 'Total Claim (RM) *';
-                }
+            if (selectedSectionId && sectionTypesData[selectedSectionId]) {
+                const sectionData = sectionTypesData[selectedSectionId];
 
-                // Hide/show Total Claim field based on section
-                if (selectedSection === 'criminal') {
-                    claimAmountField.style.display = 'none';
-                    claimAmountInput.removeAttribute('required');
-                    claimAmountInput.value = '';
-                } else {
-                    claimAmountField.style.display = 'block';
-                    claimAmountInput.setAttribute('required', 'required');
-                    // If value was cleared earlier, restore saved amount
-                    if (!claimAmountInput.value && savedClaimAmount) {
-                        claimAmountInput.value = savedClaimAmount;
+                // Filter fields based on conditional logic
+                const fieldsToShow = sectionData.customFields.filter(field => {
+                    // If field has no conditional document code, always show it
+                    if (!field.conditional_document_code) {
+                        return true;
                     }
-                }
+
+                    // If field has conditional document code, only show if it matches selected document
+                    return selectedDocumentCode && field.conditional_document_code === selectedDocumentCode;
+                });
+
+                fieldsToShow.forEach(field => {
+                    const fieldDiv = document.createElement('div');
+                    fieldDiv.className = ''; // Will be a grid item automatically due to parent grid
+                    fieldDiv.setAttribute('data-field-id', field.id);
+                    fieldDiv.setAttribute('data-conditional-code', field.conditional_document_code || '');
+
+                    const label = document.createElement('label');
+                    label.className = 'block text-xs font-medium text-gray-700 mb-2';
+                    label.textContent = field.name + (field.required ? ' *' : '');
+                    fieldDiv.appendChild(label);
+
+                    let input;
+                    const fieldName = `custom_field_${field.id}`;
+
+                    switch (field.type) {
+                        case 'text':
+                            input = document.createElement('input');
+                            input.type = 'text';
+                            input.name = fieldName;
+                            input.value = field.value;
+                            input.placeholder = field.placeholder;
+                            input.className = 'w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500';
+                            if (field.required) input.required = true;
+                            break;
+
+                        case 'number':
+                            input = document.createElement('input');
+                            input.type = 'number';
+                            input.name = fieldName;
+                            input.value = field.value;
+                            input.placeholder = field.placeholder;
+                            input.step = '0.01';
+                            input.className = 'w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500';
+                            if (field.required) input.required = true;
+                            break;
+
+                        case 'dropdown':
+                            input = document.createElement('select');
+                            input.name = fieldName;
+                            input.className = 'w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500';
+                            if (field.required) input.required = true;
+
+                            const defaultOption = document.createElement('option');
+                            defaultOption.value = '';
+                            defaultOption.textContent = 'Select option...';
+                            input.appendChild(defaultOption);
+
+                            field.options.forEach(option => {
+                                const optionElement = document.createElement('option');
+                                optionElement.value = option.value;
+                                optionElement.textContent = option.label;
+                                if (option.value === field.value) optionElement.selected = true;
+                                input.appendChild(optionElement);
+                            });
+                            break;
+
+                        case 'checkbox':
+                            input = document.createElement('div');
+                            input.className = 'space-y-2';
+                            const hiddenInput = document.createElement('input');
+                            hiddenInput.type = 'hidden';
+                            hiddenInput.name = fieldName;
+                            hiddenInput.value = '';
+                            input.appendChild(hiddenInput);
+
+                            const selectedValues = field.value ? JSON.parse(field.value) : [];
+                            field.options.forEach(option => {
+                                const checkboxDiv = document.createElement('div');
+                                checkboxDiv.className = 'flex items-center';
+
+                                const checkbox = document.createElement('input');
+                                checkbox.type = 'checkbox';
+                                checkbox.name = `${fieldName}[]`;
+                                checkbox.value = option.value;
+                                checkbox.className = 'mr-2';
+                                if (selectedValues.includes(option.value)) checkbox.checked = true;
+
+                                const checkboxLabel = document.createElement('label');
+                                checkboxLabel.className = 'text-xs text-gray-700';
+                                checkboxLabel.textContent = option.label;
+
+                                checkboxDiv.appendChild(checkbox);
+                                checkboxDiv.appendChild(checkboxLabel);
+                                input.appendChild(checkboxDiv);
+                            });
+                            break;
+
+                        case 'date':
+                            input = document.createElement('input');
+                            input.type = 'date';
+                            input.name = fieldName;
+                            input.value = field.value;
+                            input.className = 'w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500';
+                            if (field.required) input.required = true;
+                            break;
+
+                        case 'time':
+                            input = document.createElement('input');
+                            input.type = 'time';
+                            input.name = fieldName;
+                            input.value = field.value;
+                            input.className = 'w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500';
+                            if (field.required) input.required = true;
+                            break;
+
+                        case 'datetime':
+                            input = document.createElement('input');
+                            input.type = 'datetime-local';
+                            input.name = fieldName;
+                            input.value = field.value;
+                            input.className = 'w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500';
+                            if (field.required) input.required = true;
+                            break;
+
+                        default:
+                            input = document.createElement('input');
+                            input.type = 'text';
+                            input.name = fieldName;
+                            input.value = field.value;
+                            input.placeholder = field.placeholder;
+                            input.className = 'w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500';
+                            if (field.required) input.required = true;
+                    }
+
+                    fieldDiv.appendChild(input);
+                    customFieldsContainer.appendChild(fieldDiv);
+                });
             }
+        }
 
-            // Populate docs for chosen section
+
+
+        sectionSelect.addEventListener('change', function() {
+            const selectedSectionId = this.value;
+
+            // Populate documents for chosen section
             const savedDoc = @json(isset($case) ? ($case->initiating_document ?? null) : null);
-            populateDocumentsForSection(selectedSection, savedDoc);
+            populateDocumentsForSection(selectedSectionId, savedDoc);
+
+            // Render custom fields for chosen section (without document selection initially)
+            renderCustomFields(selectedSectionId, null);
         });
 
         // Add event listener for Case Initiating Documents dropdown
         documentsSelect.addEventListener('change', function() {
             const selectedDocument = this.value;
-            const selectedSection = sectionSelect.value;
-            const othersDocumentField = document.getElementById('others-document-field');
+            const selectedSectionId = sectionSelect.value;
 
-            // Show/hide Others Document field ONLY for Probate section AND Others document
-            if (selectedSection === 'probate' && selectedDocument === 'others') {
-                if (othersDocumentField) {
-                    othersDocumentField.style.display = 'block';
-                }
-            } else {
-                if (othersDocumentField) {
-                    othersDocumentField.style.display = 'none';
-                    // Clear the others document field when hiding
-                    const othersInput = othersDocumentField.querySelector('input[name="others_document"]');
-                    if (othersInput) {
-                        othersInput.value = '';
-                    }
-                }
-            }
+            // Re-render custom fields with conditional logic based on selected document
+            renderCustomFields(selectedSectionId, selectedDocument);
         });
 
         // Prefill for edit mode: court location and section
@@ -1221,24 +1300,30 @@
                     courtLocationSelect.value = existing.court_location;
                 }
 
-                // Section from case type description
-                if ((existing.section || existing.case_type) && sectionSelect) {
-                    const type = (existing.case_type || '').toLowerCase();
-                    let sectionValue = existing.section || '';
-                    if (!sectionValue) {
-                        if (type.includes('criminal')) sectionValue = 'criminal';
-                        else if (type.includes('civil')) sectionValue = 'civil';
-                        else if (type.includes('convey')) sectionValue = 'conveyancing';
-                        else if (type.includes('probate') || type.includes('administration')) sectionValue = 'probate';
+                // Section selection
+                if (existing.section && sectionSelect) {
+                    // Find section by ID or form_value for backward compatibility
+                    let sectionId = existing.section;
+
+                    // If existing.section is a form_value (like 'civil', 'criminal'), find the ID
+                    if (isNaN(existing.section)) {
+                        for (const [id, data] of Object.entries(sectionTypesData)) {
+                            if (data.form_value === existing.section || data.code.toLowerCase() === existing.section.toLowerCase()) {
+                                sectionId = id;
+                                break;
+                            }
+                        }
                     }
 
-                    if (sectionValue) {
-                        sectionSelect.value = sectionValue;
+                    if (sectionId && sectionTypesData[sectionId]) {
+                        sectionSelect.value = sectionId;
                         // Immediately populate docs and preselect saved initiating doc
-                        populateDocumentsForSection(sectionValue, existing.initiating_document);
-                        // Trigger the change event to apply Conveyancing logic
+                        populateDocumentsForSection(sectionId, existing.initiating_document);
+                        // Render custom fields for edit mode with conditional logic
+                        renderCustomFields(sectionId, existing.initiating_document);
+                        // Trigger the change event
                         sectionSelect.dispatchEvent(new Event('change'));
-                        // Trigger documents change event to show Others field if needed
+                        // Trigger documents change event to show additional fields if needed
                         setTimeout(() => {
                             if (existing.initiating_document) {
                                 documentsSelect.value = existing.initiating_document;
@@ -1252,23 +1337,21 @@
             // Prefill init failed - silently continue
         }
         // Fallback: ensure documents are populated on load even if no event fired
-        const initialSection = sectionSelect ? sectionSelect.value : '';
-        if (initialSection) {
+        const initialSectionId = sectionSelect ? sectionSelect.value : '';
+        if (initialSectionId) {
             const savedDocFinal = @json(isset($case) ? ($case->initiating_document ?? null) : null);
-            populateDocumentsForSection(initialSection, savedDocFinal);
-            // Trigger the change event to apply section-specific logic (including Conveyancing)
+            populateDocumentsForSection(initialSectionId, savedDocFinal);
+            // Render custom fields for initial section with conditional logic
+            renderCustomFields(initialSectionId, savedDocFinal);
+            // Trigger the change event
             sectionSelect.dispatchEvent(new Event('change'));
-            // Trigger documents change event to show Others field if needed
+            // Trigger documents change event to show additional fields if needed
             setTimeout(() => {
                 if (savedDocFinal) {
                     documentsSelect.value = savedDocFinal;
                     documentsSelect.dispatchEvent(new Event('change'));
                 }
             }, 100);
-            // Ensure claim amount visible and restored for non-criminal
-            if (initialSection !== 'criminal' && claimAmountField && claimAmountInput && !claimAmountInput.value && savedClaimAmount) {
-                claimAmountInput.value = savedClaimAmount;
-            }
         }
 
         // Warrant to Act Configuration
@@ -1394,14 +1477,17 @@
             const alpineData = Alpine.$data(formElement);
 
             // Check required fields
-            const caseRef = formElement.querySelector('input[name="case_ref"]').value;
+            const caseRefInput = formElement.querySelector('input[name="case_ref"]');
+            const caseRef = caseRefInput ? caseRefInput.value : '';
             const personInCharge = formElement.querySelector('input[name="person_in_charge"]').value;
             const caseTypeId = formElement.querySelector('select[name="case_type_id"]').value;
             const caseStatusId = formElement.querySelector('select[name="case_status_id"]').value;
             const section = formElement.querySelector('select[name="section"]').value;
 
+            // Check if this is edit mode (case_ref is required) or create mode (case_ref is auto-generated)
+            const isEditMode = caseRefInput && !caseRefInput.hasAttribute('readonly');
+
             // Conditional validation based on section
-            let caseTitle = '';
             let nameOfProperty = '';
 
             if (section === 'conveyancing') {
@@ -1410,15 +1496,15 @@
                     alert('Please fill in Name of Property for Conveyancing cases');
                     return;
                 }
-            } else {
-                caseTitle = formElement.querySelector('input[name="case_title"]').value;
-                if (!caseTitle) {
-                    alert('Please fill in Case Title');
-                    return;
-                }
             }
 
-            if (!caseRef || !personInCharge || !caseTypeId || !caseStatusId) {
+            // Validate required fields (case_ref only required in edit mode)
+            if (isEditMode && !caseRef) {
+                alert('Please fill in Case Reference');
+                return;
+            }
+
+            if (!personInCharge || !caseTypeId || !caseStatusId) {
                 alert('Please fill in all required fields');
                 return;
             }
@@ -1503,8 +1589,24 @@
                 });
             }
 
+            // Collect custom field values
+            const customFieldInputs = formElement.querySelectorAll('[name^="custom_field_"]');
+
+            customFieldInputs.forEach(input => {
+                // Create hidden input for custom field
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = input.name;
+                hiddenInput.value = input.value;
+                fragment.appendChild(hiddenInput);
+            });
+
+
+
             // Append all inputs at once for better performance
             container.appendChild(fragment);
+
+
 
             // Check if form is valid
             if (!formElement.checkValidity()) {

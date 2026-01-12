@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Design Preview - Naaelah Saleh & Co</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 20px;
+    }
+    .preview-container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .preview-header {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .preview-header h1 {
+      margin: 0 0 10px 0;
+      color: #2c3e50;
+    }
+    .preview-header p {
+      margin: 0;
+      color: #7f8c8d;
+    }
+    .email-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+    .email-preview {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .email-preview h2 {
+      margin: 0 0 15px 0;
+      color: #2c3e50;
+      font-size: 18px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #47b2e4;
+    }
+    .email-iframe {
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      min-height: 800px;
+      background: white;
+    }
+    @media (max-width: 1200px) {
+      .email-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="preview-container">
+    <div class="preview-header">
+      <h1>📧 Email Template Design Preview</h1>
+      <p>Naaelah Saleh & Co - Corporate Email Templates</p>
+    </div>
+
+    <div class="email-grid">
+      <!-- Email 1: To Firm (Notification) -->
+      <div class="email-preview">
+        <h2>📬 Email to Firm (Notification)</h2>
+        <iframe class="email-iframe" srcdoc='
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; 
+      line-height: 1.6; 
+      color: #2c3e50;
+      background: #ecf0f1;
+      padding: 20px;
+    }
+    .email-wrapper { 
+      max-width: 650px; 
+      margin: 0 auto; 
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    .header { 
+      background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+      color: white; 
+      padding: 40px 30px;
+      text-align: center;
+      border-bottom: 5px solid #47b2e4;
+    }
+    .header h1 { 
+      font-size: 26px; 
+      font-weight: 600;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+    .header p { 
+      font-size: 14px; 
+      opacity: 0.9;
+      font-weight: 300;
+    }
+    .logo-area {
+      background: white;
+      padding: 20px;
+      text-align: center;
+      border-bottom: 2px solid #ecf0f1;
+    }
+    .logo-area h2 {
+      color: #2c3e50;
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0;
+    }
+    .logo-area span {
+      color: #47b2e4;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 600;
+    }
+    .content { 
+      padding: 40px 30px;
+      background: #ffffff;
+    }
+    .info-badge {
+      display: inline-block;
+      background: #47b2e4;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 25px;
+    }
+    .field-group { 
+      margin-bottom: 28px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      border-left: 4px solid #47b2e4;
+    }
+    .field-label { 
+      font-weight: 700;
+      color: #2c3e50;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+    }
+    .field-label::before {
+      content: "●";
+      color: #47b2e4;
+      margin-right: 8px;
+      font-size: 16px;
+    }
+    .field-value { 
+      color: #34495e;
+      font-size: 15px;
+      line-height: 1.8;
+      word-wrap: break-word;
+    }
+    .field-value.message-box {
+      background: white;
+      padding: 15px;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+      min-height: 80px;
+    }
+    .action-button {
+      display: inline-block;
+      background: #47b2e4;
+      color: white !important;
+      padding: 12px 30px;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
+      margin-top: 20px;
+    }
+    .divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, #ddd, transparent);
+      margin: 30px 0;
+    }
+    .footer { 
+      background: #2c3e50;
+      color: #ecf0f1;
+      padding: 30px;
+      text-align: center;
+      font-size: 13px;
+    }
+    .footer-links {
+      margin: 15px 0;
+    }
+    .footer-links a {
+      color: #47b2e4;
+      text-decoration: none;
+      margin: 0 12px;
+      font-weight: 500;
+    }
+    .footer p { 
+      margin: 8px 0; 
+      opacity: 0.8;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-wrapper">
+    <div class="header">
+      <h1>📧 New Contact Form Submission</h1>
+      <p>You have received a new inquiry from your website</p>
+    </div>
+
+    <div class="logo-area">
+      <h2>NAAELAH SALEH & CO</h2>
+      <span>Legal Services Malaysia</span>
+    </div>
+
+    <div class="content">
+      <div class="info-badge">New Inquiry • 28 Oct 2025, 08:45</div>
+
+      <div class="field-group">
+        <div class="field-label">Contact Name</div>
+        <div class="field-value">Faizan Rahman</div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Email Address</div>
+        <div class="field-value">
+          <a href="mailto:faizanrahman84@gmail.com" style="color: #47b2e4; text-decoration: none; font-weight: 600;">faizanrahman84@gmail.com</a>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Department</div>
+        <div class="field-value">
+          <span style="background: #47b2e4; color: white; padding: 4px 12px; border-radius: 4px; font-size: 13px; font-weight: 600;">
+            GENERAL
+          </span>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Subject</div>
+        <div class="field-value" style="font-weight: 600; color: #2c3e50;">Legal Consultation Request</div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Message</div>
+        <div class="field-value message-box">I would like to inquire about your legal services for property conveyancing matters. Please get back to me at your earliest convenience.</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <p style="color: #7f8c8d; font-size: 14px; margin-top: 20px;">
+        <strong>📌 Quick Action:</strong> Click the button below to reply directly to this inquiry.
+      </p>
+
+      <a href="#" class="action-button">
+        ✉️ Reply to Faizan Rahman
+      </a>
+    </div>
+
+    <div class="footer">
+      <p style="font-weight: 600; font-size: 14px; margin-bottom: 15px;">NAAELAH SALEH & CO</p>
+      
+      <div class="footer-links">
+        <a href="https://www.naaelahsaleh.co">Website</a> | 
+        <a href="https://www.naaelahsaleh.co/contact">Contact</a> | 
+        <a href="tel:+60193186436">+60 19-318 6436</a>
+      </div>
+
+      <p>This is an automated notification from your website contact form</p>
+      <p>© 2025 Naaelah Saleh & Co. All rights reserved.</p>
+      
+      <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+        <p style="font-size: 11px; opacity: 0.7;">
+          📍 HQ: Sg Pelek, Selangor | Sendayan Branch: N. Sembilan
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+'></iframe>
+      </div>
+
+      <!-- Email 2: To User (Acknowledgment) -->
+      <div class="email-preview">
+        <h2>✉️ Email to User (Acknowledgment)</h2>
+        <iframe class="email-iframe" srcdoc='
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; 
+      line-height: 1.8; 
+      color: #2c3e50;
+      background: #ecf0f1;
+      padding: 20px;
+    }
+    .email-wrapper { 
+      max-width: 650px; 
+      margin: 0 auto; 
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    .header { 
+      background: linear-gradient(135deg, #47b2e4 0%, #2980b9 100%);
+      color: white; 
+      padding: 50px 30px;
+      text-align: center;
+    }
+    .header h1 { 
+      font-size: 28px; 
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: 0.5px;
+    }
+    .header p { 
+      font-size: 15px; 
+      opacity: 0.95;
+      font-weight: 300;
+    }
+    .logo-area {
+      background: white;
+      padding: 25px;
+      text-align: center;
+      border-bottom: 3px solid #47b2e4;
+    }
+    .logo-area h2 {
+      color: #2c3e50;
+      font-size: 24px;
+      font-weight: 800;
+      margin: 0;
+      letter-spacing: 1px;
+    }
+    .logo-area span {
+      color: #7f8c8d;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      font-weight: 600;
+      display: block;
+      margin-top: 5px;
+    }
+    .content { 
+      padding: 40px 35px;
+      background: #ffffff;
+    }
+    .greeting {
+      font-size: 18px;
+      color: #2c3e50;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    .intro-text {
+      font-size: 15px;
+      color: #34495e;
+      line-height: 1.8;
+      margin-bottom: 30px;
+    }
+    .summary-box {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border: 2px solid #47b2e4;
+      border-radius: 10px;
+      padding: 25px;
+      margin: 30px 0;
+    }
+    .summary-title {
+      color: #47b2e4;
+      font-weight: 700;
+      font-size: 16px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+    }
+    .summary-title::before {
+      content: "✓";
+      background: #47b2e4;
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .summary-item {
+      display: flex;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    .summary-item:last-child {
+      border-bottom: none;
+    }
+    .summary-label {
+      font-weight: 700;
+      color: #2c3e50;
+      min-width: 120px;
+      font-size: 14px;
+    }
+    .summary-value {
+      color: #34495e;
+      font-size: 14px;
+      flex: 1;
+    }
+    .contact-section {
+      background: #2c3e50;
+      color: white;
+      border-radius: 10px;
+      padding: 25px;
+      margin: 30px 0;
+    }
+    .contact-section h3 {
+      color: white;
+      font-size: 18px;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+    .contact-item {
+      background: rgba(255,255,255,0.1);
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+    }
+    .contact-icon {
+      background: #47b2e4;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+      font-size: 18px;
+    }
+    .contact-details {
+      flex: 1;
+    }
+    .contact-label {
+      font-weight: 700;
+      font-size: 13px;
+      opacity: 0.9;
+      display: block;
+    }
+    .contact-value {
+      font-size: 15px;
+      color: #47b2e4;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .divider {
+      height: 2px;
+      background: linear-gradient(to right, transparent, #ddd, transparent);
+      margin: 30px 0;
+    }
+    .response-time {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px 20px;
+      border-radius: 6px;
+      margin: 25px 0;
+    }
+    .response-time strong {
+      color: #856404;
+    }
+    .footer { 
+      background: #2c3e50;
+      color: #ecf0f1;
+      padding: 35px 30px;
+      text-align: center;
+      font-size: 13px;
+    }
+    .footer-brand {
+      font-weight: 700;
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: white;
+    }
+    .footer-links {
+      margin: 20px 0;
+      padding: 15px 0;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .footer-links a {
+      color: #47b2e4;
+      text-decoration: none;
+      margin: 0 15px;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .footer p { 
+      margin: 8px 0; 
+      opacity: 0.8;
+      line-height: 1.6;
+    }
+    .signature {
+      margin-top: 30px;
+      padding-top: 25px;
+      border-top: 2px solid #ecf0f1;
+      font-style: italic;
+      color: #7f8c8d;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-wrapper">
+    <div class="header">
+      <h1>✓ Message Received Successfully</h1>
+      <p>Thank you for reaching out to us</p>
+    </div>
+
+    <div class="logo-area">
+      <h2>NAAELAH SALEH & CO</h2>
+      <span>Legal Services Malaysia</span>
+    </div>
+
+    <div class="content">
+      <div class="greeting">Dear Faizan Rahman,</div>
+      
+      <div class="intro-text">
+        Thank you for contacting <strong style="color: #47b2e4;">Naaelah Saleh & Co</strong>. 
+        We have successfully received your inquiry and appreciate you taking the time to reach out to us.
+      </div>
+
+      <div class="response-time">
+        <strong>⏱️ Expected Response Time:</strong> Our legal team typically responds within 24-48 hours during business days. 
+        For urgent matters, please contact us directly via phone.
+      </div>
+
+      <div class="summary-box">
+        <div class="summary-title">Your Inquiry Summary</div>
+        
+        <div class="summary-item">
+          <div class="summary-label">Reference Date:</div>
+          <div class="summary-value">Monday, 28 October 2025, 08:45</div>
+        </div>
+        
+        <div class="summary-item">
+          <div class="summary-label">Department:</div>
+          <div class="summary-value">
+            <span style="background: #47b2e4; color: white; padding: 3px 10px; border-radius: 4px; font-size: 12px; font-weight: 600;">
+              GENERAL
+            </span>
+          </div>
+        </div>
+        
+        <div class="summary-item">
+          <div class="summary-label">Subject:</div>
+          <div class="summary-value" style="font-weight: 600;">Legal Consultation Request</div>
+        </div>
+        
+        <div class="summary-item">
+          <div class="summary-label">Your Email:</div>
+          <div class="summary-value">faizanrahman84@gmail.com</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="contact-section">
+        <h3>📞 Need Immediate Assistance?</h3>
+        <p style="opacity: 0.9; margin-bottom: 20px; font-size: 14px;">
+          If your matter is urgent, feel free to contact us directly:
+        </p>
+
+        <div class="contact-item">
+          <div class="contact-icon">🏢</div>
+          <div class="contact-details">
+            <span class="contact-label">HQ - Sg Pelek</span>
+            <a href="tel:+60193186436" class="contact-value">+60 19-318 6436</a>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="contact-icon">⚖️</div>
+          <div class="contact-details">
+            <span class="contact-label">Litigation Department</span>
+            <a href="tel:+601162339159" class="contact-value">+60 116-233 9159</a>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="contact-icon">🏘️</div>
+          <div class="contact-details">
+            <span class="contact-label">Sendayan Branch</span>
+            <a href="tel:+60138511400" class="contact-value">+60 13-851 1400</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="signature">
+        <p style="margin-bottom: 5px; font-weight: 600; color: #2c3e50;">Best regards,</p>
+        <p style="font-weight: 700; color: #47b2e4; font-size: 16px; font-style: normal;">Naaelah Saleh & Co</p>
+        <p style="color: #7f8c8d;">Legal Services Team</p>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="footer-brand">NAAELAH SALEH & CO</div>
+      
+      <div class="footer-links">
+        <a href="https://www.naaelahsaleh.co">🌐 Visit Website</a>
+        <a href="https://www.naaelahsaleh.co/contact">📧 Contact Us</a>
+        <a href="https://www.naaelahsaleh.co/status-check">🔍 Status Check</a>
+      </div>
+
+      <p style="font-size: 12px; margin-top: 20px;">
+        📍 <strong>HQ:</strong> No.6, Jalan Tasik Beringin 1, Taman Sepang Putra, 43950 Sungai Pelek, Selangor
+      </p>
+      <p style="font-size: 12px; margin-bottom: 20px;">
+        📍 <strong>Sendayan:</strong> No.59-1, Jalan Metro Sendayan 1/3, 71950 Bandar Sri Sendayan, N. Sembilan
+      </p>
+
+      <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+        <p>This is an automated acknowledgment email</p>
+        <p style="font-size: 11px; opacity: 0.7;">Please do not reply directly to this email</p>
+        <p style="margin-top: 15px;">© 2025 Naaelah Saleh & Co. All rights reserved.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+'></iframe>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+

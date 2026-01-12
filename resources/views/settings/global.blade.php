@@ -948,6 +948,217 @@
         </div>
     </div>
 
+    <!-- API Security Section -->
+    <div class="bg-white rounded shadow-md border border-gray-300">
+        <div class="p-4 md:p-6 border-b border-gray-200">
+            <div class="flex items-center">
+                <span class="material-icons mr-2 text-green-600">api</span>
+                <h2 class="text-lg font-semibold text-gray-800 text-[14px]">API Security</h2>
+            </div>
+            <p class="text-xs text-gray-500 mt-1 ml-8 text-[11px]">Configure public API security settings, CORS, and rate limiting.</p>
+        </div>
+
+        <div class="p-4 md:p-6">
+            <form id="apiSecurityForm" class="space-y-4" x-data="{
+                loading: false,
+                formData: {
+                    rate_limit_per_minute: 60,
+                    rate_limit_per_hour: 1000,
+                    allowed_origins_array: [
+                        'https://naaelahsaleh.co',
+                        'https://www.naaelahsaleh.co',
+                        'http://localhost:8000',
+                        'http://localhost:3000'
+                    ],
+                    cors_enabled: true,
+                    ip_blacklist_enabled: true,
+                    auto_blacklist_threshold: 10,
+                    blacklist_duration_hours: 24,
+                    log_all_requests: true,
+                    log_failed_attempts: true,
+                    api_enabled: true
+                },
+                addOrigin() {
+                    this.formData.allowed_origins_array.push('');
+                },
+                removeOrigin(index) {
+                    this.formData.allowed_origins_array.splice(index, 1);
+                },
+                async saveApiSecuritySettings() {
+                    this.loading = true;
+                    console.log('Saving API security settings:', this.formData);
+
+                    try {
+                        const response = await fetch('/settings/api-security', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(this.formData)
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            alert('API Security settings saved successfully!');
+                        } else {
+                            alert('Error: ' + (data.message || 'Unknown error'));
+                        }
+                    } catch (error) {
+                        console.error('API Security settings error:', error);
+                        alert('Error saving API Security settings: ' + error.message);
+                    } finally {
+                        this.loading = false;
+                    }
+                }
+            }" x-init="
+                fetch('/settings/api-security/get')
+                .then(response => response.json())
+                .then(data => {
+                    if (data && typeof data === 'object') {
+                        formData.rate_limit_per_minute = data.rate_limit_per_minute || 60;
+                        formData.rate_limit_per_hour = data.rate_limit_per_hour || 1000;
+                        formData.allowed_origins_array = data.allowed_origins_array || [
+                            'https://naaelahsaleh.co',
+                            'https://www.naaelahsaleh.co',
+                            'http://localhost:8000',
+                            'http://localhost:3000'
+                        ];
+                        formData.cors_enabled = data.cors_enabled !== undefined ? Boolean(data.cors_enabled) : true;
+                        formData.ip_blacklist_enabled = data.ip_blacklist_enabled !== undefined ? Boolean(data.ip_blacklist_enabled) : true;
+                        formData.auto_blacklist_threshold = data.auto_blacklist_threshold || 10;
+                        formData.blacklist_duration_hours = data.blacklist_duration_hours || 24;
+                        formData.log_all_requests = data.log_all_requests !== undefined ? Boolean(data.log_all_requests) : true;
+                        formData.log_failed_attempts = data.log_failed_attempts !== undefined ? Boolean(data.log_failed_attempts) : true;
+                        formData.api_enabled = data.api_enabled !== undefined ? Boolean(data.api_enabled) : true;
+                    }
+                })
+                .catch(error => {
+                    // Silent error handling
+                });
+            ">
+                <!-- API Status -->
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div>
+                        <label class="text-xs font-medium text-gray-700">Enable Public API</label>
+                        <p class="text-[10px] text-gray-500">Allow public case status checking via API</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" x-model="formData.api_enabled" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                    </label>
+                </div>
+
+                <!-- Rate Limiting -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Rate Limit (per minute)</label>
+                        <input type="number" x-model.number="formData.rate_limit_per_minute" min="1" max="1000" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <p class="text-[10px] text-gray-500 mt-1">Maximum requests per minute per IP</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Rate Limit (per hour)</label>
+                        <input type="number" x-model.number="formData.rate_limit_per_hour" min="1" max="10000" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <p class="text-[10px] text-gray-500 mt-1">Maximum requests per hour per IP</p>
+                    </div>
+                </div>
+
+                <!-- CORS Settings -->
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div>
+                        <label class="text-xs font-medium text-gray-700">Enable CORS</label>
+                        <p class="text-[10px] text-gray-500">Allow cross-origin requests from specified domains</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" x-model="formData.cors_enabled" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                    </label>
+                </div>
+
+                <!-- Allowed Origins -->
+                <div x-show="formData.cors_enabled">
+                    <label class="block text-xs font-medium text-gray-700 mb-2">Allowed Origins (CORS)</label>
+                    <div class="space-y-2">
+                        <template x-for="(origin, index) in formData.allowed_origins_array" :key="index">
+                            <div class="flex gap-2">
+                                <input type="url" x-model="formData.allowed_origins_array[index]" placeholder="https://example.com" class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <button type="button" @click="removeOrigin(index)" class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-xs">
+                                    <span class="material-icons text-xs">delete</span>
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                    <button type="button" @click="addOrigin()" class="mt-2 px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md text-xs flex items-center">
+                        <span class="material-icons text-xs mr-1">add</span>
+                        Add Origin
+                    </button>
+                    <p class="text-[10px] text-gray-500 mt-2">Add domains that are allowed to access the API (e.g., https://naaelahsaleh.co)</p>
+                </div>
+
+                <!-- IP Blacklist Settings -->
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div>
+                        <label class="text-xs font-medium text-gray-700">Enable IP Blacklist</label>
+                        <p class="text-[10px] text-gray-500">Automatically block IPs with suspicious activity</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" x-model="formData.ip_blacklist_enabled" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                    </label>
+                </div>
+
+                <div x-show="formData.ip_blacklist_enabled" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Auto-Blacklist Threshold</label>
+                        <input type="number" x-model.number="formData.auto_blacklist_threshold" min="1" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <p class="text-[10px] text-gray-500 mt-1">Failed attempts before auto-blacklist</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Blacklist Duration (hours)</label>
+                        <input type="number" x-model.number="formData.blacklist_duration_hours" min="1" max="168" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <p class="text-[10px] text-gray-500 mt-1">How long to block suspicious IPs</p>
+                    </div>
+                </div>
+
+                <!-- Logging Settings -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                        <div>
+                            <label class="text-xs font-medium text-gray-700">Log All Requests</label>
+                            <p class="text-[10px] text-gray-500">Log all API requests for audit trail</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" x-model="formData.log_all_requests" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                        </label>
+                    </div>
+
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                        <div>
+                            <label class="text-xs font-medium text-gray-700">Log Failed Attempts</label>
+                            <p class="text-[10px] text-gray-500">Log failed verification attempts</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" x-model="formData.log_failed_attempts" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit" @click.prevent="saveApiSecuritySettings()" :disabled="loading" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span x-show="!loading">Save API Security Settings</span>
+                        <span x-show="loading">Saving...</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Opening Balance Section -->
     <div class="bg-white rounded shadow-md border border-gray-300">
         <div class="p-4 md:p-6 border-b border-gray-200">

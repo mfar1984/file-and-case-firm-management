@@ -93,14 +93,7 @@
                             <p class="text-[11px] text-gray-900 font-medium text-blue-600">{{ $case->name_of_property }}</p>
                         </div>
                         @endif
-                        @if($caseTypeDescription !== 'criminal')
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">{{ $isConveyancing ? 'Purchase Price' : 'Claim Amount' }}</label>
-                            <p class="text-[11px] text-gray-900 font-medium text-green-600">
-                                {{ $case->claim_amount ? 'RM ' . number_format($case->claim_amount, 2) : 'N/A' }}
-                            </p>
-                        </div>
-                        @endif
+
                         @if($isProbate && $case->others_document)
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Others Document</label>
@@ -115,6 +108,57 @@
                             <label class="block text-xs font-medium text-gray-700 mb-1">Created By</label>
                             <p class="text-[11px] text-gray-900">{{ $case->createdBy->name ?? 'N/A' }}</p>
                         </div>
+
+                        <!-- Section Information -->
+                        @if($sectionType)
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Section</label>
+                            <p class="text-[11px] text-gray-900">{{ $sectionType->name ?? 'N/A' }}</p>
+                        </div>
+                        @endif
+
+                        <!-- Case Initiating Document -->
+                        @if($case->initiating_document)
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Case Initiating Document</label>
+                            <p class="text-[11px] text-gray-900">
+                                @php
+                                    // Find the initiating document name
+                                    $initiatingDocName = 'N/A';
+                                    if($sectionType && $sectionType->initiatingDocuments) {
+                                        foreach($sectionType->initiatingDocuments as $doc) {
+                                            if($doc->document_code === $case->initiating_document) {
+                                                $initiatingDocName = $doc->document_name;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                @endphp
+                                {{ $initiatingDocName }}
+                            </p>
+                        </div>
+                        @endif
+
+                        <!-- Custom Fields (if available) -->
+                        @if($sectionType && $customFieldValues->count() > 0 && $customFieldValues->has($sectionType->id))
+                            @foreach($customFieldValues->get($sectionType->id) as $customFieldValue)
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                                        {{ $customFieldValue->customField->field_name }}
+                                        @if($customFieldValue->customField->is_required)
+                                            <span class="text-red-500">*</span>
+                                        @endif
+                                    </label>
+                                    <p class="text-[11px] text-gray-900">
+                                        @if($customFieldValue->customField->field_type === 'number')
+                                            {{ number_format((float)$customFieldValue->field_value, 2) }}
+                                        @else
+                                            {{ $customFieldValue->field_value ?? 'N/A' }}
+                                        @endif
+                                    </p>
+                                </div>
+                            @endforeach
+                        @endif
                     </div>
                 </div>
             </div>
@@ -410,6 +454,8 @@
                     </div>
                 </div>
             </div>
+
+
 
             <!-- Case Timeline -->
             <div class="bg-blue-50 p-4 rounded-sm mb-6">

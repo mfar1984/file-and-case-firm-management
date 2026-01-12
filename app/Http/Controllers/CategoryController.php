@@ -7,6 +7,8 @@ use App\Models\CaseStatus;
 use App\Models\EventStatus;
 use App\Models\ExpenseCategory;
 use App\Models\SectionType;
+use App\Models\CaseInitiatingDocument;
+use App\Models\SectionCustomField;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -36,7 +38,13 @@ class CategoryController extends Controller
                 $fileTypes = \App\Models\FileType::withoutFirmScope()->orderBy('code')->get();
                 $specializations = \App\Models\Specialization::withoutFirmScope()->orderBy('specialist_name')->get();
                 $expenseCategories = ExpenseCategory::withoutFirmScope()->ordered()->get();
-                $sectionTypes = SectionType::withoutFirmScope()->ordered()->get();
+                $sectionTypes = SectionType::withoutFirmScope()->with(['initiatingDocuments', 'customFields'])->ordered()->get();
+                // Force load relationships and make them visible in JSON
+                $sectionTypes->load(['initiatingDocuments', 'customFields']);
+                $sectionTypes->each(function($sectionType) {
+                    $sectionType->makeVisible(['initiatingDocuments', 'customFields']);
+                    $sectionType->append(['initiatingDocuments', 'customFields']);
+                });
             }
         } else {
             $caseTypes = CaseType::orderBy('code')->get();
@@ -46,7 +54,12 @@ class CategoryController extends Controller
             $fileTypes = \App\Models\FileType::orderBy('code')->get();
             $specializations = \App\Models\Specialization::orderBy('specialist_name')->get();
             $expenseCategories = ExpenseCategory::ordered()->get();
-            $sectionTypes = SectionType::ordered()->get();
+            $sectionTypes = SectionType::with(['initiatingDocuments', 'customFields'])->ordered()->get();
+            // Force load relationships and make them visible in JSON
+            $sectionTypes->load(['initiatingDocuments', 'customFields']);
+            $sectionTypes->each(function($sectionType) {
+                $sectionType->makeVisible(['initiatingDocuments', 'customFields']);
+            });
         }
 
         return view('settings.category', compact('caseTypes', 'taxCategories', 'caseStatuses', 'eventStatuses', 'fileTypes', 'specializations', 'expenseCategories', 'sectionTypes'));
@@ -914,6 +927,15 @@ class CategoryController extends Controller
             'name' => 'required|string|max:100',
             'description' => 'nullable|string|max:500',
             'status' => 'required|in:active,inactive',
+            'documents' => 'nullable|array',
+            'documents.*.document_name' => 'required_with:documents|string|max:255',
+            'documents.*.document_code' => 'required_with:documents|string|max:50',
+            'custom_fields' => 'nullable|array',
+            'custom_fields.*.field_name' => 'required_with:custom_fields|string|max:255',
+            'custom_fields.*.field_type' => 'required_with:custom_fields|in:text,number,dropdown,checkbox,date,time,datetime',
+            'custom_fields.*.placeholder' => 'nullable|string|max:255',
+            'custom_fields.*.is_required' => 'nullable|boolean',
+            'custom_fields.*.field_options' => 'nullable|array',
         ]);
 
         if ($validator->fails()) {
@@ -924,30 +946,79 @@ class CategoryController extends Controller
             ], 422);
         }
 
-        $sectionType = SectionType::create([
-            'code' => strtoupper($request->code),
-            'name' => $request->name,
-            'description' => $request->description,
-            'status' => $request->status,
-            'firm_id' => $firmId,
-        ]);
+        try {
+            DB::beginTransaction();
 
-        // Log section type creation
-        activity()
-            ->performedOn($sectionType)
-            ->causedBy(auth()->user())
-            ->withProperties([
-                'ip' => request()->ip(),
-                'code' => $sectionType->code,
-                'name' => $sectionType->name,
-            ])
-            ->log('Section type created');
+            $sectionType = SectionType::create([
+                'code' => strtoupper($request->code),
+                'name' => $request->name,
+                'description' => $request->description,
+                'status' => $request->status,
+                'firm_id' => $firmId,
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Section type created successfully',
-            'data' => $sectionType
-        ]);
+            // Create documents if provided
+            if ($request->has('documents')) {
+                foreach ($request->documents as $index => $documentData) {
+                    if (!empty($documentData['document_name']) && !empty($documentData['document_code'])) {
+                        CaseInitiatingDocument::create([
+                            'section_type_id' => $sectionType->id,
+                            'document_name' => $documentData['document_name'],
+                            'document_code' => $documentData['document_code'],
+                            'sort_order' => $index + 1,
+                            'status' => 'active',
+                            'firm_id' => $firmId,
+                        ]);
+                    }
+                }
+            }
+
+            // Create custom fields if provided
+            if ($request->has('custom_fields')) {
+                foreach ($request->custom_fields as $index => $fieldData) {
+                    if (!empty($fieldData['field_name']) && !empty($fieldData['field_type'])) {
+                        SectionCustomField::create([
+                            'section_type_id' => $sectionType->id,
+                            'field_name' => $fieldData['field_name'],
+                            'field_type' => $fieldData['field_type'],
+                            'placeholder' => $fieldData['placeholder'] ?? '',
+                            'is_required' => isset($fieldData['is_required']) ? (bool)$fieldData['is_required'] : false,
+                            'field_options' => isset($fieldData['field_options']) ? $fieldData['field_options'] : null,
+                            'conditional_document_code' => $fieldData['conditional_document_code'] ?? null,
+                            'sort_order' => $index + 1,
+                            'status' => 'active',
+                            'firm_id' => $firmId,
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+
+            // Log section type creation
+            activity()
+                ->performedOn($sectionType)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'code' => $sectionType->code,
+                    'name' => $sectionType->name,
+                ])
+                ->log('Section type created');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Section type created successfully',
+                'data' => $sectionType
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create section type: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function updateSectionType(Request $request, $id)
@@ -956,37 +1027,111 @@ class CategoryController extends Controller
         $user = auth()->user();
         $firmId = session('current_firm_id') ?? $user->firm_id;
 
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'code' => 'required|string|max:10|unique:section_types,code,' . $id . ',id,firm_id,' . $firmId,
             'name' => 'required|string|max:100',
             'description' => 'nullable|string|max:500',
             'status' => 'required|in:active,inactive',
+            'documents' => 'nullable|array',
+            'documents.*.document_name' => 'required_with:documents|string|max:255',
+            'documents.*.document_code' => 'required_with:documents|string|max:50',
+            'custom_fields' => 'nullable|array',
+            'custom_fields.*.field_name' => 'required_with:custom_fields|string|max:255',
+            'custom_fields.*.field_type' => 'required_with:custom_fields|in:text,number,dropdown,checkbox,date,time,datetime',
+            'custom_fields.*.placeholder' => 'nullable|string|max:255',
+            'custom_fields.*.is_required' => 'nullable|boolean',
+            'custom_fields.*.field_options' => 'nullable|array',
         ]);
 
-        $sectionType = SectionType::findOrFail($id);
-        $sectionType->update([
-            'code' => strtoupper($request->code),
-            'name' => $request->name,
-            'description' => $request->description,
-            'status' => $request->status,
-        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
-        // Log section type update
-        activity()
-            ->performedOn($sectionType)
-            ->causedBy(auth()->user())
-            ->withProperties([
-                'ip' => request()->ip(),
-                'code' => $sectionType->code,
-                'name' => $sectionType->name,
-            ])
-            ->log('Section type updated');
+        try {
+            DB::beginTransaction();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Section type updated successfully',
-            'data' => $sectionType
-        ]);
+            $sectionType = SectionType::findOrFail($id);
+            $sectionType->update([
+                'code' => strtoupper($request->code),
+                'name' => $request->name,
+                'description' => $request->description,
+                'status' => $request->status,
+            ]);
+
+            // Update documents - delete existing and create new ones
+            if ($request->has('documents')) {
+                // Delete existing documents
+                $sectionType->initiatingDocuments()->delete();
+
+                // Create new documents
+                foreach ($request->documents as $index => $documentData) {
+                    if (!empty($documentData['document_name']) && !empty($documentData['document_code'])) {
+                        CaseInitiatingDocument::create([
+                            'section_type_id' => $sectionType->id,
+                            'document_name' => $documentData['document_name'],
+                            'document_code' => $documentData['document_code'],
+                            'sort_order' => $index + 1,
+                            'status' => 'active',
+                            'firm_id' => $firmId,
+                        ]);
+                    }
+                }
+            }
+
+            // Update custom fields - delete existing and create new ones
+            if ($request->has('custom_fields')) {
+                // Delete existing custom fields
+                $sectionType->customFields()->delete();
+
+                // Create new custom fields
+                foreach ($request->custom_fields as $index => $fieldData) {
+                    if (!empty($fieldData['field_name']) && !empty($fieldData['field_type'])) {
+                        SectionCustomField::create([
+                            'section_type_id' => $sectionType->id,
+                            'field_name' => $fieldData['field_name'],
+                            'field_type' => $fieldData['field_type'],
+                            'placeholder' => $fieldData['placeholder'] ?? '',
+                            'is_required' => isset($fieldData['is_required']) ? (bool)$fieldData['is_required'] : false,
+                            'field_options' => isset($fieldData['field_options']) ? $fieldData['field_options'] : null,
+                            'conditional_document_code' => $fieldData['conditional_document_code'] ?? null,
+                            'sort_order' => $index + 1,
+                            'status' => 'active',
+                            'firm_id' => $firmId,
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+
+            // Log section type update
+            activity()
+                ->performedOn($sectionType)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'code' => $sectionType->code,
+                    'name' => $sectionType->name,
+                ])
+                ->log('Section type updated');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Section type updated successfully',
+                'data' => $sectionType
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update section type: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function destroySectionType($id)
@@ -1010,5 +1155,309 @@ class CategoryController extends Controller
             'success' => true,
             'message' => 'Section type deleted successfully'
         ]);
+    }
+
+    // Case Initiating Document Methods
+    public function getDocuments($sectionTypeId)
+    {
+        try {
+            $sectionType = SectionType::findOrFail($sectionTypeId);
+            $documents = $sectionType->initiatingDocuments()->ordered()->get();
+
+            return response()->json([
+                'success' => true,
+                'documents' => $documents,
+                'section_type' => $sectionType
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch documents: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function storeDocument(Request $request)
+    {
+        $request->validate([
+            'section_type_id' => 'required|exists:section_types,id',
+            'document_name' => 'required|string|max:255',
+            'document_code' => 'nullable|string|max:100',
+            'sort_order' => 'nullable|integer|min:0',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        try {
+            // Get current firm context
+            $firmId = session('current_firm_id') ?? auth()->user()->firm_id;
+
+            $document = CaseInitiatingDocument::create([
+                'section_type_id' => $request->section_type_id,
+                'document_name' => $request->document_name,
+                'document_code' => $request->document_code,
+                'sort_order' => $request->sort_order ?? 0,
+                'status' => $request->status,
+                'firm_id' => $firmId,
+            ]);
+
+            // Log activity
+            activity('case_initiating_document')
+                ->performedOn($document)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'section_type_id' => $document->section_type_id,
+                    'document_name' => $document->document_name,
+                ])
+                ->log('Case initiating document created');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Document created successfully',
+                'document' => $document->load('sectionType')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create document: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateDocument(Request $request, $id)
+    {
+        $request->validate([
+            'document_name' => 'required|string|max:255',
+            'document_code' => 'nullable|string|max:100',
+            'sort_order' => 'nullable|integer|min:0',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        try {
+            $document = CaseInitiatingDocument::findOrFail($id);
+
+            $document->update([
+                'document_name' => $request->document_name,
+                'document_code' => $request->document_code,
+                'sort_order' => $request->sort_order ?? 0,
+                'status' => $request->status,
+            ]);
+
+            // Log activity
+            activity('case_initiating_document')
+                ->performedOn($document)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'document_name' => $document->document_name,
+                ])
+                ->log('Case initiating document updated');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Document updated successfully',
+                'document' => $document->load('sectionType')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update document: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function destroyDocument($id)
+    {
+        try {
+            $document = CaseInitiatingDocument::findOrFail($id);
+
+            // Log activity before deletion
+            activity('case_initiating_document')
+                ->performedOn($document)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'document_name' => $document->document_name,
+                ])
+                ->log('Case initiating document deleted');
+
+            $document->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Document deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete document: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Section Custom Field Methods
+    public function getCustomFields($sectionTypeId)
+    {
+        try {
+            $sectionType = SectionType::findOrFail($sectionTypeId);
+            $customFields = $sectionType->customFields()->ordered()->get();
+
+            return response()->json([
+                'success' => true,
+                'custom_fields' => $customFields,
+                'section_type' => $sectionType
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch custom fields: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function storeCustomField(Request $request)
+    {
+        $request->validate([
+            'section_type_id' => 'required|exists:section_types,id',
+            'field_name' => 'required|string|max:255',
+            'field_type' => 'required|in:text,number,dropdown,checkbox,date,time,datetime',
+            'placeholder' => 'nullable|string|max:255',
+            'field_options' => 'nullable|array',
+            'field_options.*.label' => 'required_with:field_options|string|max:255',
+            'field_options.*.value' => 'required_with:field_options|string|max:255',
+            'is_required' => 'boolean',
+            'sort_order' => 'nullable|integer|min:0',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        try {
+            // Get current firm context
+            $firmId = session('current_firm_id') ?? auth()->user()->firm_id;
+
+            $customField = SectionCustomField::create([
+                'section_type_id' => $request->section_type_id,
+                'field_name' => $request->field_name,
+                'field_type' => $request->field_type,
+                'placeholder' => $request->placeholder,
+                'field_options' => $request->field_options,
+                'is_required' => $request->boolean('is_required'),
+                'sort_order' => $request->sort_order ?? 0,
+                'status' => $request->status,
+                'firm_id' => $firmId,
+            ]);
+
+            // Log activity
+            activity('section_custom_field')
+                ->performedOn($customField)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'section_type_id' => $customField->section_type_id,
+                    'field_name' => $customField->field_name,
+                    'field_type' => $customField->field_type,
+                ])
+                ->log('Section custom field created');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Custom field created successfully',
+                'custom_field' => $customField->load('sectionType')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create custom field: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateCustomField(Request $request, $id)
+    {
+        $request->validate([
+            'field_name' => 'required|string|max:255',
+            'field_type' => 'required|in:text,number,dropdown,checkbox,date,time,datetime',
+            'placeholder' => 'nullable|string|max:255',
+            'field_options' => 'nullable|array',
+            'field_options.*.label' => 'required_with:field_options|string|max:255',
+            'field_options.*.value' => 'required_with:field_options|string|max:255',
+            'is_required' => 'boolean',
+            'sort_order' => 'nullable|integer|min:0',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        try {
+            $customField = SectionCustomField::findOrFail($id);
+
+            $customField->update([
+                'field_name' => $request->field_name,
+                'field_type' => $request->field_type,
+                'placeholder' => $request->placeholder,
+                'field_options' => $request->field_options,
+                'is_required' => $request->boolean('is_required'),
+                'sort_order' => $request->sort_order ?? 0,
+                'status' => $request->status,
+            ]);
+
+            // Log activity
+            activity('section_custom_field')
+                ->performedOn($customField)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'field_name' => $customField->field_name,
+                    'field_type' => $customField->field_type,
+                ])
+                ->log('Section custom field updated');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Custom field updated successfully',
+                'custom_field' => $customField->load('sectionType')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update custom field: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function destroyCustomField($id)
+    {
+        try {
+            $customField = SectionCustomField::findOrFail($id);
+
+            // Check if custom field is being used in any cases
+            $usageCount = $customField->caseValues()->count();
+            if ($usageCount > 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Cannot delete custom field. It is being used in {$usageCount} case(s)."
+                ], 400);
+            }
+
+            // Log activity before deletion
+            activity('section_custom_field')
+                ->performedOn($customField)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'field_name' => $customField->field_name,
+                    'field_type' => $customField->field_type,
+                ])
+                ->log('Section custom field deleted');
+
+            $customField->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Custom field deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete custom field: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
