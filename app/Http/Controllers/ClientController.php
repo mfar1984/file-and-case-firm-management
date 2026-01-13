@@ -114,13 +114,16 @@ class ClientController extends Controller
             'notes' => $data['notes'],
         ];
 
-        // Convert null values to empty strings
-        $clientData = array_map(function($value) {
-            return $value ?? '';
-        }, $clientData);
-
-        // Explicitly cast dependent to integer
-        $clientData['dependent'] = (int)($clientData['dependent']);
+        // Handle numeric fields - ensure proper type casting
+        $clientData['salary'] = !empty($clientData['salary']) ? (float)$clientData['salary'] : null;
+        $clientData['dependent'] = !empty($clientData['dependent']) ? (int)$clientData['dependent'] : 0;
+        
+        // Convert remaining null values to empty strings for string fields
+        foreach ($clientData as $key => $value) {
+            if (!in_array($key, ['salary', 'dependent']) && $value === null) {
+                $clientData[$key] = '';
+            }
+        }
 
         // Auto-create user account
         $userResult = UserCreationService::createUserForClient($clientData);
@@ -300,13 +303,16 @@ class ClientController extends Controller
             'mobile' => $data['mobile'],
         ];
 
-        // Clean up null values that might cause database issues
-        $clientData = array_map(function($value) {
-            return $value === null ? '' : $value;
-        }, $clientData);
-
-        // Ensure dependent is always an integer
-        $clientData['dependent'] = (int)($clientData['dependent']);
+        // Handle numeric fields - ensure proper type casting
+        $clientData['salary'] = !empty($clientData['salary']) ? (float)$clientData['salary'] : null;
+        $clientData['dependent'] = !empty($clientData['dependent']) ? (int)$clientData['dependent'] : 0;
+        
+        // Convert remaining null values to empty strings for string fields
+        foreach ($clientData as $key => $value) {
+            if (!in_array($key, ['salary', 'dependent']) && $value === null) {
+                $clientData[$key] = '';
+            }
+        }
 
         // Add firm context
         $user = auth()->user();

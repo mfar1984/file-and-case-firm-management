@@ -72,25 +72,28 @@
                 selectedPlaintiff: '',
                 selectedDefendant: '',
                 selectedPartner: '',
-                clientList: [
-                    @foreach($clients as $client)
-                    { 
-                        id: {{ $client->id }}, 
-                        name: '{{ $client->name }}', 
-                        ic: '{{ $client->ic_passport ?? '' }}', 
-                        phone: '{{ $client->phone ?? '' }}', 
-                        email: '{{ $client->email ?? '' }}', 
-                        party_type: '{{ $client->party_type ?? '' }}',
-                        gender: '{{ $client->gender ?? '' }}',
-                        nationality: '{{ $client->nationality ?? '' }}'
-                    },
-                    @endforeach
-                ],
-                partnerList: [
-                    @foreach($partners as $partner)
-                    { id: {{ $partner->id }}, name: '{{ $partner->incharge_name }}', firm_name: '{{ $partner->firm_name }}', email: '{{ $partner->incharge_email }}', contact: '{{ $partner->incharge_contact }}', specialization: '{{ $partner->specialization }}' },
-                    @endforeach
-                ],
+                clientList: @js($clients->map(function($client) {
+                    return [
+                        'id' => $client->id,
+                        'name' => $client->name,
+                        'ic' => $client->ic_passport ?? '',
+                        'phone' => $client->phone ?? '',
+                        'email' => $client->email ?? '',
+                        'party_type' => $client->party_type ?? '',
+                        'gender' => $client->gender ?? '',
+                        'nationality' => $client->nationality ?? ''
+                    ];
+                })->values()),
+                partnerList: @js($partners->map(function($partner) {
+                    return [
+                        'id' => $partner->id,
+                        'name' => $partner->incharge_name,
+                        'firm_name' => $partner->firm_name,
+                        'email' => $partner->incharge_email,
+                        'contact' => $partner->incharge_contact,
+                        'specialization' => $partner->specialization
+                    ];
+                })->values()),
                 
                 // Computed properties for filtered client lists
                 get applicantList() {

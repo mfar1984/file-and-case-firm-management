@@ -164,16 +164,16 @@
                     <span id="pageInfo">Showing 1 to 25 of 100 records</span>
                 </div>
 
-                <!-- Right: Pagination -->
-                <div class="flex items-center gap-1">
+                <!-- Right on Desktop, Center on Mobile: Pagination -->
+                <div class="flex items-center justify-center md:justify-end gap-1">
                     <button id="prevBtn" onclick="firstPage()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;&lt;
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &laquo;
                     </button>
 
                     <button id="prevSingleBtn" onclick="previousPage()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lsaquo;
                     </button>
 
                     <div id="pageNumbers" class="flex items-center gap-1 mx-2">
@@ -181,13 +181,13 @@
                     </div>
 
                     <button id="nextSingleBtn" onclick="nextPage()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &rsaquo;
                     </button>
 
                     <button id="nextBtn" onclick="lastPage()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;&gt;
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &raquo;
                     </button>
                 </div>
             </div>
@@ -337,29 +337,55 @@ function updatePagination() {
     nextBtn.disabled = currentPage === totalPages || totalPages === 0;
     nextSingleBtn.disabled = currentPage === totalPages || totalPages === 0;
 
-    // Update page numbers
+    // Update page numbers with ellipsis format: 1 2 ... 18 19
     const pageNumbers = document.getElementById('pageNumbers');
     let pageHtml = '';
 
-    // Show page numbers (max 5 visible)
-    let startPage = Math.max(1, currentPage - 2);
-    let endPage = Math.min(totalPages, startPage + 4);
+    if (totalPages <= 7) {
+        // Show all pages if 7 or less
+        for (let i = 1; i <= totalPages; i++) {
+            pageHtml += createPageButton(i);
+        }
+    } else {
+        // Always show first 2 pages
+        pageHtml += createPageButton(1);
+        pageHtml += createPageButton(2);
 
-    if (endPage - startPage < 4) {
-        startPage = Math.max(1, endPage - 4);
-    }
+        if (currentPage > 4) {
+            pageHtml += '<span class="w-8 h-8 flex items-center justify-center text-xs text-gray-400">...</span>';
+        }
 
-    for (let i = startPage; i <= endPage; i++) {
-        const isActive = i === currentPage;
-        pageHtml += `
-            <button onclick="goToPage(${i})"
-                    class="w-8 h-8 flex items-center justify-center text-xs transition-colors ${isActive ? 'bg-blue-500 text-white rounded-full' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full'}">
-                ${i}
-            </button>
-        `;
+        // Show pages around current page
+        const startMiddle = Math.max(3, currentPage - 1);
+        const endMiddle = Math.min(totalPages - 2, currentPage + 1);
+
+        for (let i = startMiddle; i <= endMiddle; i++) {
+            if (i > 2 && i < totalPages - 1) {
+                pageHtml += createPageButton(i);
+            }
+        }
+
+        if (currentPage < totalPages - 3) {
+            pageHtml += '<span class="w-8 h-8 flex items-center justify-center text-xs text-gray-400">...</span>';
+        }
+
+        // Always show last 2 pages
+        pageHtml += createPageButton(totalPages - 1);
+        pageHtml += createPageButton(totalPages);
     }
 
     pageNumbers.innerHTML = pageHtml;
+}
+
+function createPageButton(page) {
+    const isActive = page === currentPage;
+    return `
+        <button onclick="goToPage(${page})"
+                style="border-radius: 50% !important;"
+                class="w-8 h-8 flex items-center justify-center text-xs transition-colors ${isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'}">
+            ${page}
+        </button>
+    `;
 }
 
 function goToPage(page) {

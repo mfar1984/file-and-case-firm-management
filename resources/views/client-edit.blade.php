@@ -21,16 +21,6 @@
         
         <div class="p-4 md:p-6">
             <form action="{{ route('client.update', $client->id) }}" method="POST" class="space-y-0" x-data="{
-                partyType: '{{ $client->party_type }}',
-                identityType: '{{ $client->identity_type }}',
-                identityNumber: '{{ $client->ic_passport }}',
-                name: '{{ $client->name }}',
-                gender: '{{ $client->gender }}',
-                nationality: '{{ $client->nationality }}',
-                race: '{{ $client->race }}',
-                state: '{{ $client->state }}',
-                country: '{{ $client->country }}',
-                
                 identityTypes: [
                     'Government Agency (Criminal)',
                     'Government Agency (Civil)',
@@ -86,41 +76,39 @@
                     'Zambia', 'Zimbabwe'
                 ],
                 activePersonalTab: 'identity',
-                partyType: '{{ $client->party_type }}',
-                identityType: '{{ $client->identity_type }}',
-                identityNumber: '{{ $client->ic_passport }}',
-                name: '{{ $client->name }}',
-                gender: '{{ $client->gender }}',
-                nationality: '{{ $client->nationality }}',
-                race: '{{ $client->race }}',
-                addresses: [
-                    @foreach($client->addresses->sortByDesc('is_primary') as $address)
-                    {
-                        address_line1: '{{ $address->address_line1 ?? '' }}',
-                        address_line2: '{{ $address->address_line2 ?? '' }}',
-                        address_line3: '{{ $address->address_line3 ?? '' }}',
-                        postcode: '{{ $address->postcode ?? '' }}',
-                        city: '{{ $address->city ?? '' }}',
-                        state: '{{ $address->state ?? '' }}',
-                        country: '{{ $address->country ?? 'Malaysia' }}'
-                    }@if(!$loop->last),@endif
-                    @endforeach
-                ],
-                phone: '{{ $client->phone }}',
-                fax: '{{ $client->fax }}',
-                mobile: '{{ $client->mobile }}',
-                email: '{{ $client->email }}',
-                tin_no: '{{ $client->tin_no }}',
-                job: '{{ $client->job }}',
-                salary: '{{ $client->salary }}',
-                dependent: '{{ $client->dependent }}',
-                family_contact_name: '{{ $client->family_contact_name }}',
-                family_contact_phone: '{{ $client->family_contact_phone }}',
-                family_address: '{{ $client->family_address }}',
-                agent_banker: '{{ $client->agent_banker }}',
-                financier_bank: '{{ $client->financier_bank }}',
-                lawyers_parties: '{{ $client->lawyers_parties }}',
-                notes: '{{ $client->notes }}'
+                partyType: {{ Js::from($client->party_type ?? '') }},
+                identityType: {{ Js::from($client->identity_type ?? '') }},
+                identityNumber: {{ Js::from($client->ic_passport ?? '') }},
+                name: {{ Js::from($client->name ?? '') }},
+                gender: {{ Js::from($client->gender ?? '') }},
+                nationality: {{ Js::from($client->nationality ?? '') }},
+                race: {{ Js::from($client->race ?? '') }},
+                addresses: {{ Js::from($client->addresses->sortByDesc('is_primary')->map(function($addr) {
+                    return [
+                        'address_line1' => $addr->address_line1 ?? '',
+                        'address_line2' => $addr->address_line2 ?? '',
+                        'address_line3' => $addr->address_line3 ?? '',
+                        'postcode' => $addr->postcode ?? '',
+                        'city' => $addr->city ?? '',
+                        'state' => $addr->state ?? '',
+                        'country' => $addr->country ?? 'Malaysia'
+                    ];
+                })->values()->toArray()) }},
+                phone: {{ Js::from($client->phone ?? '') }},
+                fax: {{ Js::from($client->fax ?? '') }},
+                mobile: {{ Js::from($client->mobile ?? '') }},
+                email: {{ Js::from($client->email ?? '') }},
+                tin_no: {{ Js::from($client->tin_no ?? '') }},
+                job: {{ Js::from($client->job ?? '') }},
+                salary: {{ Js::from($client->salary ?? '') }},
+                dependent: {{ Js::from($client->dependent ?? '') }},
+                family_contact_name: {{ Js::from($client->family_contact_name ?? '') }},
+                family_contact_phone: {{ Js::from($client->family_contact_phone ?? '') }},
+                family_address: {{ Js::from($client->family_address ?? '') }},
+                agent_banker: {{ Js::from($client->agent_banker ?? '') }},
+                financier_bank: {{ Js::from($client->financier_bank ?? '') }},
+                lawyers_parties: {{ Js::from($client->lawyers_parties ?? '') }},
+                notes: {{ Js::from($client->notes ?? '') }}
             }">
                 @csrf
                 @method('PUT')
@@ -230,7 +218,7 @@
                             <label class="block text-xs font-medium text-gray-700 mb-2">Nationality *</label>
                             <select x-model="nationality" name="nationality" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 @error('nationality') border-red-500 @enderror" required>
                                 <template x-for="country in countries" :key="country">
-                                    <option :value="country" :selected="country === '{{ $client->nationality }}'" x-text="country"></option>
+                                    <option :value="country" :selected="country === nationality" x-text="country"></option>
                                 </template>
                             </select>
                             @error('nationality')
@@ -242,7 +230,7 @@
                             <select x-model="race" name="race" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 @error('race') border-red-500 @enderror" required>
                                 <option value="">Select race...</option>
                                 <template x-for="raceOption in races" :key="raceOption">
-                                    <option :value="raceOption" :selected="raceOption === '{{ $client->race }}'" x-text="raceOption"></option>
+                                    <option :value="raceOption" :selected="raceOption === race" x-text="raceOption"></option>
                                 </template>
                             </select>
                             @error('race')

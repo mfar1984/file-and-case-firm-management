@@ -857,16 +857,18 @@
                     <span id="pageInfoTypes">Showing 1 to 10 of 100 records</span>
                 </div>
 
-                <!-- Right: Pagination -->
-                <div class="flex items-center gap-1">
+                <!-- Right on Desktop, Center on Mobile: Pagination -->
+                <div class="flex items-center justify-center md:justify-end gap-1">
                     <button id="prevBtnTypes" onclick="firstPageTypes()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;&lt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &laquo;
                     </button>
 
                     <button id="prevSingleBtnTypes" onclick="previousPageTypes()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lsaquo;
                     </button>
 
                     <div id="pageNumbersTypes" class="flex items-center gap-1 mx-2">
@@ -874,13 +876,15 @@
                     </div>
 
                     <button id="nextSingleBtnTypes" onclick="nextPageTypes()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &rsaquo;
                     </button>
 
                     <button id="nextBtnTypes" onclick="lastPageTypes()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;&gt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &raquo;
                     </button>
                 </div>
             </div>
@@ -1113,16 +1117,18 @@
                     <span id="pageInfoExpenseCategory">Showing 1 to 10 of 100 records</span>
                 </div>
 
-                <!-- Right: Pagination -->
-                <div class="flex items-center gap-1">
+                <!-- Right on Desktop, Center on Mobile: Pagination -->
+                <div class="flex items-center justify-center md:justify-end gap-1">
                     <button id="prevBtnExpenseCategory" onclick="firstPageExpenseCategory()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;&lt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &laquo;
                     </button>
 
                     <button id="prevSingleBtnExpenseCategory" onclick="previousPageExpenseCategory()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lsaquo;
                     </button>
 
                     <div id="pageNumbersExpenseCategory" class="flex items-center gap-1 mx-2">
@@ -1130,13 +1136,15 @@
                     </div>
 
                     <button id="nextSingleBtnExpenseCategory" onclick="nextPageExpenseCategory()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &rsaquo;
                     </button>
 
                     <button id="nextBtnExpenseCategory" onclick="lastPageExpenseCategory()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;&gt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &raquo;
                     </button>
                 </div>
             </div>
@@ -1359,16 +1367,18 @@
                     <span id="pageInfoSectionType">Showing 1 to 10 of 100 records</span>
                 </div>
 
-                <!-- Right: Pagination -->
-                <div class="flex items-center gap-1">
+                <!-- Right on Desktop, Center on Mobile: Pagination -->
+                <div class="flex items-center justify-center md:justify-end gap-1">
                     <button id="prevBtnSectionType" onclick="firstPageSectionType()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;&lt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &laquo;
                     </button>
 
                     <button id="prevSingleBtnSectionType" onclick="previousPageSectionType()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lsaquo;
                     </button>
 
                     <div id="pageNumbersSectionType" class="flex items-center gap-1 mx-2">
@@ -1376,13 +1386,15 @@
                     </div>
 
                     <button id="nextSingleBtnSectionType" onclick="nextPageSectionType()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &rsaquo;
                     </button>
 
                     <button id="nextBtnSectionType" onclick="lastPageSectionType()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;&gt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &raquo;
                     </button>
                 </div>
             </div>
@@ -1794,16 +1806,18 @@
                     <span id="pageInfoTaxCategories">Showing 1 to 10 of 100 records</span>
                 </div>
 
-                <!-- Right: Pagination -->
-                <div class="flex items-center gap-1">
+                <!-- Right on Desktop, Center on Mobile: Pagination -->
+                <div class="flex items-center justify-center md:justify-end gap-1">
                     <button id="prevBtnTaxCategories" onclick="firstPageTaxCategories()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;&lt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &laquo;
                     </button>
 
                     <button id="prevSingleBtnTaxCategories" onclick="previousPageTaxCategories()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lsaquo;
                     </button>
 
                     <div id="pageNumbersTaxCategories" class="flex items-center gap-1 mx-2">
@@ -1811,13 +1825,15 @@
                     </div>
 
                     <button id="nextSingleBtnTaxCategories" onclick="nextPageTaxCategories()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &rsaquo;
                     </button>
 
                     <button id="nextBtnTaxCategories" onclick="lastPageTaxCategories()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;&gt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &raquo;
                     </button>
                 </div>
             </div>
@@ -1964,16 +1980,18 @@
                     <span id="pageInfoStatus">Showing 1 to 10 of 100 records</span>
                 </div>
 
-                <!-- Right: Pagination -->
-                <div class="flex items-center gap-1">
+                <!-- Right on Desktop, Center on Mobile: Pagination -->
+                <div class="flex items-center justify-center md:justify-end gap-1">
                     <button id="prevBtnStatus" onclick="firstPageStatus()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;&lt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &laquo;
                     </button>
 
                     <button id="prevSingleBtnStatus" onclick="previousPageStatus()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lsaquo;
                     </button>
 
                     <div id="pageNumbersStatus" class="flex items-center gap-1 mx-2">
@@ -1981,13 +1999,15 @@
                     </div>
 
                     <button id="nextSingleBtnStatus" onclick="nextPageStatus()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &rsaquo;
                     </button>
 
                     <button id="nextBtnStatus" onclick="lastPageStatus()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;&gt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &raquo;
                     </button>
                 </div>
             </div>
@@ -2248,16 +2268,18 @@
                     <span id="pageInfoFileType">Showing 1 to 10 of 100 records</span>
                 </div>
 
-                <!-- Right: Pagination -->
-                <div class="flex items-center gap-1">
+                <!-- Right on Desktop, Center on Mobile: Pagination -->
+                <div class="flex items-center justify-center md:justify-end gap-1">
                     <button id="prevBtnFileType" onclick="firstPageFileType()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;&lt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &laquo;
                     </button>
 
                     <button id="prevSingleBtnFileType" onclick="previousPageFileType()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lsaquo;
                     </button>
 
                     <div id="pageNumbersFileType" class="flex items-center gap-1 mx-2">
@@ -2265,13 +2287,15 @@
                     </div>
 
                     <button id="nextSingleBtnFileType" onclick="nextPageFileType()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &rsaquo;
                     </button>
 
                     <button id="nextBtnFileType" onclick="lastPageFileType()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;&gt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &raquo;
                     </button>
                 </div>
             </div>
@@ -2799,16 +2823,18 @@
                     <span id="pageInfoSpecialization">Showing 1 to 10 of 100 records</span>
                 </div>
 
-                <!-- Right: Pagination -->
-                <div class="flex items-center gap-1">
+                <!-- Right on Desktop, Center on Mobile: Pagination -->
+                <div class="flex items-center justify-center md:justify-end gap-1">
                     <button id="prevBtnSpecialization" onclick="firstPageSpecialization()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;&lt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &laquo;
                     </button>
 
                     <button id="prevSingleBtnSpecialization" onclick="previousPageSpecialization()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lsaquo;
                     </button>
 
                     <div id="pageNumbersSpecialization" class="flex items-center gap-1 mx-2">
@@ -2816,13 +2842,15 @@
                     </div>
 
                     <button id="nextSingleBtnSpecialization" onclick="nextPageSpecialization()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &rsaquo;
                     </button>
 
                     <button id="nextBtnSpecialization" onclick="lastPageSpecialization()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;&gt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &raquo;
                     </button>
                 </div>
             </div>
@@ -2983,16 +3011,18 @@
                     <span id="pageInfoEventStatus">Showing 1 to 10 of 100 records</span>
                 </div>
 
-                <!-- Right: Pagination -->
-                <div class="flex items-center gap-1">
+                <!-- Right on Desktop, Center on Mobile: Pagination -->
+                <div class="flex items-center justify-center md:justify-end gap-1">
                     <button id="prevBtnEventStatus" onclick="firstPageEventStatus()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;&lt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &laquo;
                     </button>
 
                     <button id="prevSingleBtnEventStatus" onclick="previousPageEventStatus()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lsaquo;
                     </button>
 
                     <div id="pageNumbersEventStatus" class="flex items-center gap-1 mx-2">
@@ -3000,13 +3030,15 @@
                     </div>
 
                     <button id="nextSingleBtnEventStatus" onclick="nextPageEventStatus()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &rsaquo;
                     </button>
 
                     <button id="nextBtnEventStatus" onclick="lastPageEventStatus()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;&gt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &raquo;
                     </button>
                 </div>
             </div>
@@ -3172,16 +3204,18 @@
                     <span id="pageInfoPayee">Showing 1 to 10 of 100 records</span>
                 </div>
 
-                <!-- Right: Pagination -->
-                <div class="flex items-center gap-1">
+                <!-- Right on Desktop, Center on Mobile: Pagination -->
+                <div class="flex items-center justify-center md:justify-end gap-1">
                     <button id="prevBtnPayee" onclick="firstPagePayee()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;&lt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &laquo;
                     </button>
 
                     <button id="prevSingleBtnPayee" onclick="previousPagePayee()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lsaquo;
                     </button>
 
                     <div id="pageNumbersPayee" class="flex items-center gap-1 mx-2">
@@ -3189,13 +3223,15 @@
                     </div>
 
                     <button id="nextSingleBtnPayee" onclick="nextPagePayee()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &rsaquo;
                     </button>
 
                     <button id="nextBtnPayee" onclick="lastPagePayee()"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;&gt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &raquo;
                     </button>
                 </div>
             </div>
@@ -3599,36 +3635,88 @@
                     <span x-text="pageInfo"></span>
                 </div>
 
-                <!-- Right: Pagination -->
-                <div class="flex items-center gap-1" x-show="totalPages > 1">
+                <!-- Right on Desktop, Center on Mobile: Pagination -->
+                <div class="flex items-center justify-center md:justify-end gap-1" x-show="totalPages > 1">
                     <button @click="goToPage(1)" :disabled="currentPage === 1"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;&lt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &laquo;
                     </button>
 
                     <button @click="previousPage()" :disabled="currentPage === 1"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &lt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &lsaquo;
                     </button>
 
                     <div class="flex items-center gap-1 mx-2">
-                        <template x-for="page in Array.from({length: totalPages}, (_, i) => i + 1).filter(p => p === 1 || p === totalPages || (p >= currentPage - 2 && p <= currentPage + 2))" :key="page">
+                        <!-- First 2 pages -->
+                        <template x-if="totalPages > 0">
+                            <button @click="goToPage(1)"
+                                    style="border-radius: 50% !important; width: 32px !important; height: 32px !important; min-width: 32px !important;"
+                                    :class="1 === currentPage ? 'bg-blue-500 text-white' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'"
+                                    class="flex items-center justify-center text-xs rounded-full transition-colors">
+                                1
+                            </button>
+                        </template>
+                        <template x-if="totalPages > 1">
+                            <button @click="goToPage(2)"
+                                    style="border-radius: 50% !important; width: 32px !important; height: 32px !important; min-width: 32px !important;"
+                                    :class="2 === currentPage ? 'bg-blue-500 text-white' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'"
+                                    class="flex items-center justify-center text-xs rounded-full transition-colors">
+                                2
+                            </button>
+                        </template>
+                        
+                        <!-- Left ellipsis -->
+                        <template x-if="totalPages > 7 && currentPage > 4">
+                            <span style="width: 32px; height: 32px; border-radius: 50%;" class="flex items-center justify-center text-xs text-gray-400">...</span>
+                        </template>
+                        
+                        <!-- Middle pages -->
+                        <template x-for="page in Array.from({length: totalPages}, (_, i) => i + 1).filter(p => p > 2 && p < totalPages - 1 && p >= currentPage - 1 && p <= currentPage + 1)" :key="page">
                             <button @click="goToPage(page)"
-                                    :class="page === currentPage ? 'bg-blue-500 text-white' : 'text-gray-600 hover:text-blue-600'"
-                                    class="px-2 py-1 text-xs rounded transition-colors">
+                                    style="border-radius: 50% !important; width: 32px !important; height: 32px !important; min-width: 32px !important;"
+                                    :class="page === currentPage ? 'bg-blue-500 text-white' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'"
+                                    class="flex items-center justify-center text-xs rounded-full transition-colors">
                                 <span x-text="page"></span>
+                            </button>
+                        </template>
+                        
+                        <!-- Right ellipsis -->
+                        <template x-if="totalPages > 7 && currentPage < totalPages - 3">
+                            <span style="width: 32px; height: 32px; border-radius: 50%;" class="flex items-center justify-center text-xs text-gray-400">...</span>
+                        </template>
+                        
+                        <!-- Last 2 pages -->
+                        <template x-if="totalPages > 2">
+                            <button @click="goToPage(totalPages - 1)"
+                                    style="border-radius: 50% !important; width: 32px !important; height: 32px !important; min-width: 32px !important;"
+                                    :class="(totalPages - 1) === currentPage ? 'bg-blue-500 text-white' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'"
+                                    class="flex items-center justify-center text-xs rounded-full transition-colors">
+                                <span x-text="totalPages - 1"></span>
+                            </button>
+                        </template>
+                        <template x-if="totalPages > 2">
+                            <button @click="goToPage(totalPages)"
+                                    style="border-radius: 50% !important; width: 32px !important; height: 32px !important; min-width: 32px !important;"
+                                    :class="totalPages === currentPage ? 'bg-blue-500 text-white' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'"
+                                    class="flex items-center justify-center text-xs rounded-full transition-colors">
+                                <span x-text="totalPages"></span>
                             </button>
                         </template>
                     </div>
 
                     <button @click="nextPage()" :disabled="currentPage === totalPages"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &rsaquo;
                     </button>
 
                     <button @click="goToPage(totalPages)" :disabled="currentPage === totalPages"
-                            class="px-2 py-1 text-xs text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        &gt;&gt;
+                            style="border-radius: 50% !important;"
+                            class="w-8 h-8 flex items-center justify-center text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        &raquo;
                     </button>
                 </div>
             </div>
@@ -4665,6 +4753,71 @@ function deleteSectionType(id) {
     }
 }
 
+// ============================================
+// CENTRALIZED PAGINATION HELPER
+// Format: << < 1 2 ... 21 22 > >>
+// Semua pagination guna function ini
+// Ubah sini = ubah semua pagination
+// ============================================
+function createPaginationButton(page, currentPage, onClickFn) {
+    const isActive = page === currentPage;
+    return `
+        <button onclick="${onClickFn}(${page})"
+                style="border-radius: 50% !important; width: 32px !important; height: 32px !important; min-width: 32px !important;"
+                class="flex items-center justify-center text-xs transition-colors rounded-full ${isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'}">
+            ${page}
+        </button>
+    `;
+}
+
+function generatePaginationNumbers(containerId, totalPages, currentPage, onClickFn) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    container.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    let pageHtml = '';
+    
+    if (totalPages <= 7) {
+        // Show all pages if 7 or less
+        for (let i = 1; i <= totalPages; i++) {
+            pageHtml += createPaginationButton(i, currentPage, onClickFn);
+        }
+    } else {
+        // Always show first 2 pages
+        pageHtml += createPaginationButton(1, currentPage, onClickFn);
+        pageHtml += createPaginationButton(2, currentPage, onClickFn);
+
+        // Show ellipsis if current page > 4
+        if (currentPage > 4) {
+            pageHtml += '<span style="width: 32px; height: 32px; border-radius: 50%;" class="flex items-center justify-center text-xs text-gray-400">...</span>';
+        }
+
+        // Show pages around current page
+        const startMiddle = Math.max(3, currentPage - 1);
+        const endMiddle = Math.min(totalPages - 2, currentPage + 1);
+
+        for (let i = startMiddle; i <= endMiddle; i++) {
+            if (i > 2 && i < totalPages - 1) {
+                pageHtml += createPaginationButton(i, currentPage, onClickFn);
+            }
+        }
+
+        // Show ellipsis if current page < totalPages - 3
+        if (currentPage < totalPages - 3) {
+            pageHtml += '<span style="width: 32px; height: 32px; border-radius: 50%;" class="flex items-center justify-center text-xs text-gray-400">...</span>';
+        }
+
+        // Always show last 2 pages
+        pageHtml += createPaginationButton(totalPages - 1, currentPage, onClickFn);
+        pageHtml += createPaginationButton(totalPages, currentPage, onClickFn);
+    }
+
+    container.innerHTML = pageHtml;
+}
+// ============================================
+
 // Pagination variables for Case Types
 let currentPageTypes = 1;
 let perPageTypes = 10;
@@ -4727,31 +4880,7 @@ function updatePaginationTypes() {
 }
 
 function updatePageNumbersTypes(totalPages) {
-    const pageNumbersContainer = document.getElementById('pageNumbersTypes');
-    if (!pageNumbersContainer) return;
-
-    pageNumbersContainer.innerHTML = '';
-    if (totalPages <= 1) return;
-
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPageTypes - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-    if (endPage - startPage + 1 < maxVisiblePages) {
-        startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    let pageHtml = '';
-    for (let i = startPage; i <= endPage; i++) {
-        const isActive = i === currentPageTypes;
-        pageHtml += `
-            <button onclick="goToPageTypes(${i})"
-                    class="w-8 h-8 flex items-center justify-center text-xs transition-colors ${isActive ? 'bg-blue-500 text-white rounded-full' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full'}">
-                ${i}
-            </button>
-        `;
-    }
-    pageNumbersContainer.innerHTML = pageHtml;
+    generatePaginationNumbers('pageNumbersTypes', totalPages, currentPageTypes, 'goToPageTypes');
 }
 
 function changePerPageTypes() {
@@ -4903,26 +5032,7 @@ function updatePaginationTaxCategories() {
 }
 
 function updatePageNumbersTaxCategories(totalPages) {
-    const pageNumbersContainer = document.getElementById('pageNumbersTaxCategories');
-    if (!pageNumbersContainer) return;
-
-    pageNumbersContainer.innerHTML = '';
-    if (totalPages <= 1) return;
-
-    const startPage = Math.max(1, currentPageTaxCategories - 2);
-    const endPage = Math.min(totalPages, currentPageTaxCategories + 2);
-
-    let pageHtml = '';
-    for (let i = startPage; i <= endPage; i++) {
-        const isActive = i === currentPageTaxCategories;
-        pageHtml += `
-            <button onclick="goToPageTaxCategories(${i})"
-                    class="w-8 h-8 flex items-center justify-center text-xs transition-colors ${isActive ? 'bg-blue-500 text-white rounded-full' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full'}">
-                ${i}
-            </button>
-        `;
-    }
-    pageNumbersContainer.innerHTML = pageHtml;
+    generatePaginationNumbers('pageNumbersTaxCategories', totalPages, currentPageTaxCategories, 'goToPageTaxCategories');
 }
 
 function changePerPageTaxCategories() {
@@ -5085,31 +5195,7 @@ function updatePaginationStatus() {
 }
 
 function updatePageNumbersStatus(totalPages) {
-    const pageNumbersContainer = document.getElementById('pageNumbersStatus');
-    if (!pageNumbersContainer) return;
-
-    pageNumbersContainer.innerHTML = '';
-    if (totalPages <= 1) return;
-
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPageStatus - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-    if (endPage - startPage + 1 < maxVisiblePages) {
-        startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    let pageHtml = '';
-    for (let i = startPage; i <= endPage; i++) {
-        const isActive = i === currentPageStatus;
-        pageHtml += `
-            <button onclick="goToPageStatus(${i})"
-                    class="w-8 h-8 flex items-center justify-center text-xs transition-colors ${isActive ? 'bg-blue-500 text-white rounded-full' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full'}">
-                ${i}
-            </button>
-        `;
-    }
-    pageNumbersContainer.innerHTML = pageHtml;
+    generatePaginationNumbers('pageNumbersStatus', totalPages, currentPageStatus, 'goToPageStatus');
 }
 
 function changePerPageStatus() {
@@ -5258,31 +5344,7 @@ function updatePaginationFileType() {
 }
 
 function updatePageNumbersFileType(totalPages) {
-    const pageNumbersContainer = document.getElementById('pageNumbersFileType');
-    if (!pageNumbersContainer) return;
-
-    pageNumbersContainer.innerHTML = '';
-    if (totalPages <= 1) return;
-
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPageFileType - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-    if (endPage - startPage + 1 < maxVisiblePages) {
-        startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    let pageHtml = '';
-    for (let i = startPage; i <= endPage; i++) {
-        const isActive = i === currentPageFileType;
-        pageHtml += `
-            <button onclick="goToPageFileType(${i})"
-                    class="w-8 h-8 flex items-center justify-center text-xs transition-colors ${isActive ? 'bg-blue-500 text-white rounded-full' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full'}">
-                ${i}
-            </button>
-        `;
-    }
-    pageNumbersContainer.innerHTML = pageHtml;
+    generatePaginationNumbers('pageNumbersFileType', totalPages, currentPageFileType, 'goToPageFileType');
 }
 
 function changePerPageFileType() {
@@ -5430,29 +5492,7 @@ function updatePaginationExpenseCategory() {
 }
 
 function updatePageNumbersExpenseCategory(totalPages) {
-    const pageNumbersContainer = document.getElementById('pageNumbersExpenseCategory');
-    if (!pageNumbersContainer) return;
-
-    pageNumbersContainer.innerHTML = '';
-    if (totalPages <= 1) return;
-
-    let startPage = Math.max(1, currentPageExpenseCategory - 2);
-    let endPage = Math.min(totalPages, startPage + 4);
-
-    if (endPage - startPage < 4) {
-        startPage = Math.max(1, endPage - 4);
-    }
-
-    let pageHtml = '';
-    for (let i = startPage; i <= endPage; i++) {
-        pageHtml += `
-            <button onclick="goToPageExpenseCategory(${i})"
-                    class="px-2 py-1 text-xs ${i === currentPageExpenseCategory ? 'bg-blue-500 text-white' : 'text-gray-600 hover:text-blue-600'} transition-colors">
-                ${i}
-            </button>
-        `;
-    }
-    pageNumbersContainer.innerHTML = pageHtml;
+    generatePaginationNumbers('pageNumbersExpenseCategory', totalPages, currentPageExpenseCategory, 'goToPageExpenseCategory');
 }
 
 function changePerPageExpenseCategory() {
@@ -5594,29 +5634,7 @@ function updatePaginationSectionType() {
 }
 
 function updatePageNumbersSectionType(totalPages) {
-    const pageNumbersContainer = document.getElementById('pageNumbersSectionType');
-    if (!pageNumbersContainer) return;
-
-    pageNumbersContainer.innerHTML = '';
-    if (totalPages <= 1) return;
-
-    let startPage = Math.max(1, currentPageSectionType - 2);
-    let endPage = Math.min(totalPages, startPage + 4);
-
-    if (endPage - startPage < 4) {
-        startPage = Math.max(1, endPage - 4);
-    }
-
-    let pageHtml = '';
-    for (let i = startPage; i <= endPage; i++) {
-        pageHtml += `
-            <button onclick="goToPageSectionType(${i})"
-                    class="px-2 py-1 text-xs ${i === currentPageSectionType ? 'bg-blue-500 text-white' : 'text-gray-600 hover:text-blue-600'} transition-colors">
-                ${i}
-            </button>
-        `;
-    }
-    pageNumbersContainer.innerHTML = pageHtml;
+    generatePaginationNumbers('pageNumbersSectionType', totalPages, currentPageSectionType, 'goToPageSectionType');
 }
 
 function changePerPageSectionType() {
@@ -5771,29 +5789,7 @@ function updatePaginationEventStatus() {
 }
 
 function updatePageNumbersEventStatus(totalPages) {
-    const pageNumbersContainer = document.getElementById('pageNumbersEventStatus');
-    if (!pageNumbersContainer) return;
-
-    pageNumbersContainer.innerHTML = '';
-    if (totalPages <= 1) return;
-
-    let startPage = Math.max(1, currentPageEventStatus - 2);
-    let endPage = Math.min(totalPages, startPage + 4);
-
-    if (endPage - startPage < 4) {
-        startPage = Math.max(1, endPage - 4);
-    }
-
-    let pageHtml = '';
-    for (let i = startPage; i <= endPage; i++) {
-        pageHtml += `
-            <button onclick="goToPageEventStatus(${i})"
-                    class="px-2 py-1 text-xs ${i === currentPageEventStatus ? 'bg-blue-500 text-white' : 'text-gray-600 hover:text-blue-600'} transition-colors">
-                ${i}
-            </button>
-        `;
-    }
-    pageNumbersContainer.innerHTML = pageHtml;
+    generatePaginationNumbers('pageNumbersEventStatus', totalPages, currentPageEventStatus, 'goToPageEventStatus');
 }
 
 function changePerPageEventStatus() {
@@ -5941,31 +5937,7 @@ function updatePaginationSpecialization() {
 }
 
 function updatePageNumbersSpecialization(totalPages) {
-    const pageNumbersContainer = document.getElementById('pageNumbersSpecialization');
-    if (!pageNumbersContainer) return;
-
-    pageNumbersContainer.innerHTML = '';
-    if (totalPages <= 1) return;
-
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPageSpecialization - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-    if (endPage - startPage + 1 < maxVisiblePages) {
-        startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    let pageHtml = '';
-    for (let i = startPage; i <= endPage; i++) {
-        const isActive = i === currentPageSpecialization;
-        pageHtml += `
-            <button onclick="goToPageSpecialization(${i})"
-                    class="w-8 h-8 flex items-center justify-center text-xs transition-colors ${isActive ? 'bg-blue-500 text-white rounded-full' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full'}">
-                ${i}
-            </button>
-        `;
-    }
-    pageNumbersContainer.innerHTML = pageHtml;
+    generatePaginationNumbers('pageNumbersSpecialization', totalPages, currentPageSpecialization, 'goToPageSpecialization');
 }
 
 function changePerPageSpecialization() {
@@ -6098,31 +6070,7 @@ function updatePaginationPayee() {
 }
 
 function updatePageNumbersPayee(totalPages) {
-    const pageNumbersContainer = document.getElementById('pageNumbersPayee');
-    if (!pageNumbersContainer) return;
-
-    pageNumbersContainer.innerHTML = '';
-    if (totalPages <= 1) return;
-
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPagePayee - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-    if (endPage - startPage + 1 < maxVisiblePages) {
-        startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    let pageHtml = '';
-    for (let i = startPage; i <= endPage; i++) {
-        const isActive = i === currentPagePayee;
-        pageHtml += `
-            <button onclick="goToPagePayee(${i})"
-                    class="w-8 h-8 flex items-center justify-center text-xs transition-colors ${isActive ? 'bg-blue-500 text-white rounded-full' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full'}">
-                ${i}
-            </button>
-        `;
-    }
-    pageNumbersContainer.innerHTML = pageHtml;
+    generatePaginationNumbers('pageNumbersPayee', totalPages, currentPagePayee, 'goToPagePayee');
 }
 
 function changePerPagePayee() {
@@ -6374,6 +6322,18 @@ function goToPageAgency(page) {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
+}
+
+/* Centralized Pagination Button - BULAT */
+.pagination-btn-circle {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 </style>
 

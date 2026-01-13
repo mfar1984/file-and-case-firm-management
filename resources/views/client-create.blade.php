@@ -21,15 +21,15 @@
         
         <div class="p-4 md:p-6">
             <form action="{{ route('client.store') }}" method="POST" class="space-y-0" x-data="{
-                partyType: '{{ old('party_type') }}',
-                identityType: '{{ old('identity_type') }}',
-                identityNumber: '{{ old('identity_number') }}',
-                name: '{{ old('name') }}',
-                gender: '{{ old('gender') }}',
-                nationality: '{{ old('nationality', 'Malaysia') }}',
-                race: '{{ old('race') }}',
-                state: '{{ old('state') }}',
-                country: '{{ old('country', 'Malaysia') }}',
+                partyType: {{ Js::from(old('party_type', '')) }},
+                identityType: {{ Js::from(old('identity_type', '')) }},
+                identityNumber: {{ Js::from(old('identity_number', '')) }},
+                name: {{ Js::from(old('name', '')) }},
+                gender: {{ Js::from(old('gender', '')) }},
+                nationality: {{ Js::from(old('nationality', 'Malaysia')) }},
+                race: {{ Js::from(old('race', '')) }},
+                state: {{ Js::from(old('state', '')) }},
+                country: {{ Js::from(old('country', 'Malaysia')) }},
                 
                 identityTypes: [
                     'Government Agency (Criminal)',
@@ -86,11 +86,32 @@
                     'Zambia', 'Zimbabwe'
                 ],
                 activePersonalTab: 'identity',
-                addresses: [{ address_line1:'{{ old('addresses.0.address_line1') }}', address_line2:'{{ old('addresses.0.address_line2') }}', address_line3:'{{ old('addresses.0.address_line3') }}', postcode:'{{ old('addresses.0.postcode') }}', city:'{{ old('addresses.0.city') }}', state:'{{ old('addresses.0.state') }}', country:'{{ old('addresses.0.country', 'Malaysia') }}' }],
-                phone: '{{ old('phone') }}',
-                fax: '{{ old('fax') }}',
-                mobile: '{{ old('mobile') }}',
-                email: '{{ old('email') }}'
+                addresses: {{ Js::from([
+                    [
+                        'address_line1' => old('addresses.0.address_line1', ''),
+                        'address_line2' => old('addresses.0.address_line2', ''),
+                        'address_line3' => old('addresses.0.address_line3', ''),
+                        'postcode' => old('addresses.0.postcode', ''),
+                        'city' => old('addresses.0.city', ''),
+                        'state' => old('addresses.0.state', ''),
+                        'country' => old('addresses.0.country', 'Malaysia')
+                    ]
+                ]) }},
+                phone: {{ Js::from(old('phone', '')) }},
+                fax: {{ Js::from(old('fax', '')) }},
+                mobile: {{ Js::from(old('mobile', '')) }},
+                email: {{ Js::from(old('email', '')) }},
+                tin_no: {{ Js::from(old('tin_no', '')) }},
+                job: {{ Js::from(old('job', '')) }},
+                salary: {{ Js::from(old('salary', '')) }},
+                dependent: {{ Js::from(old('dependent', '')) }},
+                family_contact_name: {{ Js::from(old('family_contact_name', '')) }},
+                family_contact_phone: {{ Js::from(old('family_contact_phone', '')) }},
+                family_address: {{ Js::from(old('family_address', '')) }},
+                agent_banker: {{ Js::from(old('agent_banker', '')) }},
+                financier_bank: {{ Js::from(old('financier_bank', '')) }},
+                lawyers_parties: {{ Js::from(old('lawyers_parties', '')) }},
+                notes: {{ Js::from(old('notes', '')) }}
             }">
                 @csrf
                 
@@ -163,14 +184,14 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2" x-text="identityType || 'Identity Number'">Identity Number *</label>
-                            <input type="text" name="identity_number" x-model="identityNumber" value="{{ old('identity_number') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 @error('identity_number') border-red-500 @enderror" placeholder="Enter identity number" required>
+                            <input type="text" name="identity_number" x-model="identityNumber" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 @error('identity_number') border-red-500 @enderror" placeholder="Enter identity number" required>
                             @error('identity_number')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Full Name *</label>
-                            <input type="text" name="name" x-model="name" value="{{ old('name') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 @error('name') border-red-500 @enderror" placeholder="Enter full name" required>
+                            <input type="text" name="name" x-model="name" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 @error('name') border-red-500 @enderror" placeholder="Enter full name" required>
                             @error('name')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
@@ -220,19 +241,19 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Phone Number</label>
-                            <input type="tel" name="phone" x-model="phone" value="{{ old('phone') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter phone number">
+                            <input type="tel" name="phone" x-model="phone" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter phone number">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Fax Number</label>
-                            <input type="tel" name="fax" x-model="fax" value="{{ old('fax') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter fax number">
+                            <input type="tel" name="fax" x-model="fax" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter fax number">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Mobile Number</label>
-                            <input type="tel" name="mobile" x-model="mobile" value="{{ old('mobile') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter mobile number">
+                            <input type="tel" name="mobile" x-model="mobile" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter mobile number">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Email</label>
-                            <input type="email" name="email" x-model="email" value="{{ old('email') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter email address">
+                            <input type="email" name="email" x-model="email" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter email address">
                         </div>
                     </div>
                 </div>
@@ -325,15 +346,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">TIN No</label>
-                            <input type="text" name="tin_no" value="{{ old('tin_no') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tax Identification Number">
+                            <input type="text" name="tin_no" x-model="tin_no" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tax Identification Number">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Job / Work</label>
-                            <input type="text" name="job" value="{{ old('job') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Engineer, Business Owner">
+                            <input type="text" name="job" x-model="job" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Engineer, Business Owner">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Salary (RM)</label>
-                            <input type="number" step="0.01" name="salary" value="{{ old('salary') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="0.00">
+                            <input type="number" step="0.01" name="salary" x-model="salary" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="0.00">
                         </div>
                     </div>
                 </div>
@@ -351,19 +372,19 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Dependent</label>
-                            <input type="number" name="dependent" value="{{ old('dependent') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Number of dependents">
+                            <input type="number" name="dependent" x-model="dependent" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Number of dependents">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Family Contact Name</label>
-                            <input type="text" name="family_contact_name" value="{{ old('family_contact_name') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Siti binti Ahmad">
+                            <input type="text" name="family_contact_name" x-model="family_contact_name" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Siti binti Ahmad">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Family Contact Number</label>
-                            <input type="tel" name="family_contact_phone" value="{{ old('family_contact_phone') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., +60 12-345 6789">
+                            <input type="tel" name="family_contact_phone" x-model="family_contact_phone" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., +60 12-345 6789">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Family Address</label>
-                            <textarea name="family_address" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Family contact address">{{ old('family_address') }}</textarea>
+                            <textarea name="family_address" rows="2" x-model="family_address" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Family contact address"></textarea>
                         </div>
                     </div>
                 </div>
@@ -381,15 +402,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Agent / Banker</label>
-                            <input type="text" name="agent_banker" value="{{ old('agent_banker') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Name of agent or banker">
+                            <input type="text" name="agent_banker" x-model="agent_banker" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Name of agent or banker">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Financier / Bank</label>
-                            <input type="text" name="financier_bank" value="{{ old('financier_bank') }}" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Bank or financial institution">
+                            <input type="text" name="financier_bank" x-model="financier_bank" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Bank or financial institution">
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-xs font-medium text-gray-700 mb-2">Lawyer(s) parties (if any)</label>
-                            <textarea name="lawyers_parties" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Names of other lawyers involved in the case">{{ old('lawyers_parties') }}</textarea>
+                            <textarea name="lawyers_parties" rows="2" x-model="lawyers_parties" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Names of other lawyers involved in the case"></textarea>
                         </div>
                     </div>
                 </div>
@@ -407,7 +428,7 @@
                     <div class="grid grid-cols-1 gap-4">
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">Notes</label>
-                            <textarea name="notes" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Any additional notes or comments about the client...">{{ old('notes') }}</textarea>
+                            <textarea name="notes" rows="4" x-model="notes" class="w-full px-3 py-2 border border-gray-300 rounded-sm text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Any additional notes or comments about the client..."></textarea>
                         </div>
                     </div>
                 </div>
