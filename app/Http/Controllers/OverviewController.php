@@ -56,20 +56,27 @@ class OverviewController extends Controller
                 ->pluck('case_id')->unique()->toArray();
         }
         
+        // Get active status ID
+        $activeStatus = \App\Models\CaseStatus::where('name', 'LIKE', '%active%')->first();
+        $pendingStatus = \App\Models\CaseStatus::where('name', 'LIKE', '%pending%')->first();
+        $closedStatus = \App\Models\CaseStatus::where('name', 'LIKE', '%closed%')->orWhere('name', 'LIKE', '%completed%')->first();
+        
         // Get cases for this client
         $totalCases = CourtCase::whereIn('id', $clientCaseIds)->count();
-        $activeCases = CourtCase::whereIn('id', $clientCaseIds)
-            ->where('status', 'active')
-            ->count();
+        $activeCases = $activeStatus ? CourtCase::whereIn('id', $clientCaseIds)->where('case_status_id', $activeStatus->id)->count() : 0;
+        $pendingCases = $pendingStatus ? CourtCase::whereIn('id', $clientCaseIds)->where('case_status_id', $pendingStatus->id)->count() : 0;
+        $closedCases = $closedStatus ? CourtCase::whereIn('id', $clientCaseIds)->where('case_status_id', $closedStatus->id)->count() : 0;
         
         // Recent cases
         $recentCases = CourtCase::whereIn('id', $clientCaseIds)
+            ->with(['caseStatus', 'sectionType'])
             ->orderBy('updated_at', 'desc')
             ->limit(5)
             ->get();
         
         // Upcoming hearings for client's cases
         $upcomingHearings = CalendarEvent::whereIn('case_id', $clientCaseIds)
+            ->with('case')
             ->where('start_date', '>=', now())
             ->orderBy('start_date', 'asc')
             ->limit(5)
@@ -80,8 +87,8 @@ class OverviewController extends Controller
             'clientName' => $client ? $client->name : $user->name,
             'totalCases' => $totalCases,
             'activeCases' => $activeCases,
-            'pendingCases' => CourtCase::whereIn('id', $clientCaseIds)->where('status', 'pending')->count(),
-            'closedCases' => CourtCase::whereIn('id', $clientCaseIds)->where('status', 'closed')->count(),
+            'pendingCases' => $pendingCases,
+            'closedCases' => $closedCases,
             'recentCases' => $recentCases,
             'upcomingHearings' => $upcomingHearings,
             'dateRange' => $dateRange,
@@ -93,19 +100,24 @@ class OverviewController extends Controller
      */
     private function staffOverview($user, $dateRange)
     {
+        // Get active status ID
+        $activeStatus = \App\Models\CaseStatus::where('name', 'LIKE', '%active%')->first();
+        
         // Total counts
         $totalCases = CourtCase::count();
-        $activeCases = CourtCase::where('status', 'active')->count();
+        $activeCases = $activeStatus ? CourtCase::where('case_status_id', $activeStatus->id)->count() : 0;
         $totalClients = Client::count();
         $totalPartners = Partner::count();
         
         // Recent cases
-        $recentCases = CourtCase::orderBy('updated_at', 'desc')
+        $recentCases = CourtCase::with(['caseStatus', 'sectionType'])
+            ->orderBy('updated_at', 'desc')
             ->limit(5)
             ->get();
         
         // Upcoming hearings
-        $upcomingHearings = CalendarEvent::where('start_date', '>=', now())
+        $upcomingHearings = CalendarEvent::with('case')
+            ->where('start_date', '>=', now())
             ->orderBy('start_date', 'asc')
             ->limit(5)
             ->get();

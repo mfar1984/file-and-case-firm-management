@@ -175,8 +175,15 @@
                                             <p class="text-xs text-gray-500 text-[11px]">{{ $case->sectionType->name ?? 'N/A' }} - {{ Str::limit($case->title ?? 'No Title', 30) }}</p>
                                         </div>
                                     </div>
-                                    <span class="badge {{ $case->status == 'active' ? 'badge-success' : ($case->status == 'pending' ? 'badge-warning' : 'badge-secondary') }} text-[11px]">
-                                        {{ ucfirst($case->status ?? 'N/A') }}
+                                    @php
+                                        $statusName = strtolower($case->caseStatus->name ?? 'n/a');
+                                        $badgeClass = 'badge-secondary';
+                                        if (str_contains($statusName, 'active')) $badgeClass = 'badge-success';
+                                        elseif (str_contains($statusName, 'pending')) $badgeClass = 'badge-warning';
+                                        elseif (str_contains($statusName, 'closed') || str_contains($statusName, 'completed')) $badgeClass = 'badge-secondary';
+                                    @endphp
+                                    <span class="badge {{ $badgeClass }} text-[11px]">
+                                        {{ ucfirst($case->caseStatus->name ?? 'N/A') }}
                                     </span>
                                 </a>
                             @empty
