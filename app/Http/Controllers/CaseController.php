@@ -29,6 +29,11 @@ class CaseController extends Controller
         // Get cases with proper firm scope filtering
         $user = auth()->user();
 
+        // Check if user is a Client
+        if ($user->hasRole('Client')) {
+            return $this->clientCaseIndex($user);
+        }
+
         if ($user->hasRole('Super Administrator')) {
             // Super Admin can see all cases or filter by session firm
             if (session('current_firm_id')) {
@@ -58,6 +63,45 @@ class CaseController extends Controller
             $caseStatuses = \App\Models\CaseStatus::active()->orderBy('name')->get();
         }
 
+        return view('case', compact('cases', 'caseStatuses'));
+    }
+
+    /**
+     * Case index for Client role - shows only their cases
+     */
+    private function clientCaseIndex($user)
+    {
+        // Get client record linked to this user
+        $client = Client::where('user_id', $user->id)->first();
+        
+        // If no client linked, try to find by email
+        if (!$client) {
+            $client = Client::where('email', $user->email)->first();
+        }
+        
+        $clientCaseIds = [];
+        
+        if ($client) {
+            // Get cases where this client is a party (by name or IC)
+            $clientCaseIds = CaseParty::where(function($query) use ($client, $user) {
+                $query->where('name', 'LIKE', '%' . $client->name . '%')
+                      ->orWhere('ic_passport', $client->ic_passport)
+                      ->orWhere('email', $user->email);
+            })->pluck('case_id')->unique()->toArray();
+        } else {
+            // Fallback: find by user email in case parties
+            $clientCaseIds = CaseParty::where('email', $user->email)
+                ->pluck('case_id')->unique()->toArray();
+        }
+        
+        // Get only client's cases
+        $cases = CourtCase::whereIn('id', $clientCaseIds)
+            ->with(['parties', 'partners.partner', 'caseType', 'caseStatus'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        $caseStatuses = \App\Models\CaseStatus::active()->orderBy('name')->get();
+        
         return view('case', compact('cases', 'caseStatuses'));
     }
 

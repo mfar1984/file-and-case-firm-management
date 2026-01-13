@@ -35,8 +35,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Dummy routes for sidebar
-Route::view('/overview', 'overview')->name('overview');
+// Overview route with controller
+Route::get('/overview', [App\Http\Controllers\OverviewController::class, 'index'])->middleware(['auth'])->name('overview');
 
 // Calendar routes
 Route::get('/calendar', [App\Http\Controllers\CalendarController::class, 'index'])->name('calendar');
