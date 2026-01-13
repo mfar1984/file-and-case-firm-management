@@ -157,27 +157,57 @@ class FirmController extends Controller
             abort(403, 'Unauthorized access to firm management.');
         }
 
-        // Prevent deletion if firm has users
+        // Check all relationships before deletion
+        $relatedData = [];
+        
         if ($firm->users()->count() > 0) {
+            $relatedData[] = $firm->users()->count() . ' users';
+        }
+        if ($firm->clients()->count() > 0) {
+            $relatedData[] = $firm->clients()->count() . ' clients';
+        }
+        if ($firm->partners()->count() > 0) {
+            $relatedData[] = $firm->partners()->count() . ' partners';
+        }
+        if ($firm->cases()->count() > 0) {
+            $relatedData[] = $firm->cases()->count() . ' cases';
+        }
+        if ($firm->receipts()->count() > 0) {
+            $relatedData[] = $firm->receipts()->count() . ' receipts';
+        }
+        if ($firm->bills()->count() > 0) {
+            $relatedData[] = $firm->bills()->count() . ' bills';
+        }
+        if ($firm->vouchers()->count() > 0) {
+            $relatedData[] = $firm->vouchers()->count() . ' vouchers';
+        }
+
+        if (!empty($relatedData)) {
             return redirect()->route('settings.firms.index')
-                ->with('error', 'Cannot delete firm with existing users.');
+                ->with('error', 'Cannot delete firm. It has related data: ' . implode(', ', $relatedData) . '. Please delete or reassign these records first.');
         }
 
-        // Delete logo if exists
-        if ($firm->logo) {
-            Storage::disk('public')->delete($firm->logo);
+        try {
+            // Delete logo if exists
+            if ($firm->logo) {
+                Storage::disk('public')->delete($firm->logo);
+            }
+
+            // Log activity before deletion
+            activity()
+                ->causedBy(auth()->user())
+                ->withProperties(['firm_name' => $firm->name])
+                ->log('Deleted firm');
+
+            $firm->delete();
+
+            return redirect()->route('settings.firms.index')
+                ->with('success', 'Firm deleted successfully.');
+                
+        } catch (\Exception $e) {
+            return redirect()->route('settings.firms.index')
+                ->with('error', 'Failed to delete firm: ' . $e->getMessage());
         }
-
-        // Log activity before deletion
-        activity()
-            ->causedBy(auth()->user())
-            ->withProperties(['firm_name' => $firm->name])
-            ->log('Deleted firm');
-
-        $firm->delete();
-
-        return redirect()->route('settings.firms.index')
-            ->with('success', 'Firm deleted successfully.');
     }
 
     /**
