@@ -77,6 +77,9 @@ class UserController extends Controller
             ]);
 
             if ($request->has('roles')) {
+                // Set team/firm context for Spatie Permission
+                setPermissionsTeamId($user->firm_id);
+                
                 $roles = Role::whereIn('id', $request->roles)->get();
                 $user->assignRole($roles);
             }
@@ -174,9 +177,13 @@ class UserController extends Controller
 
             // Handle role assignment
             if ($request->has('roles')) {
+                // Set team/firm context for Spatie Permission
+                setPermissionsTeamId($user->firm_id);
+                
                 $roles = Role::whereIn('id', $request->roles)->get();
                 $user->syncRoles($roles);
             } else {
+                setPermissionsTeamId($user->firm_id);
                 $user->syncRoles([]);
             }
 
@@ -219,6 +226,7 @@ class UserController extends Controller
             DB::beginTransaction();
 
             // Remove all roles
+            setPermissionsTeamId($user->firm_id);
             $user->syncRoles([]);
             
             // Log user deletion

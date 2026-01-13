@@ -7,6 +7,20 @@ use Illuminate\Support\Facades\Auth;
 class PermissionHelper
 {
     /**
+     * Set firm/team context for Spatie Permission
+     * REQUIRED because config/permission.php has teams => true
+     */
+    private static function setFirmContext()
+    {
+        if (Auth::check()) {
+            $firmId = session('current_firm_id') ?? Auth::user()->firm_id;
+            if ($firmId) {
+                setPermissionsTeamId($firmId);
+            }
+        }
+    }
+
+    /**
      * Check if current user has a specific permission
      */
     public static function hasPermission($permission)
@@ -15,6 +29,7 @@ class PermissionHelper
             return false;
         }
 
+        self::setFirmContext();
         return Auth::user()->hasPermissionTo($permission);
     }
 
@@ -27,6 +42,7 @@ class PermissionHelper
             return false;
         }
 
+        self::setFirmContext();
         return Auth::user()->hasAnyPermission($permissions);
     }
 
@@ -39,6 +55,7 @@ class PermissionHelper
             return false;
         }
 
+        self::setFirmContext();
         return Auth::user()->hasAllPermissions($permissions);
     }
 
@@ -51,6 +68,7 @@ class PermissionHelper
             return false;
         }
 
+        self::setFirmContext();
         return Auth::user()->hasRole($role);
     }
 
@@ -63,6 +81,7 @@ class PermissionHelper
             return false;
         }
 
+        self::setFirmContext();
         return Auth::user()->hasAnyRole($roles);
     }
 
@@ -75,6 +94,7 @@ class PermissionHelper
             return collect();
         }
 
+        self::setFirmContext();
         return Auth::user()->getAllPermissions();
     }
 
@@ -87,6 +107,7 @@ class PermissionHelper
             return collect();
         }
 
+        self::setFirmContext();
         return Auth::user()->getRoleNames();
     }
 } 

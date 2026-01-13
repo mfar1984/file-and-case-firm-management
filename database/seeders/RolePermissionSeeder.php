@@ -138,6 +138,7 @@ class RolePermissionSeeder extends Seeder
                 'description' => 'Client access to their own cases',
                 'permissions' => [
                     'view-dashboard',
+                    'view-overview', // Client overview (isolated to their cases)
                     'view-cases', // Limited to own cases
                     'view-files', // Limited to own case files
                     'view-calendar' // Limited to own case events

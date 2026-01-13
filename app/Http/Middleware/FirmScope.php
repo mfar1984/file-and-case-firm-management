@@ -21,8 +21,15 @@ class FirmScope
         if (Auth::check()) {
             $user = Auth::user();
 
+            // FIRST: Set firm context BEFORE any role checks
+            // This is required because Spatie Permission teams mode needs firm_id
+            $firmId = session('current_firm_id') ?? $user->firm_id;
+            
+            if ($firmId) {
+                setPermissionsTeamId($firmId);
+            }
+
             // Determine which firm to use
-            $firmId = null;
             $currentFirm = null;
 
             // Super Administrator can switch firms via session
@@ -45,8 +52,7 @@ class FirmScope
 
             // Set current firm context for Spatie Permission teams
             if ($firmId && $currentFirm) {
-                // Set the team context for Spatie Permission
-                Config::set('permission.teams', true);
+                // Update team context if firm changed
                 setPermissionsTeamId($firmId);
 
                 // Store firm context in session for easy access

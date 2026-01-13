@@ -15,13 +15,17 @@
  *    - First plaintiff/applicant name abbreviation
  * 3. Update case_number field
  * 
- * Usage: php database/migrations/migrate_case_numbers.php
+ * Usage: php database/scripts/migrate_case_numbers.php
  */
 
 require __DIR__ . '/../../vendor/autoload.php';
 
+// Laravel 11 bootstrap
 $app = require_once __DIR__ . '/../../bootstrap/app.php';
-$app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+
+// Bootstrap the application
+$kernel = $app->make(\Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
 
 use App\Models\CourtCase;
 use App\Models\SectionType;
@@ -182,4 +186,3 @@ try {
     echo "Stack trace:\n" . $e->getTraceAsString() . "\n";
     exit(1);
 }
-
