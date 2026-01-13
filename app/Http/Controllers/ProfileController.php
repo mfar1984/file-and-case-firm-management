@@ -30,12 +30,15 @@ class ProfileController extends Controller
         $user = $request->user();
         $validated = $request->validated();
 
+        // Remove password fields from validated data first
+        unset($validated['current_password']);
+        
         // Handle password update if provided
         if ($request->filled('password')) {
-            $validated['password'] = Hash::make($validated['password']);
+            $validated['password'] = Hash::make($request->password);
         } else {
-            // Remove password fields if not updating password
-            unset($validated['password'], $validated['current_password']);
+            // Remove password if not updating
+            unset($validated['password']);
         }
 
         $user->fill($validated);
